@@ -117,4 +117,31 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_admin_cannot_delete_the_last_active_admin_account(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($admin)
+            ->from('/profile')
+            ->delete('/profile', ['password' => 'password'])
+            ->assertRedirect('/profile')
+            ->assertSessionHasErrorsIn('userDeletion', 'account');
+
+        $this->assertNotNull($admin->fresh());
+    }
+
+    public function test_profile_can_enable_the_optional_daily_digest(): void
+    {
+        $user = User::factory()->create(['digest_enabled' => false]);
+
+        $this->actingAs($user)->patch('/profile', [
+            'name' => $user->name,
+            'email' => $user->email,
+            'timezone' => 'Asia/Jakarta',
+            'digest_enabled' => '1',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertTrue($user->fresh()->digest_enabled);
+    }
 }

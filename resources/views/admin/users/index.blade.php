@@ -1,67 +1,126 @@
-<div class="overflow-hidden rounded-lg bg-white p-6 shadow-sm">
-    @if (session('success'))
-        <div class="mb-4 rounded bg-green-100 p-3 text-green-800">{{ session('success') }}</div>
-    @endif
-
-    @if ($errors->has('account'))
-        <div class="mb-4 rounded bg-red-100 p-3 text-red-800">{{ $errors->first('account') }}</div>
-    @endif
-
-    <h3 class="mb-4 text-lg font-semibold">Daftar akun</h3>
-
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-            <thead>
-                <tr class="border-b text-gray-600">
-                    <th class="px-3 py-2">Nama</th>
-                    <th class="px-3 py-2">Email</th>
-                    <th class="px-3 py-2">Peran</th>
-                    <th class="px-3 py-2">Status</th>
-                    <th class="px-3 py-2">Dibuat</th>
-                    <th class="px-3 py-2">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($users as $user)
-                    <tr class="border-b last:border-0">
-                        <td class="px-3 py-3">{{ $user->name }}</td>
-                        <td class="px-3 py-3">{{ $user->email }}</td>
-                        <td class="px-3 py-3">{{ $user->isAdmin() ? 'Admin' : 'Pengguna' }}</td>
-                        <td class="px-3 py-3">
-                            <span class="rounded px-2 py-1 text-xs {{ $user->is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700' }}">
-                                {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
-                            </span>
-                        </td>
-                        <td class="px-3 py-3">{{ $user->created_at->format('d M Y') }}</td>
-                        <td class="px-3 py-3">
-                            @if ($user->id !== auth()->id())
-                                <div class="flex flex-wrap gap-3">
-                                    <form method="POST" action="{{ route('admin.users.status', $user) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button class="text-blue-700 hover:underline">
-                                            {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                                        </button>
-                                    </form>
-                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Hapus akun ini beserta semua tugas dan kategorinya? Tindakan ini tidak dapat dibatalkan.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button class="text-red-700 hover:underline">Hapus akun</button>
-                                    </form>
-                                </div>
-                            @else
-                                <span class="text-gray-500">Akun Anda</span>
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-3 py-6 text-center text-gray-500">Belum ada akun.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+<section class="surface-card overflow-hidden">
+    <div class="flex flex-col gap-1 border-b border-line px-5 py-4 sm:px-6">
+        <h2 class="font-semibold">Manajemen Akun</h2>
+        <p class="text-sm text-muted">Cari akun, kelola akses, dan bantu pengguna memulihkan akun.</p>
     </div>
 
-    <div class="mt-4">{{ $users->links() }}</div>
-</div>
+    <form method="GET" action="{{ route('admin.users.index') }}" class="grid gap-3 border-b border-line p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <label class="sr-only" for="account-search">Cari nama atau email</label>
+        <input id="account-search" name="search" type="search" value="{{ $filters['search'] ?? '' }}" maxlength="100" placeholder="Cari nama atau email" class="form-control">
+        <label class="sr-only" for="account-status">Filter status akun</label>
+        <select id="account-status" name="status" class="form-control">
+            <option value="">Semua status</option>
+            <option value="active" @selected(($filters['status'] ?? '') === 'active')>Aktif</option>
+            <option value="inactive" @selected(($filters['status'] ?? '') === 'inactive')>Nonaktif</option>
+        </select>
+        <label class="sr-only" for="account-role">Filter peran akun</label>
+        <select id="account-role" name="role" class="form-control">
+            <option value="">Semua peran</option>
+            <option value="user" @selected(($filters['role'] ?? '') === 'user')>Pengguna</option>
+            <option value="admin" @selected(($filters['role'] ?? '') === 'admin')>Admin</option>
+        </select>
+        <div class="flex gap-2">
+            <button type="submit" class="btn-primary">Terapkan</button>
+            <a href="{{ route('admin.users.index') }}" class="btn-secondary">Reset</a>
+        </div>
+    </form>
+
+    @if ($users->isEmpty())
+        <div class="p-8 text-center">
+            <p class="font-medium">Akun tidak ditemukan.</p>
+            <p class="mt-1 text-sm text-muted">Coba ubah kata pencarian atau filter yang dipilih.</p>
+        </div>
+    @else
+        <div class="hidden overflow-x-auto md:block">
+            <table class="w-full text-left text-sm">
+                <caption class="sr-only">Daftar akun pengguna</caption>
+                <thead class="bg-gray-50 text-xs font-semibold uppercase tracking-wide text-muted">
+                    <tr>
+                        <th scope="col" class="px-5 py-3">Nama</th>
+                        <th scope="col" class="px-5 py-3">Email</th>
+                        <th scope="col" class="px-5 py-3">Peran</th>
+                        <th scope="col" class="px-5 py-3">Status</th>
+                        <th scope="col" class="px-5 py-3">Dibuat</th>
+                        <th scope="col" class="px-5 py-3">Kelola</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-line">
+                    @foreach ($users as $user)
+                        <tr>
+                            <td class="px-5 py-4 font-medium">{{ $user->name }}</td>
+                            <td class="px-5 py-4 text-muted">{{ $user->email }}</td>
+                            <td class="px-5 py-4">{{ $user->isAdmin() ? 'Admin' : 'Pengguna' }}</td>
+                            <td class="px-5 py-4"><x-status-badge :status="$user->is_active ? 'Aktif' : 'Nonaktif'" /></td>
+                            <td class="whitespace-nowrap px-5 py-4 text-muted">{{ $user->created_at->translatedFormat('d M Y') }}</td>
+                            <td class="px-5 py-4">
+                                @if ($user->id !== auth()->id())
+                                    <div class="flex flex-wrap gap-2">
+                                        <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail</a>
+                                        <x-confirm-action
+                                            :action="route('admin.users.status', $user)"
+                                            method="PATCH"
+                                            :title="$user->is_active ? 'Nonaktifkan akun?' : 'Aktifkan akun?'"
+                                            :message="$user->is_active ? 'Pengguna tidak akan dapat masuk selama akunnya nonaktif.' : 'Pengguna akan dapat masuk kembali setelah akun diaktifkan.'"
+                                            :label="$user->is_active ? 'Nonaktifkan' : 'Aktifkan'"
+                                            tone="secondary"
+                                            :icon="$user->is_active ? 'nonaktifkan' : 'selesai'"
+                                        />
+                                        <x-confirm-action
+                                            :action="route('admin.users.destroy', $user)"
+                                            method="DELETE"
+                                            title="Hapus akun secara permanen?"
+                                            message="Semua tugas dan kategori milik pengguna ini juga akan dihapus. Tindakan ini tidak dapat dibatalkan."
+                                            label="Hapus akun"
+                                        />
+                                    </div>
+                                @else
+                                    <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail akun</a>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+
+        <ul class="divide-y divide-line md:hidden">
+            @foreach ($users as $user)
+                <li class="space-y-3 p-4">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="truncate font-semibold">{{ $user->name }}</p>
+                            <p class="break-all text-sm text-muted">{{ $user->email }}</p>
+                        </div>
+                        <x-status-badge :status="$user->is_active ? 'Aktif' : 'Nonaktif'" class="shrink-0" />
+                    </div>
+                    <p class="text-xs text-muted">{{ $user->isAdmin() ? 'Admin' : 'Pengguna' }} · Dibuat {{ $user->created_at->translatedFormat('d M Y') }}</p>
+                    @if ($user->id !== auth()->id())
+                        <div class="flex flex-wrap gap-2">
+                            <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail</a>
+                            <x-confirm-action
+                                :action="route('admin.users.status', $user)"
+                                method="PATCH"
+                                :title="$user->is_active ? 'Nonaktifkan akun?' : 'Aktifkan akun?'"
+                                :message="$user->is_active ? 'Pengguna tidak akan dapat masuk selama akunnya nonaktif.' : 'Pengguna akan dapat masuk kembali setelah akun diaktifkan.'"
+                                :label="$user->is_active ? 'Nonaktifkan' : 'Aktifkan'"
+                                tone="secondary"
+                                :icon="$user->is_active ? 'nonaktifkan' : 'selesai'"
+                            />
+                            <x-confirm-action
+                                :action="route('admin.users.destroy', $user)"
+                                method="DELETE"
+                                title="Hapus akun secara permanen?"
+                                message="Semua tugas dan kategori milik pengguna ini juga akan dihapus. Tindakan ini tidak dapat dibatalkan."
+                                label="Hapus akun"
+                            />
+                        </div>
+                    @else
+                        <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail akun</a>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    <div class="border-t border-line px-4 py-4 sm:px-6">{{ $users->links() }}</div>
+</section>

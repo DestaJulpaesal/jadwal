@@ -1,27 +1,25 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('This is a secure area of the application. Please confirm your password before continuing.') }}
+    <div class="mb-6">
+        <p class="text-sm font-semibold text-primary-800">Pemeriksaan keamanan</p>
+        <h1 class="mt-1 text-2xl font-semibold">Konfirmasi password</h1>
+        <p class="mt-2 text-sm leading-6 text-muted">Untuk melanjutkan ke bagian aman ini, masukkan password akun Anda.</p>
     </div>
-
-    <form method="POST" action="{{ route('password.confirm') }}">
+    @if ($errors->any())
+        <x-alert type="danger" class="mb-5">{{ $errors->first() }}</x-alert>
+    @endif
+    <form method="POST" action="{{ route('password.confirm') }}" class="space-y-5">
         @csrf
-
-        <!-- Password -->
         <div>
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+            <x-input-label for="password" value="Password" />
+            <div class="mt-1 flex gap-2">
+                <x-text-input id="password" name="password" type="password" class="min-w-0 flex-1" required autofocus autocomplete="current-password" data-password-field aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" aria-describedby="password-error" />
+                <button type="button" class="btn-secondary px-3" data-password-toggle data-password-show-icon="{{ asset('icons/sprite.svg#icon-lihat-password') }}" data-password-hide-icon="{{ asset('icons/sprite.svg#icon-sembunyikan-password') }}" aria-label="Tampilkan password">
+                    <x-icon name="lihat-password" class="h-5 w-5" data-password-icon />
+                    <span data-password-label>Tampilkan</span>
+                </button>
+            </div>
+            <x-input-error id="password-error" :messages="$errors->get('password')" />
         </div>
-
-        <div class="flex justify-end mt-4">
-            <x-primary-button>
-                {{ __('Confirm') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="btn-primary w-full" data-loading-text="Memeriksa...">Konfirmasi</button>
     </form>
 </x-guest-layout>

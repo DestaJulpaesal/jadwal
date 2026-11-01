@@ -1,0 +1,5 @@
+@extends('layouts.error')
+@section('title', 'Terjadi kendala')
+@section('code', '500')
+@section('heading', 'Ada kendala saat memuat halaman')
+@section('message', 'Perubahan Anda mungkin belum tersimpan. Coba kembali beberapa saat lagi.')

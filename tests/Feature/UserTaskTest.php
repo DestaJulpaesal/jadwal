@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\Category;
 use App\Models\TaskStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -310,7 +309,7 @@ class UserTaskTest extends TestCase
     {
         $user = User::factory()->create(['email_verified_at' => now()]);
         $otherUser = User::factory()->create();
-        $category = Category::create(['user_id' => $otherUser->id, 'name' => 'Private']);
+        $category = $otherUser->categories()->create(['name' => 'Private']);
 
         $response = $this->actingAs($user)->from(route('user.tasks.create'))->post(route('user.tasks.store'), [
             'title' => 'Test task',
@@ -373,7 +372,7 @@ class UserTaskTest extends TestCase
             ->assertSee('My October deadline')
             ->assertDontSee('Private October deadline')
             ->assertDontSee('My November deadline')
-            ->assertSee('October 2026');
+            ->assertSee('Oktober 2026');
     }
 
     public function test_calendar_shows_scheduled_times_in_local_time_order(): void
@@ -399,8 +398,7 @@ class UserTaskTest extends TestCase
     public function test_category_colors_are_shown_in_the_task_list_and_calendar(): void
     {
         $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
-        $category = Category::create([
-            'user_id' => $user->id,
+        $category = $user->categories()->create([
             'name' => 'Belajar',
             'color' => '#22AA44',
         ]);
@@ -463,6 +461,22 @@ class UserTaskTest extends TestCase
             ->get(route('user.tasks.index', ['due' => 'today']))
             ->assertOk()
             ->assertSee('Late local evening');
+    }
+
+    public function test_overdue_filter_excludes_completed_tasks_and_includes_elapsed_schedule_end(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 12:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'UTC']);
+        $complete = TaskStatus::create(['name' => 'Selesai']);
+        $user->tasks()->create(['title' => 'Terlambat selesai', 'task_status_id' => $complete->id, 'due_date' => '2026-10-31 10:00:00']);
+        $user->tasks()->create(['title' => 'Tenggat lewat', 'due_date' => '2026-10-31 10:00:00']);
+        $user->tasks()->create(['title' => 'Jadwal berakhir', 'ends_at' => '2026-10-31 10:00:00']);
+
+        $this->actingAs($user)->get(route('user.tasks.index', ['due' => 'overdue']))
+            ->assertOk()
+            ->assertSee('Tenggat lewat')
+            ->assertSee('Jadwal berakhir')
+            ->assertDontSee('Terlambat selesai');
     }
 
     public function test_database_seeder_adds_default_task_statuses(): void

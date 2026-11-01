@@ -1,0 +1,5 @@
+@extends('layouts.error')
+@section('title', 'Terlalu banyak permintaan')
+@section('code', '429')
+@section('heading', 'Tunggu sebentar sebelum mencoba lagi')
+@section('message', 'Kami menerima terlalu banyak permintaan dalam waktu singkat. Silakan tunggu sebentar, lalu coba kembali.')

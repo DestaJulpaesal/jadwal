@@ -1,0 +1,5 @@
+@extends('layouts.error')
+@section('title', 'Tidak dapat mengakses halaman')
+@section('code', '403')
+@section('heading', 'Anda tidak dapat membuka halaman ini')
+@section('message', 'Halaman ini hanya tersedia untuk akun dengan izin tertentu. Kembali ke beranda untuk melanjutkan.')

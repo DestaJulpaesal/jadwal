@@ -16,7 +16,6 @@ class Task extends Model
     ];
 
     protected $fillable = [
-        'user_id',
         'category_id',
         'task_status_id',
         'title',

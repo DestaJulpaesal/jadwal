@@ -9,7 +9,17 @@ class TaskStatus extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'is_completed'];
+
+    protected $casts = ['is_completed' => 'boolean'];
+
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['name'] = $value;
+        if ($value === 'Selesai') {
+            $this->attributes['is_completed'] = true;
+        }
+    }
 
     public function tasks()
     {

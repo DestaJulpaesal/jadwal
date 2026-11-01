@@ -14,7 +14,14 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         foreach (['Belum dimulai', 'Sedang dikerjakan', 'Selesai'] as $name) {
-            TaskStatus::firstOrCreate(['name' => $name]);
+            TaskStatus::firstOrCreate(
+                ['name' => $name],
+                ['is_completed' => $name === 'Selesai']
+            );
+        }
+
+        if (app()->environment('local')) {
+            $this->call(LocalLifeHubSeeder::class);
         }
     }
 }

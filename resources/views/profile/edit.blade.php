@@ -1,29 +1,31 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+@extends('layouts.user')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-profile-information-form')
-                </div>
-            </div>
+@section('title', 'Profil')
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.update-password-form')
-                </div>
-            </div>
+@section('content')
+    <div class="mx-auto max-w-3xl space-y-5">
+        <header class="mb-6">
+            <p class="text-sm font-semibold text-primary-800">Pengaturan akun</p>
+            <h1 class="mt-1 text-2xl font-semibold tracking-tight">Profil Anda</h1>
+            <p class="mt-2 text-muted">Perbarui informasi, keamanan, dan zona waktu akun.</p>
+        </header>
 
-            <div class="p-4 sm:p-8 bg-white dark:bg-gray-800 shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    @include('profile.partials.delete-user-form')
-                </div>
-            </div>
-        </div>
+        @if (session('status') === 'profile-updated')
+            <x-alert type="success">Informasi profil berhasil diperbarui.</x-alert>
+        @elseif (session('status') === 'password-updated')
+            <x-alert type="success">Password berhasil diperbarui.</x-alert>
+        @elseif (session('status') === 'verification-link-sent')
+            <x-alert type="success">Tautan verifikasi baru sudah dikirim ke alamat email Anda.</x-alert>
+        @endif
+
+        <section class="surface-card p-5 sm:p-7">
+            @include('profile.partials.update-profile-information-form')
+        </section>
+        <section class="surface-card p-5 sm:p-7">
+            @include('profile.partials.update-password-form')
+        </section>
+        <section class="surface-card border-red-200 p-5 sm:p-7">
+            @include('profile.partials.delete-user-form')
+        </section>
     </div>
-</x-app-layout>
+@endsection

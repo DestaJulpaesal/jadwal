@@ -46,7 +46,13 @@ class TaskController extends Controller
             'today' => $query->where('due_date', '>=', $todayStart)
                 ->where('due_date', '<', $tomorrowStart),
             'upcoming' => $query->where('due_date', '>=', $tomorrowStart),
-            'overdue' => $query->whereNotNull('due_date')->where('due_date', '<', now()),
+            'overdue' => $query
+                ->whereDoesntHave('status', fn ($query) => $query->where('is_completed', true))
+                ->where(function ($query) {
+                    $now = Carbon::now('UTC');
+                    $query->where(fn ($query) => $query->whereNotNull('due_date')->where('due_date', '<', $now))
+                        ->orWhere(fn ($query) => $query->whereNull('due_date')->whereNotNull('ends_at')->where('ends_at', '<', $now));
+                }),
             'none' => $query->whereNull('due_date'),
             default => null,
         };
@@ -121,7 +127,7 @@ class TaskController extends Controller
     {
         $this->authorize('update', $task);
 
-        $completedStatus = TaskStatus::where('name', 'Selesai')->first();
+        $completedStatus = TaskStatus::where('is_completed', true)->first();
 
         if (! $completedStatus) {
             return back()->with('error', 'Status "Selesai" belum tersedia. Hubungi administrator.');
@@ -147,7 +153,7 @@ class TaskController extends Controller
     private function formData(): array
     {
         return [
-            'categories' => Category::where('user_id', auth()->id())->orderBy('name')->get(),
+            'categories' => auth()->user()->categories()->orderBy('name')->get(),
             'statuses' => TaskStatus::orderBy('name')->get(),
         ];
     }
@@ -155,15 +161,14 @@ class TaskController extends Controller
     private function resolveCategory(array $validated, Request $request): ?Category
     {
         if (! empty($validated['category_name'])) {
-            return Category::create([
-                'user_id' => $request->user()->id,
-                'name' => $validated['category_name'],
-                'color' => $validated['category_color'] ?? '#3B82F6',
-            ]);
+            return $request->user()->categories()->firstOrCreate(
+                ['name' => $validated['category_name']],
+                ['color' => $validated['category_color'] ?? '#3B82F6']
+            );
         }
 
         if (! empty($validated['category_id'])) {
-            $category = Category::findOrFail($validated['category_id']);
+            $category = $request->user()->categories()->findOrFail($validated['category_id']);
             $this->authorize('useForTask', $category);
 
             return $category;

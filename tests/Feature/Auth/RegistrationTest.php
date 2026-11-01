@@ -39,6 +39,27 @@ class RegistrationTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_registered_users_can_log_out_and_log_back_in(): void
+    {
+        $credentials = [
+            'name' => 'Persistent User',
+            'email' => 'persistent@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ];
+
+        $this->post('/register', $credentials)->assertRedirect(RouteServiceProvider::HOME);
+        $this->assertAuthenticated();
+        $this->post('/logout')->assertRedirect('/');
+        $this->assertGuest();
+
+        $this->post('/login', [
+            'email' => $credentials['email'],
+            'password' => $credentials['password'],
+        ])->assertRedirect(RouteServiceProvider::HOME);
+        $this->assertAuthenticated();
+    }
+
     public function test_registration_is_rate_limited_by_ip(): void
     {
         for ($attempt = 0; $attempt < 5; $attempt++) {

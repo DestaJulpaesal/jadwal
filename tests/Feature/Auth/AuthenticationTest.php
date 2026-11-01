@@ -13,11 +13,23 @@ class AuthenticationTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_test_database_is_isolated_from_the_local_sqlite_file(): void
+    {
+        $this->assertSame('sqlite', config('database.default'));
+        $this->assertSame(':memory:', config('database.connections.sqlite.database'));
+    }
+
     public function test_login_screen_can_be_rendered(): void
     {
         $response = $this->get('/login');
 
-        $response->assertStatus(200);
+        $response->assertOk()
+            ->assertSee('Masuk dulu,')
+            ->assertSee('Pahlawan!')
+            ->assertSee('Buat akun baru')
+            ->assertSee('href="#mascot"', false)
+            ->assertSee('href="#ml"', false)
+            ->assertDontSee('Masuk dengan sidik jari');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void

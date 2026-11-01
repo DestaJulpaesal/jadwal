@@ -1,0 +1,5 @@
+@extends('layouts.error')
+@section('title', 'Sesi berakhir')
+@section('code', '419')
+@section('heading', 'Sesi Anda sudah berakhir')
+@section('message', 'Untuk menjaga keamanan akun, halaman ini perlu dimuat ulang. Kembali ke beranda lalu coba lagi.')

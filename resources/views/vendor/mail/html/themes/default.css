@@ -1,0 +1,52 @@
+body,
+body *:not(html):not(style):not(br):not(tr):not(code) {
+    box-sizing: border-box;
+    font-family: Figtree, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+    background: #f7f8f5;
+    color: #52615b;
+    line-height: 1.55;
+    margin: 0;
+    width: 100% !important;
+}
+
+a { color: #226b50; }
+h1, h2, h3 { color: #1d2925; }
+p { font-size: 15px; line-height: 1.6; text-align: left; }
+.wrapper, .body { background: #f7f8f5; }
+.content { margin: 0; padding: 0; width: 100%; }
+.header { padding: 26px 0; text-align: center; }
+.header a { color: #1d2925; font-size: 19px; font-weight: 700; text-decoration: none; }
+.inner-body {
+    background: #fff;
+    border: 1px solid #dce4df;
+    border-radius: 12px;
+    margin: 0 auto;
+    width: 570px;
+}
+.content-cell { padding: 36px; }
+.subcopy { border-top: 1px solid #dce4df; margin-top: 24px; padding-top: 20px; }
+.subcopy p, .footer p { color: #52615b; font-size: 12px; }
+.footer { margin: 0 auto; text-align: center; width: 570px; }
+.footer .content-cell { padding: 20px 0; }
+.footer p { text-align: center; }
+.action { margin: 26px auto; text-align: center; width: 100%; }
+.button {
+    background: #226b50;
+    border: 10px solid #226b50;
+    border-left-width: 18px;
+    border-right-width: 18px;
+    border-radius: 8px;
+    color: #fff;
+    display: inline-block;
+    font-weight: 600;
+    text-decoration: none;
+}
+.button-blue, .button-primary, .button-green, .button-success { background: #226b50; border-color: #226b50; }
+.button-red, .button-error { background: #a3312c; border-color: #a3312c; }
+.panel { border-left: #226b50 solid 4px; margin: 20px 0; }
+.panel-content { background: #eff6f1; color: #1d2925; padding: 16px; }
+.panel-content p { color: #1d2925; }
+.break-all { word-break: break-all; }

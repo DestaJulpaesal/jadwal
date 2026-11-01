@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,6 +48,11 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        if ($user->isAdmin() && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+            return Redirect::back()->withErrors([
+                'account' => 'Akun admin aktif terakhir tidak dapat dihapus. Tambahkan admin lain terlebih dahulu.',
+            ], 'userDeletion');
+        }
 
         Auth::logout();
 

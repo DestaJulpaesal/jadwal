@@ -1,9 +1,14 @@
 @props(['messages'])
 
 @if ($messages)
-    <ul {{ $attributes->merge(['class' => 'text-sm text-red-600 dark:text-red-400 space-y-1']) }}>
+    <ul {{ $attributes->merge(['class' => 'field-error space-y-1']) }}>
         @foreach ((array) $messages as $message)
-            <li>{{ $message }}</li>
+            <li class="flex items-start gap-1.5">
+                @if (! request()->routeIs('user.*'))
+                    <x-icon name="galat" class="mt-0.5 h-4 w-4" />
+                @endif
+                <span>{{ $message }}</span>
+            </li>
         @endforeach
     </ul>
 @endif

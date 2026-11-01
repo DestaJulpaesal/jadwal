@@ -1,41 +1,37 @@
 @extends('layouts.user')
 
-@section('content')
-    <div class="max-w-5xl mx-auto">
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-                <h1 class="text-2xl font-bold">Daftar tugas</h1>
-                <p class="text-gray-600">Kelola tugas pribadi Anda.</p>
-            </div>
-            <a href="{{ route('user.tasks.create') }}" class="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">Tambah tugas</a>
-        </div>
+@section('title', 'Tugas')
 
-        @if (session('success'))
-            <div class="mb-4 rounded bg-green-100 p-3 text-green-800">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="mb-4 rounded bg-red-100 p-3 text-red-800" role="alert">{{ session('error') }}</div>
-        @endif
+@section('content')
+    <div class="mx-auto max-w-6xl">
+        <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+                <p class="text-sm font-semibold text-primary-800">Ruang kerja pribadi</p>
+                <h1 class="mt-1 text-2xl font-semibold tracking-tight">Daftar tugas</h1>
+                <p class="mt-2 text-muted">Cari, saring, dan perbarui rencana Anda.</p>
+            </div>
+            <a href="{{ route('user.tasks.create') }}" class="btn-primary hidden md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
+        </header>
 
         @if (session('schedule_conflicts'))
-            <div class="mb-4 rounded border border-amber-300 bg-amber-50 p-4 text-amber-900" role="status">
+            <x-alert type="warning" class="mb-5">
                 <p class="font-semibold">Perhatian: jadwal berhasil disimpan, tetapi bertabrakan dengan:</p>
                 <ul class="mt-2 list-inside list-disc">
                     @foreach (session('schedule_conflicts') as $conflict)
                         <li>{{ $conflict['title'] }} ({{ $conflict['starts_at'] }}–{{ $conflict['ends_at'] }})</li>
                     @endforeach
                 </ul>
-            </div>
+            </x-alert>
         @endif
 
-        <form method="GET" action="{{ route('user.tasks.index') }}" class="mb-4 grid gap-3 rounded bg-white p-4 shadow sm:grid-cols-4">
-            <div class="sm:col-span-2">
-                <label for="search" class="sr-only">Cari tugas</label>
-                <input id="search" name="search" value="{{ $filters['search'] ?? '' }}" placeholder="Cari judul atau deskripsi" class="w-full rounded border-gray-300">
+        <form method="GET" action="{{ route('user.tasks.index') }}" class="surface-card mb-5 grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_auto] lg:items-end">
+            <div>
+                <label for="search" class="field-label inline-flex items-center gap-2"><x-concept-icon name="sc" class="h-5 w-5" />Cari tugas</label>
+                <input id="search" name="search" value="{{ $filters['search'] ?? '' }}" type="search" autocomplete="off" placeholder="Judul atau catatan" class="form-control">
             </div>
             <div>
-                <label for="status_id" class="sr-only">Status</label>
-                <select id="status_id" name="status_id" class="w-full rounded border-gray-300">
+                <label for="status_id" class="field-label">Status</label>
+                <select id="status_id" name="status_id" class="form-control">
                     <option value="">Semua status</option>
                     @foreach ($statuses as $status)
                         <option value="{{ $status->id }}" @selected(($filters['status_id'] ?? '') == $status->id)>{{ $status->name }}</option>
@@ -43,8 +39,8 @@
                 </select>
             </div>
             <div>
-                <label for="due" class="sr-only">Jadwal</label>
-                <select id="due" name="due" class="w-full rounded border-gray-300">
+                <label for="due" class="field-label inline-flex items-center gap-2"><x-concept-icon name="cl" class="h-5 w-5" />Waktu tugas</label>
+                <select id="due" name="due" class="form-control">
                     <option value="">Semua jadwal</option>
                     <option value="today" @selected(($filters['due'] ?? '') === 'today')>Hari ini</option>
                     <option value="upcoming" @selected(($filters['due'] ?? '') === 'upcoming')>Akan datang</option>
@@ -52,65 +48,62 @@
                     <option value="none" @selected(($filters['due'] ?? '') === 'none')>Tanpa tenggat</option>
                 </select>
             </div>
-            <div class="flex flex-col gap-2 sm:col-span-4 sm:flex-row">
-                <button class="min-h-11 rounded bg-gray-800 px-4 py-2 text-white hover:bg-gray-700">Filter</button>
-                <a href="{{ route('user.tasks.index') }}" class="inline-flex min-h-11 items-center justify-center rounded border px-4 py-2">Reset</a>
+            <div class="flex gap-2 sm:col-span-2 lg:col-span-1">
+                <button type="submit" class="btn-primary flex-1 lg:flex-none">Terapkan</button>
+                <a href="{{ route('user.tasks.index') }}" class="btn-secondary flex-1 lg:flex-none">Reset</a>
             </div>
         </form>
 
-        <div class="rounded bg-white p-6 shadow">
-            @forelse ($tasks as $task)
-                <div class="flex flex-wrap items-center justify-between gap-4 border-b py-4 last:border-b-0">
-                    <div class="min-w-0">
-                        <h2 class="font-semibold">{{ $task->title }}</h2>
-                        @if ($task->description)
-                            <p class="mt-1 text-sm text-gray-600">{{ $task->description }}</p>
+        <section class="surface-card overflow-hidden">
+            @if ($tasks->isEmpty())
+                <div class="px-5 py-12 text-center sm:px-8">
+                    <h2 class="text-lg font-semibold">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Tidak ada tugas yang cocok.' : 'Belum ada tugas.' }}</h2>
+                    <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Coba ubah kata pencarian atau filter, atau tampilkan semua tugas.' : 'Tambahkan tugas pertama Anda agar rencana mudah diingat dan diatur.' }}</p>
+                    <div class="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
+                        @if (request()->hasAny(['search', 'status_id', 'due']))
+                            <a href="{{ route('user.tasks.index') }}" class="btn-secondary">Tampilkan semua tugas</a>
                         @endif
+                        <a href="{{ route('user.tasks.create') }}" class="btn-primary">Tambah tugas</a>
+                    </div>
+                </div>
+            @else
+                <ul class="divide-y divide-line">
+                    @foreach ($tasks as $task)
                         @php
                             $startsAt = $task->starts_at?->timezone(auth()->user()->timezone);
                             $endsAt = $task->ends_at?->timezone(auth()->user()->timezone);
                             $dueDate = $task->due_date?->timezone(auth()->user()->timezone);
                         @endphp
-                        <div class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
-                            @if ($task->category)
-                                <span class="inline-flex items-center gap-1">
-                                    <span class="h-2.5 w-2.5 rounded-full" style="background-color: {{ $task->category->displayColor() }}"></span>
-                                    {{ $task->category->name }}
-                                </span>
-                            @else
-                                <span>Tanpa kategori</span>
-                            @endif
-                            <span>{{ $task->status->name ?? 'Belum berstatus' }}</span>
-                            <span>
-                                @if ($startsAt)
-                                    {{ $startsAt->format('d M Y H:i') }}@if ($endsAt)–{{ $endsAt->format('H:i') }}@endif
-                                @else
-                                    {{ $dueDate?->format('d M Y H:i') ?? 'Tanpa tenggat' }}
+                        <li class="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+                            <div class="min-w-0">
+                                <h2 class="break-words font-semibold">{{ $task->title }}</h2>
+                                @if ($task->description)
+                                    <p class="mt-1 whitespace-pre-line break-words text-sm leading-6 text-muted">{{ $task->description }}</p>
                                 @endif
-                            </span>
-                        </div>
-                    </div>
-                    <div class="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
-                        @if ($task->status?->name !== 'Selesai')
-                            <form method="POST" action="{{ route('user.tasks.complete', $task) }}">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit" class="inline-flex min-h-10 items-center rounded bg-green-100 px-3 py-2 text-sm font-medium text-green-800 hover:bg-green-200">Tandai selesai</button>
-                            </form>
-                        @endif
-                        <a href="{{ route('user.tasks.edit', $task) }}" class="text-blue-600 hover:underline">Edit</a>
-                        <form method="POST" action="{{ route('user.tasks.destroy', $task) }}" onsubmit="return confirm('Hapus tugas ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="min-h-10 text-red-600 hover:underline">Hapus</button>
-                        </form>
-                    </div>
-                </div>
-            @empty
-                <p class="py-4 text-gray-600">Belum ada tugas. Tambahkan tugas pertama Anda.</p>
-            @endforelse
-        </div>
-
-        <div class="mt-4">{{ $tasks->links() }}</div>
+                                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+                                    @if ($task->category)
+                                        <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full" style="background-color: {{ $task->category->displayColor() }}" aria-hidden="true"></span>{{ $task->category->name }}</span>
+                                    @else
+                                        <span>Tanpa kategori</span>
+                                    @endif
+                                    <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-ink">{{ $task->status->name ?? 'Belum berstatus' }}</span>
+                                    <span>
+                                        @if ($startsAt)
+                                            {{ $startsAt->translatedFormat('j M Y') }} · {{ $startsAt->format('H:i') }}@if ($endsAt)–{{ $endsAt->format('H:i') }}@endif
+                                        @elseif ($dueDate)
+                                            Jatuh tempo {{ $dueDate->translatedFormat('j M Y, H:i') }}
+                                        @else
+                                            Tanpa tenggat
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                            <x-task-actions :task="$task" show-delete />
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+            <div class="border-t border-line px-4 py-4 sm:px-5">{{ $tasks->links() }}</div>
+        </section>
     </div>
 @endsection
