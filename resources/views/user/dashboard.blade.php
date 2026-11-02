@@ -13,10 +13,12 @@
             <p class="k">{{ now(auth()->user()->timezone)->translatedFormat('l, j F') }}</p>
             <h1 class="mt-1 break-words text-3xl sm:text-4xl">Halo,<br>{{ auth()->user()->name }}!</h1>
             <span class="concept-chip mt-2">{{ $todayCount }} hal hari ini</span>
-            <div class="concept-stats">
+            <div class="concept-stats {{ in_array('finance', $dashboardSections, true) ? '' : 'concept-stats-inline' }}">
                 <div class="concept-stat"><b>{{ $totalTasks }}</b><span>Total tugas</span></div>
                 <div class="concept-stat"><b>{{ $doneHabits }}/{{ $todayHabits->count() }}</b><span>kebiasaan</span></div>
-                <div class="concept-stat"><b data-private>{{ rupiah($totalBalance) }}</b><span>saldo</span></div>
+                @if (in_array('finance', $dashboardSections, true))
+                    <div class="concept-stat"><b data-private>{{ rupiah($totalBalance) }}</b><span>saldo</span></div>
+                @endif
             </div>
         </section>
 
@@ -34,10 +36,13 @@
         <nav class="concept-quick dashboard-wide" aria-label="Akses cepat">
             <a href="{{ route('user.tasks.index') }}" class="concept-quick-link"><x-concept-icon name="tk" />Tugas</a>
             <a href="{{ route('user.money.index') }}" class="concept-quick-link"><x-concept-icon name="wl" />Catat uang</a>
-            <a href="{{ route('user.calendar') }}" class="concept-quick-link"><x-concept-icon name="cl" />Kalender</a>
+            <a href="#home-calendar" class="concept-quick-link"><x-concept-icon name="cl" />Kalender</a>
             <a href="{{ route('user.habits.index') }}" class="concept-quick-link"><x-concept-icon name="fl" />Kebiasaan</a>
-        </section>
+        </nav>
 
+        @include('user.partials.calendar-widget')
+
+        @if (in_array('attention', $dashboardSections, true))
         <section class="concept-card concept-card-pink" aria-labelledby="attention-heading">
             <div class="concept-card-header">
                 <div class="concept-heading mb-0"><x-concept-icon name="bl" /><h2 id="attention-heading">Perlu perhatian</h2></div>
@@ -62,7 +67,9 @@
                 </ul>
             @endif
         </section>
+        @endif
 
+        @if (in_array('habits', $dashboardSections, true))
         <section class="concept-card concept-card-green" aria-labelledby="habits-heading">
             <div class="concept-card-header">
                 <div class="concept-heading mb-0"><x-concept-icon name="fl" /><div><h2 id="habits-heading" class="text-lg font-semibold">Kebiasaan hari ini</h2><p class="mt-1 text-sm">{{ $doneHabits }} dari {{ $todayHabits->count() }} selesai</p></div></div>
@@ -95,7 +102,9 @@
                 </div>
             @endforelse
         </section>
+        @endif
 
+        @if (in_array('today_tasks', $dashboardSections, true))
         <section class="concept-card concept-card-yellow">
             <div class="concept-card-header">
                 <div class="concept-heading mb-0"><x-concept-icon name="cl" /><div><h2 class="text-lg font-semibold">Jadwal hari ini</h2><p class="mt-1 text-sm">Agenda yang sudah tiba atau akan dimulai hari ini.</p></div></div>
@@ -138,7 +147,9 @@
                 </div>
             @endif
         </section>
+        @endif
 
+        @if (in_array('attention', $dashboardSections, true))
             <section class="concept-card concept-card-pink">
                 <h2 class="text-lg font-semibold">Tugas yang terlewat</h2>
                 <p class="mt-1 text-sm text-muted">Anda masih bisa mengatur ulang waktunya atau menandainya selesai.</p>
@@ -151,7 +162,9 @@
                     <div class="mt-4 border-t border-line py-4"><p class="font-medium">Tidak ada tugas yang terlewat.</p><p class="mt-1 text-sm text-muted">Bagus, semua tenggat masih terjaga.</p></div>
                 @endforelse
             </section>
+        @endif
 
+        @if (in_array('upcoming', $dashboardSections, true))
             <section class="concept-card concept-card-blue">
                 <h2 class="text-lg font-semibold">7 hari mendatang</h2>
                 <p class="mt-1 text-sm text-muted">Lihat tugas yang akan datang agar bisa menyiapkan waktu.</p>
@@ -189,7 +202,9 @@
                     @endif
                 @endforeach
             </section>
+        @endif
 
+        @if (in_array('finance', $dashboardSections, true))
         <section class="concept-card concept-card-orange" aria-labelledby="money-summary-heading">
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div><h2 id="money-summary-heading" class="text-lg font-semibold">Ringkasan uang bulan ini</h2><p class="mt-1 text-sm text-muted">Saldo dihitung dari dompet dan catatan uang Anda.</p></div>
@@ -202,6 +217,7 @@
                 <article class="concept-stat"><b data-private>{{ rupiah($monthlySummary['net']) }}</b><span>sisa</span></article>
             </div>
         </section>
+        @endif
 
         @if ($showOnboarding)
             <section class="surface-card mt-6 border-primary-200 p-5 sm:p-6">

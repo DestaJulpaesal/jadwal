@@ -24,7 +24,7 @@ class HabitController extends Controller
             ->with('logs')
             ->orderBy('title')
             ->get()
-            ->map(function (Habit $habit) use ($today) {
+            ->map(function (Habit $habit) use ($today, $request) {
                 $logs = $habit->logs->mapWithKeys(fn ($log) => [
                     $log->log_date->toDateString() => $log->status->value,
                 ])->all();
@@ -34,7 +34,10 @@ class HabitController extends Controller
                     $habit->weekdays,
                     $habit->weekly_target,
                     $logs,
-                    \Illuminate\Support\Carbon::parse($today)
+                    \Illuminate\Support\Carbon::parse($today),
+                    $request->user()->week_starts_on === 'sunday'
+                        ? \Carbon\CarbonImmutable::SUNDAY
+                        : \Carbon\CarbonImmutable::MONDAY
                 ));
                 $habit->setAttribute('today_log', $habit->logs->first(
                     fn ($log) => $log->log_date->toDateString() === $today

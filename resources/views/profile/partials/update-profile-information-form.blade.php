@@ -1,14 +1,14 @@
 <section>
     <header>
         <h2 class="text-lg font-semibold">Informasi profil</h2>
-        <p class="mt-1 text-sm text-muted">Nama dan email yang digunakan untuk akun Anda.</p>
+        <p class="mt-1 text-sm text-muted">Nama dan email yang digunakan untuk akun Anda. Atur zona waktu dan preferensi aplikasi di Pengaturan.</p>
     </header>
 
     @if (config('auth.email_verification'))
         <form id="send-verification" method="post" action="{{ route('verification.send') }}">@csrf</form>
     @endif
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-5">
+    <form method="post" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mt-6 space-y-5">
         @csrf
         @method('patch')
         @if ($errors->any())
@@ -17,6 +17,23 @@
                 <ul class="mt-2 list-inside list-disc">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
             </x-alert>
         @endif
+
+        <div class="profile-photo-editor">
+            <x-profile-avatar :user="$user" class="h-20 w-20" />
+            <div class="min-w-0 flex-1">
+                <label for="avatar" class="field-label">Foto profil</label>
+                <input id="avatar" name="avatar" type="file" accept="image/jpeg,image/png,image/webp" class="form-control mt-1 p-2" aria-describedby="avatar-help avatar-error">
+                <p id="avatar-help" class="field-help">JPG, PNG, atau WebP. Maksimal 5 MB.</p>
+                <x-input-error id="avatar-error" :messages="$errors->get('avatar')" />
+                @if ($user->profile_photo_path)
+                    <label class="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-medium">
+                        <input type="hidden" name="remove_avatar" value="0">
+                        <input name="remove_avatar" type="checkbox" value="1" class="h-4 w-4 rounded border-line text-primary-700">
+                        Hapus foto profil
+                    </label>
+                @endif
+            </div>
+        </div>
 
         <div>
             <x-input-label for="name" value="Nama" />
@@ -31,40 +48,6 @@
                 <p class="mt-2 text-sm text-warning">Alamat email Anda belum diverifikasi.</p>
                 <button form="send-verification" class="mt-2 min-h-11 text-sm font-semibold text-primary-800 underline underline-offset-4">Kirim ulang tautan verifikasi</button>
             @endif
-        </div>
-        <div>
-            <label for="timezone" class="field-label inline-flex items-center gap-2"><x-icon name="zona-waktu" class="h-5 w-5" />Zona waktu</label>
-            @php
-                $timezone = old('timezone', $user->timezone);
-            @endphp
-            <select id="timezone" name="timezone" class="form-control mt-1" required aria-invalid="{{ $errors->has('timezone') ? 'true' : 'false' }}" aria-describedby="timezone-help timezone-error">
-                <optgroup label="Indonesia">
-                    <option value="Asia/Jakarta" @selected($timezone === 'Asia/Jakarta')>WIB — Jakarta</option>
-                    <option value="Asia/Makassar" @selected($timezone === 'Asia/Makassar')>WITA — Makassar</option>
-                    <option value="Asia/Jayapura" @selected($timezone === 'Asia/Jayapura')>WIT — Jayapura</option>
-                </optgroup>
-                <optgroup label="Pilihan lain">
-                    <option value="Asia/Singapore" @selected($timezone === 'Asia/Singapore')>Singapura</option>
-                    <option value="Asia/Tokyo" @selected($timezone === 'Asia/Tokyo')>Tokyo</option>
-                    <option value="Australia/Sydney" @selected($timezone === 'Australia/Sydney')>Sydney</option>
-                    <option value="Europe/London" @selected($timezone === 'Europe/London')>London</option>
-                    <option value="America/New_York" @selected($timezone === 'America/New_York')>New York</option>
-                    <option value="UTC" @selected($timezone === 'UTC')>UTC</option>
-                    @if (! in_array($timezone, ['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura', 'Asia/Singapore', 'Asia/Tokyo', 'Australia/Sydney', 'Europe/London', 'America/New_York', 'UTC'], true))
-                        <option value="{{ $timezone }}" selected>{{ $timezone }} · zona waktu saat ini</option>
-                    @endif
-                </optgroup>
-            </select>
-            <p id="timezone-help" class="field-help flex items-start gap-1.5"><x-icon name="info" class="mt-0.5 h-4 w-4" />Waktu tugas akan ditampilkan sesuai zona waktu yang Anda pilih.</p>
-            <x-input-error id="timezone-error" :messages="$errors->get('timezone')" />
-        </div>
-        <div class="rounded-lg border border-line p-4">
-            <label for="digest_enabled" class="flex min-h-11 items-center gap-3 font-medium">
-                <input type="hidden" name="digest_enabled" value="0">
-                <input id="digest_enabled" name="digest_enabled" type="checkbox" value="1" @checked(old('digest_enabled', $user->digest_enabled)) class="h-5 w-5 rounded border-line text-primary-700">
-                Kirim ringkasan harian lewat email
-            </label>
-            <p class="ml-8 text-sm text-muted">Email dikirim setelah pukul 07.00 sesuai zona waktu Anda. Ringkasan ini nonaktif secara default.</p>
         </div>
         <button type="submit" class="btn-primary">Simpan perubahan</button>
     </form>

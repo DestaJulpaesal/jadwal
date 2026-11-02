@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
@@ -21,6 +23,8 @@ class User extends Authenticatable implements MustVerifyEmailContract
 
     protected $fillable = [
         'name', 'email', 'password', 'role', 'timezone', 'digest_enabled',
+        'week_starts_on', 'theme', 'digest_time', 'digest_days',
+        'hide_financial_amounts', 'dashboard_sections',
     ];
 
     protected $hidden = [
@@ -31,9 +35,26 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'email_verified_at' => 'datetime',
         'is_active' => 'boolean',
         'digest_enabled' => 'boolean',
+        'digest_days' => 'array',
+        'hide_financial_amounts' => 'boolean',
+        'dashboard_sections' => 'array',
         'digest_last_sent_on' => 'date',
         'onboarding_dismissed_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::deleted(function (User $user): void {
+            $path = $user->profile_photo_path;
+            $disk = Storage::disk('local');
+
+            if ($path && $disk->exists($path) && ! $disk->delete($path)) {
+                Log::warning('A deleted user profile photo could not be removed from local storage.', [
+                    'user_id' => $user->id,
+                ]);
+            }
+        });
+    }
 
     // Cek jika pengguna adalah admin
     public function isAdmin()

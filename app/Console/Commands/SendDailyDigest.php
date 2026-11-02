@@ -22,7 +22,11 @@ class SendDailyDigest extends Command
             foreach ($users as $user) {
                 $localNow = Carbon::now($user->timezone);
                 $today = $clock->date($user);
-                if ($localNow->hour < 7 || $user->digest_last_sent_on?->toDateString() === $today) {
+                if (
+                    $localNow->format('H:i') < ($user->digest_time ?: '07:00')
+                    || ! in_array($localNow->dayOfWeekIso, $user->digest_days ?? range(1, 7), true)
+                    || $user->digest_last_sent_on?->toDateString() === $today
+                ) {
                     continue;
                 }
 

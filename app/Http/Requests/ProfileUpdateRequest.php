@@ -18,8 +18,10 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
-            'timezone' => ['required', 'timezone'],
+            'timezone' => ['sometimes', 'timezone'],
             'digest_enabled' => ['sometimes', 'boolean'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'remove_avatar' => ['nullable', 'boolean'],
         ];
     }
 
@@ -28,6 +30,9 @@ class ProfileUpdateRequest extends FormRequest
         return [
             'timezone.required' => 'Zona waktu wajib diisi.',
             'timezone.timezone' => 'Masukkan nama zona waktu IANA yang valid.',
+            'avatar.image' => 'Foto profil harus berupa gambar yang valid.',
+            'avatar.mimes' => 'Foto profil harus berformat JPG, PNG, atau WebP.',
+            'avatar.max' => 'Ukuran foto profil maksimal 5 MB.',
         ];
     }
 }

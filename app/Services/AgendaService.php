@@ -32,6 +32,7 @@ class AgendaService
     public function forRange(User $user, CarbonInterface|string $startsOn, CarbonInterface|string $endsOn): Collection
     {
         $timezone = $user->timezone;
+        $weekStartsAt = $user->week_starts_on === 'sunday' ? CarbonImmutable::SUNDAY : CarbonImmutable::MONDAY;
         $startKey = CarbonImmutable::parse($startsOn)->toDateString();
         $endKey = CarbonImmutable::parse($endsOn)->toDateString();
         $start = CarbonImmutable::parse($startKey, $timezone)->startOfDay();
@@ -85,7 +86,7 @@ class AgendaService
                     HabitFrequency::Daily => true,
                     HabitFrequency::Weekdays => in_array($date->dayOfWeekIso, array_map('intval', $habit->weekdays ?? []), true),
                     HabitFrequency::WeeklyCount => $logs->filter(fn ($log) => $log->status->value === 'done'
-                        && $log->log_date->startOfWeek()->toDateString() === $date->startOfWeek()->toDateString())->count() < $habit->weekly_target,
+                        && $log->log_date->startOfWeek($weekStartsAt)->toDateString() === $date->startOfWeek($weekStartsAt)->toDateString())->count() < $habit->weekly_target,
                 };
                 if (! $scheduled) {
                     continue;

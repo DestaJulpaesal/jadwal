@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Auth\Notifications\ResetPassword;
 use Tests\TestCase;
 
 class AdminUserManagementTest extends TestCase
@@ -24,7 +24,14 @@ class AdminUserManagementTest extends TestCase
         $response->assertOk()
             ->assertSee('Private Schedule Owner')
             ->assertDontSee('Confidential appointment')
-            ->assertSee('Manajemen Akun');
+            ->assertSee('Manajemen Akun')
+            ->assertSee('Ringkasan')
+            ->assertSee('Manajemen')
+            ->assertSee($admin->name)
+            ->assertSee($admin->email)
+            ->assertSee('Buka menu akun')
+            ->assertSee(route('settings.edit'))
+            ->assertSee(route('profile.edit'));
     }
 
     public function test_admin_can_search_and_filter_accounts(): void
@@ -53,6 +60,8 @@ class AdminUserManagementTest extends TestCase
             ->assertOk()
             ->assertSee('Schedule Owner')
             ->assertSee('Ringkasan penggunaan')
+            ->assertSee('Manajemen Akun')
+            ->assertSee('aria-current="page"', false)
             ->assertDontSee('Private task details');
     }
 

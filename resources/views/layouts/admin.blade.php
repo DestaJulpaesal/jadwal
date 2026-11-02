@@ -1,10 +1,24 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ auth()->user()->theme ?? 'light' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Panel admin') · Jadwal Harian</title>
+    <script>
+        (() => {
+            const root = document.documentElement;
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            const applyTheme = () => {
+                root.dataset.colorScheme = root.dataset.theme === 'system'
+                    ? (prefersDark.matches ? 'dark' : 'light')
+                    : root.dataset.theme;
+            };
+
+            applyTheme();
+            prefersDark.addEventListener('change', applyTheme);
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased">
@@ -17,20 +31,28 @@
                 </span>
                 Jadwal Harian
             </a>
-            <p class="px-5 pb-2 pt-6 text-xs font-semibold uppercase tracking-wide text-muted">Administrasi</p>
-            <nav class="space-y-1 px-3" aria-label="Navigasi admin">
-                <a href="{{ route('admin.dashboard') }}" class="nav-link w-full {{ request()->routeIs('admin.dashboard') ? 'nav-link-active' : '' }}">
-                    <x-icon name="beranda" class="h-5 w-5" />
-                    Ringkasan akun
-                </a>
-                <a href="{{ route('admin.users.index') }}" class="nav-link w-full {{ request()->routeIs('admin.users.index') ? 'nav-link-active' : '' }}">
-                    <x-icon name="kelola-akun" class="h-5 w-5" />
-                    Manajemen Akun
-                </a>
+            <nav class="space-y-5 px-3 pt-6" aria-label="Navigasi admin">
+                <section>
+                    <p class="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-muted">Ringkasan</p>
+                    <div class="space-y-1">
+                        <a href="{{ route('admin.dashboard') }}" @class(['nav-link w-full', 'nav-link-active' => request()->routeIs('admin.dashboard')]) @if (request()->routeIs('admin.dashboard')) aria-current="page" @endif>
+                            <x-icon name="beranda" class="h-5 w-5" />
+                            Ringkasan akun
+                        </a>
+                    </div>
+                </section>
+                <section>
+                    <p class="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-muted">Manajemen</p>
+                    <div class="space-y-1">
+                        <a href="{{ route('admin.users.index') }}" @class(['nav-link w-full', 'nav-link-active' => request()->routeIs('admin.users.*')]) @if (request()->routeIs('admin.users.*')) aria-current="page" @endif>
+                            <x-icon name="kelola-akun" class="h-5 w-5" />
+                            Manajemen Akun
+                        </a>
+                    </div>
+                </section>
             </nav>
             <div class="mt-auto border-t border-line p-4">
-                <p class="truncate text-sm font-medium">{{ auth()->user()->name }}</p>
-                <p class="truncate text-xs text-muted">{{ auth()->user()->email }}</p>
+                <x-sidebar-profile-card :user="auth()->user()" />
                 <form method="POST" action="{{ route('logout') }}" class="mt-3">
                     @csrf
                     <button class="btn-quiet w-full justify-start" type="submit"><x-icon name="keluar" class="h-5 w-5" />Keluar</button>

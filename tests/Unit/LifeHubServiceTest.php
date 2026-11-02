@@ -53,6 +53,26 @@ class LifeHubServiceTest extends TestCase
         $this->assertSame(2, $result['longest']);
     }
 
+    public function test_weekly_habit_streak_respects_a_sunday_week_start(): void
+    {
+        $result = app(HabitStreakCalculator::class)->statistics(
+            HabitFrequency::WeeklyCount,
+            '2026-10-26',
+            null,
+            2,
+            [
+                '2026-10-26' => 'done',
+                '2026-11-01' => 'done',
+                '2026-11-02' => 'done',
+            ],
+            Carbon::parse('2026-11-03'),
+            Carbon::SUNDAY
+        );
+
+        $this->assertSame(1, $result['current']);
+        $this->assertSame(1, $result['longest']);
+    }
+
     public function test_monthly_obligation_due_dates_clamp_to_the_last_day_of_the_month(): void
     {
         $scheduler = app(ObligationScheduler::class);

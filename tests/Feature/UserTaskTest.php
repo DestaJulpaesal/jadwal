@@ -33,8 +33,25 @@ class UserTaskTest extends TestCase
             ->assertSee('My task')
             ->assertDontSee('Private task')
             ->assertSee('Total tugas')
+            ->assertSee('id="home-calendar"', false)
+            ->assertSee('Kalender')
+            ->assertDontSee(route('user.calendar'), false)
             ->assertSee('Jadwal hari ini')
-            ->assertSee('7 hari mendatang');
+            ->assertSee('7 hari mendatang')
+            ->assertSee('Ringkasan')
+            ->assertSee('Aktivitas')
+            ->assertSee('Keuangan')
+            ->assertSee('Perencanaan')
+            ->assertDontSee('>Kalender</a>', false);
+    }
+
+    public function test_calendar_page_url_redirects_to_the_dashboard_calendar_widget(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($user)
+            ->get(route('user.calendar', ['year' => 2026, 'month' => 10]))
+            ->assertRedirect(route('user.dashboard', ['year' => 2026, 'month' => 10]));
     }
 
     public function test_user_can_create_a_task_with_a_new_category_and_status(): void
@@ -363,7 +380,7 @@ class UserTaskTest extends TestCase
             'due_date' => '2026-11-15 09:30:00',
         ]);
 
-        $response = $this->actingAs($user)->get(route('user.calendar', [
+        $response = $this->actingAs($user)->get(route('user.dashboard', [
             'year' => 2026,
             'month' => 10,
         ]));
@@ -372,7 +389,8 @@ class UserTaskTest extends TestCase
             ->assertSee('My October deadline')
             ->assertDontSee('Private October deadline')
             ->assertDontSee('My November deadline')
-            ->assertSee('Oktober 2026');
+            ->assertSee('Oktober 2026')
+            ->assertSee('id="home-calendar"', false);
     }
 
     public function test_calendar_shows_scheduled_times_in_local_time_order(): void
@@ -390,7 +408,7 @@ class UserTaskTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('user.calendar', ['year' => 2026, 'month' => 10]))
+            ->get(route('user.dashboard', ['year' => 2026, 'month' => 10]))
             ->assertOk()
             ->assertSeeInOrder(['01:30–02:30', 'Jadwal pagi', '17:00–18:00', 'Jadwal sore']);
     }
@@ -415,7 +433,7 @@ class UserTaskTest extends TestCase
             ->assertSee('background-color: #22AA44', false)
             ->assertSee('Belajar');
 
-        $this->get(route('user.calendar', ['year' => 2026, 'month' => 10]))
+        $this->get(route('user.dashboard', ['year' => 2026, 'month' => 10]))
             ->assertOk()
             ->assertSee('background-color: #22AA44', false)
             ->assertSee('Latihan');

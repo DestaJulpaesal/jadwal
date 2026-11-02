@@ -8,6 +8,7 @@ use App\Services\AgendaService;
 use App\Services\MonthlySummary;
 use App\Services\WalletBalance;
 use App\Support\UserClock;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -16,9 +17,14 @@ class UserController extends Controller
 {
     public function index(Request $request, UserClock $clock, AgendaService $agenda, MonthlySummary $summary, WalletBalance $balances)
     {
+        $validated = $request->validate([
+            'year' => ['nullable', 'integer', 'between:2000,2100'],
+            'month' => ['nullable', 'integer', 'between:1,12'],
+        ]);
         $user = $request->user();
         $today = $clock->date($user);
         $todayStartLocal = Carbon::parse($today, $user->timezone)->startOfDay();
+        $weekStartsAt = $user->week_starts_on === 'sunday' ? Carbon::SUNDAY : Carbon::MONDAY;
         $tomorrowStartLocal = $todayStartLocal->copy()->addDay();
         $nextWeekStartLocal = $tomorrowStartLocal->copy()->addDays(7);
         $totalTasks = $user->tasks()->count();
@@ -54,7 +60,7 @@ class UserController extends Controller
             ->where(fn ($query) => $query->whereNull('ends_on')->orWhere('ends_on', '>=', $today))
             ->with(['logs' => fn ($query) => $query->whereBetween(
                 'log_date',
-                [$todayStartLocal->copy()->startOfWeek(Carbon::MONDAY)->toDateString(), $today]
+                [$todayStartLocal->copy()->startOfWeek($weekStartsAt)->toDateString(), $today]
             )])
             ->orderBy('title')
             ->get()
@@ -84,6 +90,9 @@ class UserController extends Controller
             && $user->habits()->exists() === false
             && $user->transactions()->exists() === false;
 
+        $dashboardSections = $user->dashboard_sections ?? ['attention', 'habits', 'today_tasks', 'upcoming', 'finance'];
+        $calendarData = $this->calendarData($user, $agenda, $validated['year'] ?? null, $validated['month'] ?? null);
+
         return view('user.dashboard', compact(
             'todayTasks',
             'upcomingTasks',
@@ -97,8 +106,9 @@ class UserController extends Controller
             'monthlySummary',
             'wallets',
             'totalBalance',
-            'showOnboarding'
-        ));
+            'showOnboarding',
+            'dashboardSections'
+        ) + $calendarData);
     }
 
     public function dismissOnboarding(Request $request)
@@ -130,23 +140,30 @@ class UserController extends Controller
             ->sortBy(fn ($task) => ($task->starts_at ?? $task->due_date)->timestamp);
     }
 
-    public function calendar(Request $request, AgendaService $agenda)
+    public function calendar(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'year' => ['nullable', 'integer', 'between:2000,2100'],
             'month' => ['nullable', 'integer', 'between:1,12'],
         ]);
-        $user = $request->user();
+
+        return redirect()->route('user.dashboard', $validated);
+    }
+
+    private function calendarData(User $user, AgendaService $agenda, ?int $year = null, ?int $monthNumber = null): array
+    {
         $timezone = $user->timezone;
         $now = Carbon::now($timezone);
         $month = Carbon::createFromDate(
-            $validated['year'] ?? $now->year,
-            $validated['month'] ?? $now->month,
+            $year ?? $now->year,
+            $monthNumber ?? $now->month,
             1,
             $timezone
         )->startOfMonth();
-        $calendarStart = $month->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
-        $calendarEnd = $month->copy()->endOfMonth()->endOfWeek(Carbon::SUNDAY)->endOfDay();
+        $weekStartsAt = $user->week_starts_on === 'sunday' ? Carbon::SUNDAY : Carbon::MONDAY;
+        $weekEndsAt = ($weekStartsAt + 6) % 7;
+        $calendarStart = $month->copy()->startOfWeek($weekStartsAt)->startOfDay();
+        $calendarEnd = $month->copy()->endOfMonth()->endOfWeek($weekEndsAt)->endOfDay();
         $rangeStartUtc = $calendarStart->copy()->utc();
         $rangeEndUtc = $calendarEnd->copy()->utc();
         $tasksByDay = $user->tasks()
@@ -161,7 +178,7 @@ class UserController extends Controller
             ->get()
             ->sortBy(fn ($task) => ($task->starts_at ?? $task->due_date)->timestamp)
             ->groupBy(fn ($task) => ($task->starts_at ?? $task->due_date)->timezone($timezone)->toDateString());
-        $agendaByDay = $agenda->forRange($user, $calendarStart->toDateString(), $calendarEnd->toDateString());
+        $calendarAgendaByDay = $agenda->forRange($user, $calendarStart->toDateString(), $calendarEnd->toDateString());
         $days = collect();
 
         for ($date = $calendarStart->copy(); $date->lte($calendarEnd); $date->addDay()) {
@@ -177,6 +194,6 @@ class UserController extends Controller
         $previousMonth = $month->copy()->subMonthNoOverflow();
         $nextMonth = $month->copy()->addMonthNoOverflow();
 
-        return view('user.calendar', compact('month', 'weeks', 'previousMonth', 'nextMonth', 'agendaByDay'));
+        return compact('month', 'weeks', 'previousMonth', 'nextMonth', 'calendarAgendaByDay', 'weekStartsAt');
     }
 }

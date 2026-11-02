@@ -32,12 +32,7 @@ window.rupiahInput = (initial = '') => ({
 Alpine.start();
 
 document.addEventListener('DOMContentLoaded', () => {
-    let privacyHidden = false;
-    try {
-        privacyHidden = window.localStorage.getItem('jadwal-private-balances') === 'true';
-    } catch (error) {
-        privacyHidden = false;
-    }
+    let privacyHidden = document.body.dataset.privateDefault === 'true';
 
     const updatePrivacy = () => {
         document.querySelectorAll('[data-private]').forEach((element) => {
@@ -60,11 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-privacy-toggle]').forEach((button) => {
         button.addEventListener('click', () => {
             privacyHidden = !privacyHidden;
-            try {
-                window.localStorage.setItem('jadwal-private-balances', String(privacyHidden));
-            } catch (error) {
-                // Privacy remains active for this page when browser storage is unavailable.
-            }
             updatePrivacy();
         });
     });

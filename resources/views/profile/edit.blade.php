@@ -7,7 +7,7 @@
         <header class="mb-6">
             <p class="text-sm font-semibold text-primary-800">Pengaturan akun</p>
             <h1 class="mt-1 text-2xl font-semibold tracking-tight">Profil Anda</h1>
-            <p class="mt-2 text-muted">Perbarui informasi, keamanan, dan zona waktu akun.</p>
+            <p class="mt-2 text-muted">Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.</p>
         </header>
 
         @if (session('status') === 'profile-updated')

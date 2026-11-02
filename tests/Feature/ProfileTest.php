@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -18,7 +20,93 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response->assertOk();
+        $response->assertOk()
+            ->assertSee($user->name)
+            ->assertSee($user->email)
+            ->assertSee('Buka menu akun')
+            ->assertSee('sidebar-profile-menu')
+            ->assertSee('sidebar-profile-menu-popover')
+            ->assertSee(route('settings.edit'))
+            ->assertSee(route('profile.edit'))
+            ->assertSee('Foto profil');
+    }
+
+    public function test_user_can_upload_and_replace_their_profile_photo(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('avatar.png'),
+        ])->assertSessionHasNoErrors()
+            ->assertRedirect(route('profile.edit'));
+
+        $firstPath = $user->fresh()->profile_photo_path;
+        $this->assertNotNull($firstPath);
+        Storage::disk('local')->assertExists($firstPath);
+        $this->get(route('profile.photo'))->assertOk();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->image('new-avatar.jpg'),
+        ])->assertSessionHasNoErrors();
+
+        $secondPath = $user->fresh()->profile_photo_path;
+        $this->assertNotSame($firstPath, $secondPath);
+        Storage::disk('local')->assertMissing($firstPath);
+        Storage::disk('local')->assertExists($secondPath);
+    }
+
+    public function test_user_can_remove_their_profile_photo(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->create();
+        $path = UploadedFile::fake()->image('avatar.png')->store('profile-photos');
+        $user->profile_photo_path = $path;
+        $user->save();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'remove_avatar' => '1',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertNull($user->fresh()->profile_photo_path);
+        Storage::disk('local')->assertMissing($path);
+    }
+
+    public function test_profile_photo_must_be_an_image_with_a_supported_format(): void
+    {
+        Storage::fake('local');
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->patch(route('profile.update'), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'avatar' => UploadedFile::fake()->create('notes.pdf', 100, 'application/pdf'),
+        ])->assertSessionHasErrors('avatar');
+
+        $this->assertNull($user->fresh()->profile_photo_path);
+    }
+
+    public function test_profile_photo_is_private_and_removed_when_the_account_is_deleted(): void
+    {
+        Storage::fake('local');
+        $owner = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $path = UploadedFile::fake()->image('avatar.png')->store('profile-photos');
+        $owner->profile_photo_path = $path;
+        $owner->save();
+
+        $this->actingAs($owner)->get(route('profile.photo'))->assertOk();
+        $this->actingAs($otherUser)->get(route('profile.photo'))->assertNotFound();
+
+        $owner->delete();
+
+        Storage::disk('local')->assertMissing($path);
     }
 
     public function test_profile_information_can_be_updated(): void

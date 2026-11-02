@@ -1,9 +1,4 @@
-@extends('layouts.user')
-
-@section('title', 'Kalender')
-
-@section('content')
-    @php
+@php
         $selectedDate = $month->isCurrentMonth() ? now(auth()->user()->timezone)->toDateString() : $month->toDateString();
         $weekdays = [
             ['short' => 'Sen', 'full' => 'Senin'],
@@ -14,24 +9,25 @@
             ['short' => 'Sab', 'full' => 'Sabtu'],
             ['short' => 'Min', 'full' => 'Minggu'],
         ];
-    @endphp
-    <div class="mx-auto max-w-7xl" x-data="{ selectedDay: '{{ $selectedDate }}' }">
-        <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        if ($weekStartsAt === \Illuminate\Support\Carbon::SUNDAY) {
+            $weekdays = array_merge([array_pop($weekdays)], $weekdays);
+        }
+@endphp
+    <section id="home-calendar" class="concept-card concept-card-blue dashboard-wide" x-data="{ selectedDay: '{{ $selectedDate }}' }" aria-labelledby="home-calendar-heading">
+        <header class="concept-card-header">
             <div>
-                <p class="text-sm font-semibold text-primary-800">Rencana bulanan</p>
-                <h1 class="mt-1 text-2xl font-semibold tracking-tight">Kalender tugas</h1>
-                <p class="mt-2 text-muted">Pilih tanggal untuk melihat agenda pada hari itu.</p>
+                <div class="concept-heading mb-0"><x-concept-icon name="cl" /><div><h2 id="home-calendar-heading" class="text-lg font-semibold">Kalender</h2><p class="mt-1 text-sm">Pilih tanggal untuk melihat agenda bulanan.</p></div></div>
             </div>
-            <a href="{{ route('user.tasks.create') }}" class="btn-primary hidden md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
+            <a href="{{ route('user.tasks.create') }}" class="btn-secondary"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
         </header>
 
         <section class="surface-card overflow-hidden">
             <div class="flex items-center justify-between gap-2 border-b border-line p-3 sm:p-4">
-                <a href="{{ route('user.calendar', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}" class="btn-secondary min-h-11 px-3" aria-label="Bulan sebelumnya">
+                <a href="{{ route('user.dashboard', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}#home-calendar" class="btn-secondary min-h-11 px-3" aria-label="Bulan sebelumnya">
                     <span>Sebelumnya</span>
                 </a>
                 <h2 class="text-center text-base font-semibold sm:text-lg">{{ $month->translatedFormat('F Y') }}</h2>
-                <a href="{{ route('user.calendar', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}" class="btn-secondary min-h-11 px-3" aria-label="Bulan berikutnya">
+                <a href="{{ route('user.dashboard', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}#home-calendar" class="btn-secondary min-h-11 px-3" aria-label="Bulan berikutnya">
                     <span>Berikutnya</span>
                 </a>
             </div>
@@ -79,7 +75,7 @@
                                 @if ($day['tasks']->count() > 3)
                                     <p class="px-2 text-xs text-muted">+{{ $day['tasks']->count() - 3 }} tugas lainnya</p>
                                 @endif
-                                @foreach ($agendaByDay->get($dayKey, collect())->where('type', '!=', 'task')->take(2) as $agendaItem)
+                                @foreach ($calendarAgendaByDay->get($dayKey, collect())->where('type', '!=', 'task')->take(2) as $agendaItem)
                                     <a href="{{ $agendaItem['url'] }}" class="block truncate rounded-md border border-line bg-white px-2 py-1 text-xs text-ink" title="{{ $agendaItem['status'] }}">{{ $agendaItem['type'] === 'habit' ? 'Kebiasaan' : ucfirst($agendaItem['type']) }} · {{ $agendaItem['title'] }}</a>
                                 @endforeach
                             </div>
@@ -136,7 +132,7 @@
                                 <a href="{{ route('user.tasks.create') }}" class="mt-2 inline-flex min-h-11 items-center gap-2 font-semibold text-primary-800 underline-offset-4 hover:underline"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
                             </div>
                         @endforelse
-                        @foreach ($agendaByDay->get($dayKey, collect())->where('type', '!=', 'task') as $agendaItem)
+                        @foreach ($calendarAgendaByDay->get($dayKey, collect())->where('type', '!=', 'task') as $agendaItem)
                             <a href="{{ $agendaItem['url'] }}" class="mt-2 flex min-h-12 items-center justify-between gap-3 border-t border-line py-2">
                                 <span class="min-w-0"><span class="block break-words font-medium">{{ $agendaItem['title'] }}</span><span class="text-sm text-muted">{{ $agendaItem['type'] === 'habit' ? 'Kebiasaan' : ucfirst($agendaItem['type']) }} · {{ $agendaItem['status'] }}</span></span>
                             </a>
@@ -146,5 +142,4 @@
             @endforeach
         </section>
         <p class="mt-3 text-sm text-muted">Kalender memuat tugas, kebiasaan, tagihan, utang/piutang, dan target. Tugas tanpa waktu atau jatuh tempo tidak ditampilkan.</p>
-    </div>
-@endsection
+    </section>

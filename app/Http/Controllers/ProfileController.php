@@ -7,8 +7,12 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ProfileController extends Controller
 {
@@ -27,15 +31,55 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
+        $avatar = $request->file('avatar');
+        $removeAvatar = (bool) ($validated['remove_avatar'] ?? false);
+        unset($validated['avatar'], $validated['remove_avatar']);
 
-        if (config('auth.email_verification') && $request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $oldPhotoPath = $user->profile_photo_path;
+        $newPhotoPath = null;
+        if ($avatar) {
+            $newPhotoPath = $avatar->store('profile-photos');
+            if (! is_string($newPhotoPath)) {
+                throw new RuntimeException('Foto profil gagal disimpan. Silakan coba lagi.');
+            }
+            $user->profile_photo_path = $newPhotoPath;
+        } elseif ($removeAvatar) {
+            $user->profile_photo_path = null;
         }
 
-        $request->user()->save();
+        $user->fill($validated);
+
+        if (config('auth.email_verification') && $user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        try {
+            $user->save();
+        } catch (\Throwable $exception) {
+            if ($newPhotoPath) {
+                Storage::disk('local')->delete($newPhotoPath);
+            }
+
+            throw $exception;
+        }
+
+        if ($oldPhotoPath && $oldPhotoPath !== $newPhotoPath && ($newPhotoPath || $removeAvatar)) {
+            $this->deletePhoto($oldPhotoPath);
+        }
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
+    }
+
+    public function photo(Request $request): BinaryFileResponse
+    {
+        $path = $request->user()->profile_photo_path;
+        abort_unless($path && Storage::disk('local')->exists($path), 404);
+
+        return response()->file(Storage::disk('local')->path($path), [
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 
     /**
@@ -62,5 +106,16 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    private function deletePhoto(string $path): void
+    {
+        $disk = Storage::disk('local');
+        if ($disk->exists($path) && ! $disk->delete($path)) {
+            Log::warning('A profile photo could not be deleted from local storage.', [
+                'user_id' => Auth::id(),
+                'path' => $path,
+            ]);
+        }
     }
 }

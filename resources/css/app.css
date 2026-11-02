@@ -69,6 +69,49 @@
         @apply bg-primary-50 text-primary-900;
     }
 
+    .profile-avatar {
+        @apply inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary-100 text-sm font-bold text-primary-800;
+    }
+
+    .profile-avatar img {
+        @apply h-full w-full object-cover;
+    }
+
+    .sidebar-profile-card {
+        @apply flex min-h-14 min-w-0 items-center gap-3 rounded-lg p-2 text-ink transition-colors hover:bg-primary-50;
+    }
+
+    .sidebar-profile-menu {
+        @apply grid gap-1 rounded-lg border border-line bg-white p-2 shadow-card;
+        background-color: var(--color-surface);
+    }
+
+    .sidebar-profile-menu-popover {
+        position: fixed;
+        z-index: 60;
+        width: 12rem;
+    }
+
+    .sidebar-profile-menu-link {
+        @apply inline-flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-medium text-muted transition-colors hover:bg-primary-50 hover:text-primary-900;
+    }
+
+    .sidebar-profile-copy {
+        @apply flex min-w-0 flex-1 flex-col;
+    }
+
+    .sidebar-profile-name {
+        @apply truncate text-sm font-semibold;
+    }
+
+    .sidebar-profile-email {
+        @apply truncate text-xs text-muted;
+    }
+
+    .profile-photo-editor {
+        @apply flex flex-wrap items-center gap-4;
+    }
+
     .mobile-nav-link {
         @apply flex min-h-14 flex-col items-center justify-center gap-1 rounded-lg px-1 text-[11px] font-medium text-muted;
     }
@@ -230,6 +273,10 @@
     }
 
     .user-app .user-header {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
         border-bottom: 2px solid var(--ink);
         background: #fff;
         box-shadow: 0 3px 0 rgb(27 27 27 / 9%);
@@ -276,13 +323,23 @@
     }
 
     .user-app .user-sidebar {
+        position: fixed;
+        top: 4rem;
+        bottom: 0;
+        left: 0;
         z-index: 20;
+        overscroll-behavior: contain;
         border-right: 2px solid var(--ink);
         background: #fff;
     }
 
     .user-app .sidebar-content {
         flex: 1;
+    }
+
+    .user-app .sidebar-profile-footer {
+        padding: 12px;
+        border-top: 1px solid var(--color-line);
     }
 
     @media (min-width: 1024px) {
@@ -401,111 +458,114 @@
         width: 100%;
     }
 
+    /* ===== Bottom nav mobile: bar putih dengan lekukan melengkung di bawah tab aktif ===== */
     .user-app #mobileNavigationMenu {
-        right: 12px;
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        left: 12px;
+        --nav-pad: 20px;
+        --nav-frac: .1;
+        --nav-cut: 1px;
+        --nav-cx: -200px;
+        --nav-cx-inner: -200px;
+        --nav-cy: 6px;
+        right: 14px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        left: 14px;
         width: auto;
-        max-width: 480px;
-        min-height: 82px;
+        max-width: 460px;
+        height: 74px;
         margin-right: auto;
         margin-left: auto;
-        overflow: visible;
-        padding: 10px 4px 4px;
         isolation: isolate;
     }
 
-    .user-app #mobileNavigationMenu::before {
+    .user-app #mobileNavigationMenu:has(.mobile-nav-link-active) {
+        --nav-cut: 35px;
+        --nav-cx: calc(var(--nav-pad) + (100% - var(--nav-pad) * 2) * var(--nav-frac));
+        --nav-cx-inner: calc(var(--nav-pad) + (100% - var(--nav-pad) * 2) * var(--nav-frac) + (var(--nav-frac) * 5 - 2.5) * 1px);
+    }
+
+    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(1).mobile-nav-link-active) { --nav-frac: .1; }
+    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(2).mobile-nav-link-active) { --nav-frac: .3; }
+    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(3).mobile-nav-link-active) { --nav-frac: .5; }
+    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(4).mobile-nav-link-active) { --nav-frac: .7; }
+    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(5).mobile-nav-link-active) { --nav-frac: .9; }
+
+    /* Bentuk bar digambar 2 lapis (garis tinta + isi putih) supaya garis ikut melengkung di lekukan */
+    .user-app .mobile-nav-shape {
         position: absolute;
         z-index: -1;
         inset: 0;
-        border: 2px solid var(--ink);
-        border-radius: 22px;
-        background: #fffefa;
-        box-shadow: 4px 4px 0 var(--ink);
-        content: "";
-        -webkit-mask: radial-gradient(circle 38px at var(--mobile-nav-notch-x, 10%) 10px, transparent 98%, #000 100%);
-        mask: radial-gradient(circle 38px at var(--mobile-nav-notch-x, 10%) 10px, transparent 98%, #000 100%);
         pointer-events: none;
+        filter: drop-shadow(3px 3px 0 var(--ink));
     }
 
-    .user-app #mobileNavigationMenu::after {
+    .user-app .mobile-nav-shape::before,
+    .user-app .mobile-nav-shape::after {
         position: absolute;
-        z-index: 1;
-        top: -28px;
-        left: var(--mobile-nav-notch-x, 10%);
-        width: 76px;
-        height: 38px;
-        transform: translateX(-50%);
-        border: 2px solid transparent;
-        border-bottom-color: var(--ink);
-        border-radius: 0 0 50% 50%;
         content: "";
-        pointer-events: none;
     }
 
-    .user-app #mobileNavigationMenu > div {
+    .user-app .mobile-nav-shape::before {
+        inset: 0;
+        border-radius: 24px;
+        background: var(--ink);
+        -webkit-mask-image: radial-gradient(circle var(--nav-cut) at var(--nav-cx) var(--nav-cy), transparent calc(var(--nav-cut) - 1px), #000 var(--nav-cut));
+        mask-image: radial-gradient(circle var(--nav-cut) at var(--nav-cx) var(--nav-cy), transparent calc(var(--nav-cut) - 1px), #000 var(--nav-cut));
+    }
+
+    .user-app .mobile-nav-shape::after {
+        inset: 2.5px;
+        border-radius: 21.5px;
+        background: #fffefa;
+        -webkit-mask-image: radial-gradient(circle calc(var(--nav-cut) + 2.5px) at var(--nav-cx-inner) calc(var(--nav-cy) - 2.5px), transparent calc(var(--nav-cut) + 1.5px), #000 calc(var(--nav-cut) + 2.5px));
+        mask-image: radial-gradient(circle calc(var(--nav-cut) + 2.5px) at var(--nav-cx-inner) calc(var(--nav-cy) - 2.5px), transparent calc(var(--nav-cut) + 1.5px), #000 calc(var(--nav-cut) + 2.5px));
+    }
+
+    .user-app .mobile-nav-grid {
         position: relative;
-        z-index: 2;
-        align-items: stretch;
-    }
-
-    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(1).mobile-nav-link-active) {
-        --mobile-nav-notch-x: 10%;
-    }
-
-    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(2).mobile-nav-link-active) {
-        --mobile-nav-notch-x: 30%;
-    }
-
-    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(3).mobile-nav-link-active) {
-        --mobile-nav-notch-x: 50%;
-    }
-
-    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(4).mobile-nav-link-active) {
-        --mobile-nav-notch-x: 70%;
-    }
-
-    .user-app #mobileNavigationMenu:has(.mobile-nav-link:nth-child(5).mobile-nav-link-active) {
-        --mobile-nav-notch-x: 90%;
+        height: 100%;
+        padding-inline: var(--nav-pad);
     }
 
     .user-app .mobile-nav-link {
         position: relative;
         min-width: 0;
-        min-height: 68px;
-        margin: 0 1px;
-        padding: 0 1px 5px;
+        min-height: 0;
+        padding: 0;
         border: 0;
         border-radius: 0;
-        color: #716b60;
-        font-size: 10.5px;
+        background: transparent;
+        color: #7a7468;
+        font-size: 10px;
         font-weight: 800;
+        line-height: 1;
+        -webkit-tap-highlight-color: transparent;
     }
 
     .user-app .mobile-nav-icon {
         position: absolute;
-        top: 10px;
+        top: 15px;
         left: 50%;
         display: flex;
-        width: 34px;
-        height: 34px;
+        width: 30px;
+        height: 30px;
         align-items: center;
         justify-content: center;
         transform: translateX(-50%);
-        transition: top 160ms ease, width 160ms ease, height 160ms ease;
+        transition: top 180ms ease, width 180ms ease, height 180ms ease;
     }
 
     .user-app .mobile-nav-icon .concept-icon {
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
+        opacity: .85;
+        filter: grayscale(.35);
     }
 
     .user-app .mobile-nav-link > span:last-child {
         position: absolute;
-        right: 0;
-        bottom: 4px;
-        left: 0;
+        right: -2px;
+        bottom: 10px;
+        left: -2px;
         overflow: hidden;
         text-align: center;
         text-overflow: ellipsis;
@@ -515,37 +575,46 @@
     .user-app .mobile-nav-link-active,
     .user-app .mobile-nav-link-active:hover {
         z-index: 2;
-        border: 0;
         background: transparent;
         color: var(--ink);
     }
 
+    /* Tab aktif: lingkaran kuning naik keluar dari bar, tepat di tengah lekukan */
     .user-app .mobile-nav-link-active .mobile-nav-icon {
-        top: -28px;
-        width: 60px;
-        height: 60px;
+        top: calc(var(--nav-cy) - 28px);
+        width: 56px;
+        height: 56px;
         border: 3px solid var(--ink);
         border-radius: 50%;
         background: var(--y);
-        box-shadow: 0 0 0 4px #fffefa, 3px 3px 0 var(--ink);
+        box-shadow: 2px 3px 0 var(--ink);
+        animation: nav-pop 320ms cubic-bezier(.2, 1.4, .4, 1) both;
     }
 
     .user-app .mobile-nav-link-active .mobile-nav-icon .concept-icon {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
+        opacity: 1;
+        filter: none;
     }
 
     .user-app .mobile-nav-link-active > span:last-child {
         font-weight: 900;
     }
 
-    .user-app .mobile-nav-link:hover {
+    .user-app .mobile-nav-link:not(.mobile-nav-link-active):hover,
+    .user-app .mobile-nav-link:not(.mobile-nav-link-active):active {
         color: var(--ink);
+    }
+
+    @keyframes nav-pop {
+        from { transform: translateX(-50%) scale(.6); }
+        to { transform: translateX(-50%) scale(1); }
     }
 
     @media (max-width: 1023px) {
         .user-app .mobile-create-button {
-            bottom: calc(6.75rem + env(safe-area-inset-bottom));
+            bottom: calc(7.5rem + env(safe-area-inset-bottom));
         }
     }
 
@@ -590,6 +659,7 @@
     }
 
     .user-app .concept-hero > .concept-chip {
+        justify-self: start;
         margin-top: 10px;
     }
 
@@ -1134,4 +1204,156 @@
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+.settings-choice,
+.settings-toggle {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    gap: 12px;
+    border: 2px solid var(--ink);
+    border-radius: 14px;
+    background: #fff;
+    padding: 10px 12px;
+}
+
+.settings-toggle {
+    justify-content: space-between;
+}
+
+.settings-choice input,
+.settings-toggle input {
+    width: 20px;
+    height: 20px;
+    flex: none;
+    accent-color: var(--color-primary-700);
+}
+
+.settings-toggle > span {
+    min-width: 0;
+}
+
+html[data-color-scheme="dark"] {
+    color-scheme: dark;
+    --color-canvas: #182126;
+    --color-surface: #273139;
+    --color-ink: #f0eadf;
+    --color-muted: #c1c8c8;
+    --color-line: #4a565e;
+    --color-primary-50: #303b40;
+    --color-primary-100: #39464a;
+    --color-primary-600: #287654;
+    --color-primary-700: #226b50;
+    --color-primary-800: #174e3a;
+    --color-primary-900: #d7ecdf;
+}
+
+html[data-color-scheme="dark"] body:not(.user-app) {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+}
+
+html[data-color-scheme="dark"] body:not(.user-app) .bg-white,
+html[data-color-scheme="dark"] body:not(.user-app) .form-control,
+html[data-color-scheme="dark"] body:not(.user-app) input,
+html[data-color-scheme="dark"] body:not(.user-app) select,
+html[data-color-scheme="dark"] body:not(.user-app) textarea {
+    background-color: #273139;
+    color: var(--color-ink);
+}
+
+html[data-color-scheme="dark"] body:not(.user-app) .text-gray-500,
+html[data-color-scheme="dark"] body:not(.user-app) .text-gray-600 {
+    color: var(--color-muted);
+}
+
+html[data-color-scheme="dark"] .user-app {
+    --ink: #f0eadf;
+    --bg: #182126;
+    --y: #655322;
+    --g: #294b3b;
+    --p: #593843;
+    --b: #30495d;
+    --o: #59452e;
+    --color-canvas: #182126;
+    --color-surface: #273139;
+    --color-ink: #f0eadf;
+    --color-muted: #c1c8c8;
+    --color-line: #4a565e;
+    --color-primary: #f0d477;
+    --color-primary-dark: #f0d477;
+    --color-primary-50: #303b40;
+    --color-primary-100: #39464a;
+    --color-primary-600: #f0d477;
+    --color-primary-700: #f0d477;
+    --color-primary-800: #f0d477;
+    --color-primary-900: #f6e5a5;
+    --color-success: #9cdbad;
+    --color-warning: #f0c271;
+    --color-danger: #f5a6a0;
+    --color-info: #9dc9ed;
+    --shadow-card: 4px 4px 0 #090e11;
+    background-image: radial-gradient(#344047 1.2px, transparent 1.4px);
+}
+
+html[data-color-scheme="dark"] .user-app .surface-card,
+html[data-color-scheme="dark"] .user-app .concept-stat,
+html[data-color-scheme="dark"] .user-app .concept-chip,
+html[data-color-scheme="dark"] .user-app .concept-quick-link,
+html[data-color-scheme="dark"] .user-app .concept-card-white,
+html[data-color-scheme="dark"] .user-app .money-summary-card,
+html[data-color-scheme="dark"] .user-app .habit-stat,
+html[data-color-scheme="dark"] .user-app .habit-card,
+html[data-color-scheme="dark"] .user-app .settings-choice,
+html[data-color-scheme="dark"] .user-app .settings-toggle,
+html[data-color-scheme="dark"] .user-app .user-header,
+html[data-color-scheme="dark"] .user-app .user-sidebar,
+html[data-color-scheme="dark"] .user-app .btn-secondary,
+html[data-color-scheme="dark"] .user-app .logout-button,
+html[data-color-scheme="dark"] .user-app .global-search-input,
+html[data-color-scheme="dark"] .user-app .mobile-nav-shape::after,
+html[data-color-scheme="dark"] .user-app .form-control,
+html[data-color-scheme="dark"] .user-app input,
+html[data-color-scheme="dark"] .user-app select,
+html[data-color-scheme="dark"] .user-app textarea,
+html[data-color-scheme="dark"] .user-app .bg-white {
+    background-color: #273139;
+    color: var(--ink);
+}
+
+html[data-color-scheme="dark"] .user-app .bg-gray-50,
+html[data-color-scheme="dark"] .user-app .hover\:bg-gray-50:hover,
+html[data-color-scheme="dark"] .user-app .hover\:bg-gray-100:hover,
+html[data-color-scheme="dark"] .user-app .global-search-result:hover,
+html[data-color-scheme="dark"] .user-app .nav-link:hover {
+    background-color: #303b42;
+}
+
+html[data-color-scheme="dark"] .user-app .header-user-name,
+html[data-color-scheme="dark"] .user-app .sidebar-section-label,
+html[data-color-scheme="dark"] .user-app .nav-link,
+html[data-color-scheme="dark"] .user-app .mobile-nav-link,
+html[data-color-scheme="dark"] .user-app .concept-hero > .k,
+html[data-color-scheme="dark"] .user-app .concept-card-header p,
+html[data-color-scheme="dark"] .user-app .habit-stat span,
+html[data-color-scheme="dark"] .user-app .page-heading .k {
+    color: var(--color-muted);
+}
+
+html[data-color-scheme="dark"] .user-app .concept-card-yellow,
+html[data-color-scheme="dark"] .user-app .concept-card-green,
+html[data-color-scheme="dark"] .user-app .concept-card-pink,
+html[data-color-scheme="dark"] .user-app .concept-card-blue,
+html[data-color-scheme="dark"] .user-app .concept-card-orange {
+    color: var(--ink);
+}
+
+html[data-color-scheme="dark"] .user-app .text-gray-600,
+html[data-color-scheme="dark"] .user-app .text-gray-500 {
+    color: var(--color-muted);
+}
+
+html[data-color-scheme="dark"] .user-app .concept-icon {
+    filter: drop-shadow(1.6px 0 0 #273139) drop-shadow(-1.6px 0 0 #273139) drop-shadow(0 1.6px 0 #273139) drop-shadow(0 -1.6px 0 #273139);
 }

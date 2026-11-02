@@ -18,14 +18,15 @@ class HabitStreakCalculator
         ?array $weekdays,
         ?int $weeklyTarget,
         array $logs,
-        CarbonInterface $today
+        CarbonInterface $today,
+        int $weekStartsAt = CarbonImmutable::MONDAY
     ): array {
         $frequency = $frequency instanceof HabitFrequency ? $frequency : HabitFrequency::from($frequency);
         $today = CarbonImmutable::instance($today)->startOfDay();
         $start = CarbonImmutable::parse($startsOn)->startOfDay();
 
         $statistics = $frequency === HabitFrequency::WeeklyCount
-            ? $this->weeklyStatistics($start, $today, $weeklyTarget ?? 1, $logs)
+            ? $this->weeklyStatistics($start, $today, $weeklyTarget ?? 1, $logs, $weekStartsAt)
             : $this->dailyStatistics($frequency, $start, $today, $weekdays ?? [], $logs);
 
         $statistics['completion_percent'] = $this->completionPercent(
@@ -34,7 +35,8 @@ class HabitStreakCalculator
             $today,
             $weekdays ?? [],
             $weeklyTarget ?? 1,
-            $logs
+            $logs,
+            $weekStartsAt
         );
 
         return $statistics;
@@ -91,10 +93,10 @@ class HabitStreakCalculator
         return ['current' => $current, 'longest' => $longest];
     }
 
-    private function weeklyStatistics(CarbonImmutable $start, CarbonImmutable $today, int $target, array $logs): array
+    private function weeklyStatistics(CarbonImmutable $start, CarbonImmutable $today, int $target, array $logs, int $weekStartsAt): array
     {
-        $startWeek = $start->startOfWeek(CarbonImmutable::MONDAY);
-        $thisWeek = $today->startOfWeek(CarbonImmutable::MONDAY);
+        $startWeek = $start->startOfWeek($weekStartsAt);
+        $thisWeek = $today->startOfWeek($weekStartsAt);
         $completed = [];
 
         for ($week = $startWeek; $week->lte($thisWeek); $week = $week->addWeek()) {
@@ -133,7 +135,8 @@ class HabitStreakCalculator
         CarbonImmutable $today,
         array $weekdays,
         int $weeklyTarget,
-        array $logs
+        array $logs,
+        int $weekStartsAt
     ): int {
         $rangeStart = $today->subDays(29)->max($start);
         $done = 0;
@@ -150,7 +153,7 @@ class HabitStreakCalculator
 
         if ($frequency === HabitFrequency::WeeklyCount) {
             $weeks = 0;
-            for ($week = $rangeStart->startOfWeek(CarbonImmutable::MONDAY); $week->lte($today); $week = $week->addWeek()) {
+            for ($week = $rangeStart->startOfWeek($weekStartsAt); $week->lte($today); $week = $week->addWeek()) {
                 $weeks++;
             }
             $scheduled = max(1, $weeks) * $weeklyTarget;

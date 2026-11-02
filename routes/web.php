@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\User\GoalController;
 use App\Http\Controllers\User\HabitController;
 use App\Http\Controllers\User\LoanController;
@@ -86,6 +87,9 @@ Route::middleware($dashboardMiddleware)->group(function () {
 });
 
 Route::middleware(['auth', 'active'])->group(function () {
+    Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+    Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/profile/photo', [ProfileController::class, 'photo'])->name('profile.photo');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');

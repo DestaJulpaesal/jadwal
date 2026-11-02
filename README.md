@@ -11,7 +11,8 @@ Aplikasi jadwal multi-user berbasis Laravel. Pengguna hanya dapat mengelola tuga
 - Keuangan pribadi: dompet, kategori, transaksi, transfer, tagihan, cicilan, utang, dan piutang.
 - Laporan keuangan bulanan dengan kategori pengeluaran terbesar dan perbandingan bulan sebelumnya.
 - Target angka/tabungan/kebiasaan, mode privasi nominal, dan ringkasan harian email opsional.
-- Kategori berwarna, verifikasi email opsional, dan panel admin untuk mencari/filter akun, melihat ringkasan akun, mengelola status dan role, serta mengirim tautan reset password.
+- Pengaturan zona waktu, awal minggu, tema, jadwal ringkasan email, privasi nominal, dan kartu dashboard.
+- Kategori berwarna, verifikasi email opsional, foto profil privat yang dapat dikelola dari halaman Profil, dan panel admin untuk mencari/filter akun, melihat ringkasan akun, mengelola status dan role, serta mengirim tautan reset password.
 
 ## Persyaratan
 
