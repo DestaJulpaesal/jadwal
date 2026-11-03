@@ -4,11 +4,11 @@
     x-data="{
         open: false,
         toggleMenu(event) {
+            const button = event.currentTarget;
             this.open = !this.open;
             if (!this.open) return;
 
             this.$nextTick(() => {
-                const button = event.currentTarget;
                 const rect = button.getBoundingClientRect();
                 const menu = this.$refs.menu;
                 const menuRect = menu.getBoundingClientRect();

@@ -16,7 +16,14 @@ class RegistrationTest extends TestCase
     {
         $response = $this->get('/register');
 
-        $response->assertStatus(200);
+        $response->assertOk()
+            ->assertSee('Hari baru,')
+            ->assertSee('Buat akun')
+            ->assertSee('register-form')
+            ->assertSee('Hari lebih tertata')
+            ->assertSee('Kembali ke beranda')
+            ->assertSee('href="'.route('home').'"', false)
+            ->assertSee(route('login'));
     }
 
     public function test_new_users_can_register(): void

@@ -3,89 +3,125 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Jadwal Harian — Atur hari dengan lebih tenang</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    @vite(['resources/css/app.css', 'resources/css/concept-b-home.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-canvas text-ink antialiased">
-    <header class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <a href="{{ route('home') }}" class="flex min-h-11 items-center gap-3 font-semibold" aria-label="Jadwal Harian">
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-100 text-primary-800" aria-hidden="true">
-                <x-icon name="kalender" class="h-5 w-5" />
-            </span>
-            Jadwal Harian
+<body class="concept-home">
+    <x-concept-b-sprite />
+    <header class="home-header">
+        <a href="{{ route('home') }}" class="home-brand" aria-label="Jadwal Harian, beranda">
+            <span class="home-brand-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg></span>
+            <span>Jadwal Harian</span>
         </a>
-        <nav class="flex items-center gap-2" aria-label="Akun">
+        <nav class="home-nav" aria-label="Akun">
             @auth
-                <a href="{{ route('user.dashboard') }}" class="btn-primary"><x-icon name="beranda" class="h-5 w-5" />Buka beranda</a>
+                <a href="{{ route('user.dashboard') }}" class="home-button home-button-primary"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#home" /></svg>Buka beranda</a>
             @else
-                <a href="{{ route('login') }}" class="btn-quiet"><x-icon name="profil" class="h-5 w-5" />Masuk</a>
+                <a href="{{ route('login') }}" class="home-login"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#us" /></svg><span>Masuk</span></a>
                 @if (Route::has('register'))
-                    <a href="{{ route('register') }}" class="btn-primary"><x-icon name="tambah" class="h-5 w-5" />Daftar gratis</a>
+                    <a href="{{ route('register') }}" class="home-button home-button-primary"><span class="home-plus" aria-hidden="true">+</span>Daftar gratis</a>
                 @endif
             @endauth
         </nav>
     </header>
 
     <main>
-        <section class="mx-auto grid max-w-7xl gap-12 px-4 py-12 sm:px-6 sm:py-20 lg:grid-cols-[1fr_0.9fr] lg:items-center lg:py-24">
-            <div class="max-w-2xl">
-                <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-primary-100 bg-white px-3 py-1 text-sm font-medium text-primary-800">
-                    <x-icon name="kalender" class="h-5 w-5" />
-                    Rencana harian yang lebih tertata
-                </p>
-                <h1 class="text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">Lebih mudah tahu apa yang perlu dikerjakan hari ini.</h1>
-                <p class="mt-5 max-w-xl text-lg leading-8 text-muted">Catat tugas, tentukan waktunya, dan lihat agenda dalam satu tempat. Mulai dari hal kecil tanpa membuat rencana terasa rumit.</p>
-                <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+        <section class="home-hero" aria-labelledby="home-title">
+            <div class="hero-copy-card">
+                <svg class="home-spark" viewBox="0 0 24 24" aria-hidden="true"><use href="#spark" /></svg>
+                <p class="home-kicker"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg>Rencana harian yang lebih tertata</p>
+                <h1 id="home-title">Rencanakan hari,<br>jalani dengan tenang.</h1>
+                <p class="home-description">Tugas, kebiasaan, agenda, dan catatan uangmu—tertata dalam satu tempat. Mulai dari satu hal kecil, sisanya bisa menyusul.</p>
+                <div class="home-actions">
                     @guest
-                        <a href="{{ route('register') }}" class="btn-primary"><x-icon name="tambah" class="h-5 w-5" />Daftar gratis</a>
-                        <a href="{{ route('login') }}" class="btn-secondary"><x-icon name="profil" class="h-5 w-5" />Masuk ke akun</a>
+                        <a href="{{ route('register') }}" class="home-button home-button-primary"><span class="home-plus" aria-hidden="true">+</span>Mulai sekarang</a>
+                        <a href="{{ route('login') }}" class="home-button home-button-secondary"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#us" /></svg>Masuk ke akun</a>
                     @else
-                        <a href="{{ route('user.dashboard') }}" class="btn-primary"><x-icon name="beranda" class="h-5 w-5" />Lihat jadwal saya</a>
+                        <a href="{{ route('user.dashboard') }}" class="home-button home-button-primary"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#home" /></svg>Lihat jadwalku</a>
                     @endguest
                 </div>
-                <p class="mt-4 text-sm text-muted">Jadwal Anda hanya terlihat oleh akun Anda.</p>
+                <p class="home-privacy"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#lk" /></svg>Jadwalmu hanya bisa dilihat oleh akunmu.</p>
+                <svg class="home-mascot" viewBox="0 0 110 100" aria-hidden="true"><use href="#mascot" /></svg>
             </div>
 
-            <aside class="surface-card p-5 sm:p-7" aria-label="Contoh tampilan agenda">
-                <div class="flex items-center justify-between border-b border-line pb-4">
-                    <div>
-                        <p class="text-sm text-muted">Contoh tampilan agenda</p>
-                        <h2 class="mt-1 text-xl font-semibold">Hari yang terencana</h2>
-                    </div>
-                    <span class="rounded-lg bg-primary-50 px-3 py-2 text-sm font-semibold text-primary-900">Hari ini</span>
+            <aside class="agenda-card" aria-label="Contoh tampilan agenda">
+                <div class="agenda-heading">
+                    <div><p class="home-script">Intip rencanamu</p><h2>Hari yang terencana</h2></div>
+                    <span class="today-badge">Hari ini</span>
                 </div>
-                <ol class="mt-2 divide-y divide-line">
-                    <li class="flex gap-4 py-4">
-                        <span class="w-12 pt-0.5 text-sm font-semibold text-primary-800">09.00</span>
-                        <x-icon name="tugas" class="h-5 w-5 text-primary-700" />
-                        <div><p class="font-medium">Tinjau rencana hari ini</p><p class="mt-1 text-sm text-muted">Mulai dengan melihat prioritas</p></div>
-                    </li>
-                    <li class="flex gap-4 py-4">
-                        <span class="w-12 pt-0.5 text-sm font-semibold text-primary-800">13.00</span>
-                        <x-icon name="kalender" class="h-5 w-5 text-primary-700" />
-                        <div><p class="font-medium">Kerjakan satu hal penting</p><p class="mt-1 text-sm text-muted">Atur waktu agar agenda tetap realistis</p></div>
-                    </li>
-                    <li class="flex gap-4 py-4">
-                        <span class="w-12 pt-0.5 text-sm font-semibold text-primary-800">16.30</span>
-                        <x-icon name="selesai" class="h-5 w-5 text-primary-700" />
-                        <div><p class="font-medium">Periksa tugas berikutnya</p><p class="mt-1 text-sm text-muted">Tugas dapat dilihat lagi di kalender</p></div>
-                    </li>
+                <ol class="agenda-list">
+                    <li><time>09.00</time><span class="agenda-icon agenda-green"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#tk" /></svg></span><div><h3>Tinjau rencana hari ini</h3><p>Mulai dengan melihat prioritas</p></div></li>
+                    <li><time>13.00</time><span class="agenda-icon agenda-yellow"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg></span><div><h3>Kerjakan satu hal penting</h3><p>Atur waktu agar agenda tetap realistis</p></div></li>
+                    <li><time>16.30</time><span class="agenda-icon agenda-pink"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#wl" /></svg></span><div><h3>Periksa tugas berikutnya</h3><p>Satu langkah kecil tetap berarti</p></div></li>
                 </ol>
+                <span class="agenda-sticker" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#fl" /></svg></span>
             </aside>
         </section>
 
-        <section class="border-y border-line bg-white">
-            <div class="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 md:grid-cols-3">
-                <div><h2 class="inline-flex items-center gap-2 font-semibold"><x-icon name="tugas" class="h-5 w-5" />Catat tugas dengan jelas</h2><p class="mt-2 text-sm leading-6 text-muted">Simpan judul, kategori, status, dan tenggat agar detail penting tidak tercecer.</p></div>
-                <div><h2 class="inline-flex items-center gap-2 font-semibold"><x-icon name="bentrok" class="h-5 w-5" />Atur waktu tanpa bentrok</h2><p class="mt-2 text-sm leading-6 text-muted">Tentukan jam mulai dan selesai. Jika ada jadwal bertabrakan, Anda akan mendapat peringatan.</p></div>
-                <div><h2 class="inline-flex items-center gap-2 font-semibold"><x-icon name="kalender" class="h-5 w-5" />Lihat rencana beberapa hari</h2><p class="mt-2 text-sm leading-6 text-muted">Periksa agenda harian, tugas mendatang, dan kalender bulanan sesuai zona waktu Anda.</p></div>
-            </div>
+        <section id="fitur" class="home-features" aria-label="Yang bisa kamu atur">
+            <article class="feature-card feature-green"><span class="feature-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#tk" /></svg></span><h2>Tugas lebih jelas</h2><p>Catat yang penting, tentukan prioritas, lalu selesaikan satu per satu.</p></article>
+            <article class="feature-card feature-pink"><span class="feature-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#fl" /></svg></span><h2>Kebiasaan baik</h2><p>Bangun rutinitas kecil dan rayakan progres yang kamu capai.</p></article>
+            <article class="feature-card feature-blue"><span class="feature-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg></span><h2>Agenda tertata</h2><p>Atur waktu dengan tenang dan lihat rencanamu dalam satu kalender.</p></article>
         </section>
     </main>
 
-    <footer class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <span class="font-semibold text-ink">Jadwal Harian</span>
-        <span>Rencana yang jelas, satu hari pada satu waktu.</span>
+    <footer class="home-footer">
+        <div class="footer-invite">
+            <span class="footer-ticket footer-ticket-left" aria-hidden="true">SIAP?</span>
+            <div class="footer-invite-copy">
+                <span class="footer-invite-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#fl" /></svg></span>
+                <div>
+                    <p class="footer-invite-message"><span class="home-script">Pelan-pelan juga sampai</span> Satu langkah kecil bisa bikin harimu lebih tertata.</p>
+                </div>
+            </div>
+            @guest
+                <a href="{{ route('register') }}" class="home-button home-button-primary footer-cta"><span class="home-plus" aria-hidden="true">+</span>Mulai gratis</a>
+            @else
+                <a href="{{ route('user.dashboard') }}" class="home-button home-button-primary footer-cta">Lihat jadwalku</a>
+            @endguest
+            <span class="footer-ticket footer-ticket-right" aria-hidden="true">MULAI!</span>
+        </div>
+        <div class="footer-divider" aria-hidden="true">
+            <span class="footer-divider-line"></span>
+            <span class="footer-divider-label">ATUR HARI, BUKAN KEKHAWATIRAN</span>
+            <span class="footer-divider-line"></span>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <div class="footer-brand-row">
+                    <a href="{{ route('home') }}" class="footer-brand"><span class="footer-brand-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg></span>Jadwal Harian</a>
+                    <span class="footer-live-badge"><span aria-hidden="true"></span> Teman harianmu</span>
+                </div>
+                <p class="footer-note">Rencana yang jelas, satu hari pada satu waktu.</p>
+                <p class="footer-quote">“Hari yang tenang dimulai dari rencana kecil.”</p>
+                <div class="footer-topics" aria-label="Ruang yang bisa diatur">
+                    <span>Tugas</span><span>Kebiasaan</span><span>Agenda</span><span>Keuangan</span>
+                </div>
+            </div>
+            <div class="footer-bottom-right">
+                <div class="footer-nav-group">
+                    <span class="footer-nav-label">Jelajahi</span>
+                    <nav class="footer-links" aria-label="Tautan akun">
+                        <a href="#fitur">Fitur</a>
+                        @auth
+                            <a href="{{ route('user.dashboard') }}">Berandaku</a>
+                        @else
+                            <a href="{{ route('login') }}">Masuk</a>
+                            <a href="{{ route('register') }}">Daftar gratis</a>
+                        @endauth
+                    </nav>
+                </div>
+                <div class="footer-meta">
+                    <span class="footer-copy">&copy; {{ now()->year }} Jadwal Harian</span>
+                    <span class="footer-made">Dibuat untuk hari yang lebih ringan <span aria-hidden="true">✦</span></span>
+                </div>
+            </div>
+        </div>
     </footer>
 </body>
 </html>

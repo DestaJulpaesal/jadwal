@@ -8,8 +8,8 @@ use App\Services\AgendaService;
 use App\Services\MonthlySummary;
 use App\Services\WalletBalance;
 use App\Support\UserClock;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -91,8 +91,6 @@ class UserController extends Controller
             && $user->transactions()->exists() === false;
 
         $dashboardSections = $user->dashboard_sections ?? ['attention', 'habits', 'today_tasks', 'upcoming', 'finance'];
-        $calendarData = $this->calendarData($user, $agenda, $validated['year'] ?? null, $validated['month'] ?? null);
-
         return view('user.dashboard', compact(
             'todayTasks',
             'upcomingTasks',
@@ -108,7 +106,7 @@ class UserController extends Controller
             'totalBalance',
             'showOnboarding',
             'dashboardSections'
-        ) + $calendarData);
+        ));
     }
 
     public function dismissOnboarding(Request $request)
@@ -140,14 +138,16 @@ class UserController extends Controller
             ->sortBy(fn ($task) => ($task->starts_at ?? $task->due_date)->timestamp);
     }
 
-    public function calendar(Request $request): RedirectResponse
+    public function calendar(Request $request, AgendaService $agenda): View
     {
         $validated = $request->validate([
             'year' => ['nullable', 'integer', 'between:2000,2100'],
             'month' => ['nullable', 'integer', 'between:1,12'],
         ]);
+        $user = $request->user();
+        $calendarData = $this->calendarData($user, $agenda, $validated['year'] ?? null, $validated['month'] ?? null);
 
-        return redirect()->route('user.dashboard', $validated);
+        return view('user.calendar', $calendarData);
     }
 
     private function calendarData(User $user, AgendaService $agenda, ?int $year = null, ?int $monthNumber = null): array

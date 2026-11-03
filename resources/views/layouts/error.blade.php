@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title') · Jadwal Harian</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="flex min-h-[100dvh] items-center justify-center bg-canvas px-4 py-10 text-ink">

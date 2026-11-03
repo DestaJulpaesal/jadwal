@@ -17,7 +17,15 @@
                 <div class="concept-stat"><b>{{ $totalTasks }}</b><span>Total tugas</span></div>
                 <div class="concept-stat"><b>{{ $doneHabits }}/{{ $todayHabits->count() }}</b><span>kebiasaan</span></div>
                 @if (in_array('finance', $dashboardSections, true))
-                    <div class="concept-stat"><b data-private>{{ rupiah($totalBalance) }}</b><span>saldo</span></div>
+                    <div class="concept-stat concept-stat-finance">
+                        <b data-private>{{ rupiah($totalBalance) }}</b>
+                        <div class="concept-stat-label">
+                            <span>saldo</span>
+                            <button type="button" class="privacy-toggle privacy-toggle-stat" data-privacy-toggle aria-label="Sembunyikan nominal" aria-pressed="false">
+                                <x-concept-icon name="lk" />
+                            </button>
+                        </div>
+                    </div>
                 @endif
             </div>
         </section>
@@ -36,11 +44,9 @@
         <nav class="concept-quick dashboard-wide" aria-label="Akses cepat">
             <a href="{{ route('user.tasks.index') }}" class="concept-quick-link"><x-concept-icon name="tk" />Tugas</a>
             <a href="{{ route('user.money.index') }}" class="concept-quick-link"><x-concept-icon name="wl" />Catat uang</a>
-            <a href="#home-calendar" class="concept-quick-link"><x-concept-icon name="cl" />Kalender</a>
+            <a href="{{ route('user.calendar') }}" class="concept-quick-link"><x-concept-icon name="cl" />Kalender</a>
             <a href="{{ route('user.habits.index') }}" class="concept-quick-link"><x-concept-icon name="fl" />Kebiasaan</a>
         </nav>
-
-        @include('user.partials.calendar-widget')
 
         @if (in_array('attention', $dashboardSections, true))
         <section class="concept-card concept-card-pink" aria-labelledby="attention-heading">

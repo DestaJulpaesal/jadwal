@@ -59,6 +59,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('.user-app form').forEach((form) => {
+        form.addEventListener('submit', (event) => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                form.reportValidity();
+                form.querySelector(':invalid')?.focus();
+                return;
+            }
+
+            form.setAttribute('aria-busy', 'true');
+            form.querySelectorAll('button[type="submit"]').forEach((button) => {
+                button.disabled = true;
+                button.classList.add('is-submitting');
+                if (button.dataset.loadingText) {
+                    button.dataset.defaultText = button.textContent.trim();
+                    button.childNodes.forEach((node) => {
+                        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
+                            node.textContent = ` ${button.dataset.loadingText}`;
+                        }
+                    });
+                }
+            });
+        });
+    });
+
     document.addEventListener('click', (event) => {
         const toggle = event.target.closest('[data-password-toggle]');
 

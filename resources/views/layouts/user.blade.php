@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Beranda') · Jadwal Harian</title>
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
     <script>
         (() => {
             const root = document.documentElement;
@@ -36,10 +37,15 @@
             </a>
             <div class="user-header-actions flex shrink-0 items-center gap-2 sm:gap-3">
                 <span class="header-user-name hidden max-w-40 truncate sm:block">{{ auth()->user()->name }}</span>
-                <button type="button" class="btn-icon privacy-toggle" data-privacy-toggle aria-label="Sembunyikan nominal" aria-pressed="false">
-                    <span data-private-show><x-concept-icon name="ey" class="h-6 w-6" /></span>
-                    <span class="hidden" data-private-hide><x-concept-icon name="lk" class="h-6 w-6" /></span>
-                </button>
+                @if (request()->routeIs('user.search'))
+                    <a href="{{ route('user.dashboard') }}" class="btn-icon global-search-close" aria-label="Kembali ke beranda" title="Kembali ke beranda">
+                        <x-concept-icon name="home" class="h-6 w-6" />
+                    </a>
+                @else
+                    <a href="{{ route('user.search') }}" class="btn-icon global-search-launch" aria-label="Buka pencarian" title="Cari di semua data">
+                        <x-concept-icon name="sc" class="h-6 w-6" />
+                    </a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button class="btn-secondary logout-button min-h-11 px-3 sm:px-4" type="submit">Keluar</button>
@@ -89,16 +95,18 @@
     </aside>
 
     <main class="user-main min-h-[calc(100dvh-4rem)] px-4 py-6 pb-32 sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
-        <form method="GET" action="{{ route('user.search') }}" role="search" class="global-search-wrap mx-auto mb-6 max-w-6xl">
-            <label for="global-search" class="sr-only">Cari di semua data</label>
-            <div class="global-search-control">
-                <x-concept-icon name="sc" class="global-search-icon h-5 w-5" />
-                <input id="global-search" name="q" type="search" value="{{ request()->routeIs('user.search') ? request('q') : '' }}" maxlength="100" required autocomplete="off" placeholder="Cari tugas, kebiasaan, transaksi..." class="global-search-input">
-                <button type="submit" class="global-search-button" aria-label="Cari">
-                    <x-concept-icon name="sc" class="h-5 w-5" />
-                </button>
-            </div>
-        </form>
+        @if (request()->routeIs('user.search'))
+            <form method="GET" action="{{ route('user.search') }}" role="search" class="global-search-wrap mx-auto mb-6 max-w-6xl">
+                <label for="global-search" class="sr-only">Cari di semua data</label>
+                <div class="global-search-control">
+                    <x-concept-icon name="sc" class="global-search-icon h-5 w-5" />
+                    <input id="global-search" name="q" type="search" value="{{ request('q') }}" maxlength="100" required autocomplete="off" placeholder="Cari tugas, kebiasaan, transaksi..." class="global-search-input">
+                    <button type="submit" class="global-search-button" data-loading-text="Mencari..." aria-label="Cari">
+                        <x-concept-icon name="sc" class="h-5 w-5" />
+                    </button>
+                </div>
+            </form>
+        @endif
         @if (session('success'))
             <x-toast>{{ session('success') }}</x-toast>
         @endif

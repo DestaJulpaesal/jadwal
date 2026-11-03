@@ -12,6 +12,31 @@
     box-sizing: border-box;
 }
 
+body.concept-login-body {
+    view-transition-name: home-page;
+}
+
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(home-page) {
+    animation: home-page-out .18s ease-in both;
+}
+
+::view-transition-new(home-page) {
+    animation: home-page-in .38s cubic-bezier(.2, .75, .25, 1) both;
+}
+
+@keyframes home-page-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes home-page-out {
+    to { opacity: 0; transform: translateY(-5px); }
+}
+
 html {
     min-height: 100%;
     background: #f1efe8;
@@ -52,6 +77,45 @@ body.concept-login-body {
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.auth-home-link {
+    display: inline-flex;
+    min-height: 36px;
+    width: fit-content;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 11px;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 2px 2px 0 var(--ink);
+    color: var(--ink);
+    font-family: "Baloo 2", sans-serif;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+
+.auth-home-link svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.auth-home-link:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0 var(--ink);
+}
+
+.auth-home-link:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
 }
 
 .c {
@@ -200,6 +264,88 @@ h2 {
     margin-top: 8px;
 }
 
+.register-hero {
+    min-height: 154px;
+    padding-right: 112px;
+    background: var(--g);
+}
+
+.register-hero h1 {
+    margin-top: 5px;
+    font-size: 27px;
+}
+
+.register-mascot {
+    position: absolute;
+    top: 26px;
+    right: 6px;
+    width: 100px;
+    height: 92px;
+}
+
+.register-spark {
+    position: absolute;
+    top: 12px;
+    right: 96px;
+    width: 22px;
+    height: 22px;
+}
+
+.register-chip {
+    margin-top: 8px;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.register-label {
+    display: block;
+    margin: 0 0 5px 2px;
+}
+
+.register-form .fld {
+    margin-bottom: 0;
+}
+
+.register-help {
+    margin: 2px 2px 0;
+    color: #625e55;
+    font-size: 12px;
+}
+
+.register-form .msg {
+    min-height: 0;
+    margin: 0;
+}
+
+.go.register-go {
+    margin-top: 2px;
+    background: var(--g);
+}
+
+.register-links {
+    justify-content: center;
+    margin: 2px 0 0;
+    padding-top: 10px;
+    border-top: 1.5px solid #e8e4da;
+    text-align: center;
+}
+
+.register-links a {
+    color: var(--ink);
+}
+
+.register-error {
+    border: 2px solid #e8a39b;
+    border-radius: 14px;
+    background: #fff1ef;
+    color: #9c2f26;
+    font-size: 12px;
+}
+
 .login-form {
     padding: 14px;
 }
@@ -224,15 +370,15 @@ h2 {
 }
 
 .fld .ic {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
     border: 2px solid var(--ink);
-    border-radius: 10px;
+    border-radius: 9px;
 }
 
 .fld .ic svg {
-    width: 38px;
-    height: 38px;
+    width: 30px;
+    height: 30px;
     filter: drop-shadow(1.6px 0 0 #fff) drop-shadow(-1.6px 0 0 #fff) drop-shadow(0 1.6px 0 #fff) drop-shadow(0 -1.6px 0 #fff) drop-shadow(2px 3px 0 rgba(27, 27, 27, .28));
 }
 
@@ -255,19 +401,39 @@ h2 {
     font-weight: 600;
 }
 
-.eyebtn {
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    cursor: pointer;
-    border: 2px solid var(--ink);
-    border-radius: 10px;
-    background: #fff;
+.fld input:-webkit-autofill,
+.fld input:-webkit-autofill:hover,
+.fld input:-webkit-autofill:focus,
+.fld input:autofill {
+    -webkit-text-fill-color: var(--ink);
+    caret-color: var(--ink);
+    box-shadow: 0 0 0 1000px #fff inset;
+    transition: background-color 9999s ease-out;
 }
 
-.eyebtn svg {
-    width: 28px;
-    height: 28px;
+.fld .password-toggle {
+    width: 34px;
+    height: 34px;
+    margin-left: 2px;
+    padding: 0;
+    cursor: pointer;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    transition: transform .12s ease;
+}
+
+.fld .password-toggle:hover {
+    transform: scale(1.12);
+}
+
+.fld .password-toggle:active {
+    transform: scale(.94);
+}
+
+.fld .password-toggle svg {
+    width: 25px;
+    height: 25px;
     filter: none;
 }
 
@@ -341,8 +507,9 @@ h2 {
 }
 
 .go:focus-visible,
-.eyebtn:focus-visible,
-.lnk a:focus-visible {
+.password-toggle:focus-visible,
+.lnk a:focus-visible,
+.auth-home-link:focus-visible {
     outline: 3px solid var(--ink);
     outline-offset: 3px;
 }
@@ -380,14 +547,14 @@ h2 {
 }
 
 .q .ic {
-    width: 50px;
-    height: 50px;
+    width: 42px;
+    height: 42px;
     margin: 0 auto 4px;
 }
 
 .q .ic svg {
-    width: 50px;
-    height: 50px;
+    width: 42px;
+    height: 42px;
 }
 
 .desktop-panel {
@@ -468,9 +635,9 @@ h2 {
     .concept-login-shell {
         max-width: 960px;
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 390px;
+        grid-template-columns: minmax(0, 1fr) minmax(390px, 420px);
         align-items: center;
-        gap: 64px;
+        gap: 48px;
     }
 
     .desktop-panel {
@@ -496,6 +663,33 @@ h2 {
         max-width: 400px;
         margin-top: 10px;
         font-size: 42px;
+    }
+
+    .register-hero {
+        min-height: 0;
+        padding: 14px;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .register-hero h1 {
+        margin-top: 5px;
+        font-size: 27px;
+    }
+
+    .register-mascot {
+        top: 23px;
+        right: 8px;
+    }
+
+    .register-error {
+        font-size: 13px;
+    }
+
+    .register-form {
+        gap: 9px;
+        padding: 12px;
     }
 
     .desktop-copy {

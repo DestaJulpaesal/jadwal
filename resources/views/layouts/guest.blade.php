@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Akun') · Jadwal Harian</title>
-    @if (request()->routeIs('login'))
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
+    @if (request()->routeIs('login', 'register'))
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -14,7 +15,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @endif
 </head>
-@if (request()->routeIs('login'))
+@if (request()->routeIs('login', 'register'))
 <body class="concept-login-body">
     <x-concept-b-sprite />
     <div class="concept-login-shell">
@@ -22,18 +23,27 @@
             <svg class="hero-mascot stk bobf" viewBox="0 0 110 100" aria-hidden="true"><use href="#mascot" /></svg>
             <svg class="hero-spark stk" viewBox="0 0 24 24" aria-hidden="true"><use href="#spark" /></svg>
             <p class="k">Jadwal Harian</p>
-            <h1>Rencanakan hari,<br>jalani dengan tenang.</h1>
-            <p class="desktop-copy">Tugas, kebiasaan, agenda, dan catatan uangmu—tertata dalam satu tempat.</p>
+            @if (request()->routeIs('register'))
+                <h1>Hari baru,<br>rencana baru!</h1>
+                <p class="desktop-copy">Buat ruang untuk semua yang ingin kamu capai, satu langkah kecil setiap hari.</p>
+            @else
+                <h1>Rencanakan hari,<br>jalani dengan tenang.</h1>
+                <p class="desktop-copy">Tugas, kebiasaan, agenda, dan catatan uangmu—tertata dalam satu tempat.</p>
+            @endif
             <div class="quick" aria-label="Fitur yang tersedia">
                 <div class="q"><span class="ic" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#tk" /></svg></span>Tugas</div>
                 <div class="q"><span class="ic" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#fl" /></svg></span>Kebiasaan</div>
                 <div class="q"><span class="ic" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#wl" /></svg></span>Uang</div>
                 <div class="q"><span class="ic" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#cl" /></svg></span>Jadwal</div>
             </div>
-            <p class="desktop-note">Mulai dari satu hal kecil. Sisanya bisa menyusul.</p>
+            <p class="desktop-note">{{ request()->routeIs('register') ? 'Mulai dari hari ini. Besok, kamu akan berterima kasih.' : 'Mulai dari satu hal kecil. Sisanya bisa menyusul.' }}</p>
         </section>
         <main class="ph">
             <div class="in">
+                <a class="auth-home-link" href="{{ route('home') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7M5.5 9v11h13V9M9.5 20v-6h5v6" /></svg>
+                    Kembali ke beranda
+                </a>
                 {{ $slot }}
             </div>
         </main>

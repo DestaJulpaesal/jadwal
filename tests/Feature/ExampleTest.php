@@ -14,6 +14,11 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        $response->assertOk()
+            ->assertSee('rel="icon" type="image/svg+xml"', false)
+            ->assertSee('favicon.svg?v=3', false)
+            ->assertSee('Satu langkah kecil bisa bikin harimu lebih tertata.')
+            ->assertSee('footer-links')
+            ->assertSee('Daftar gratis');
     }
 }

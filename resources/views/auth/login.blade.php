@@ -27,8 +27,8 @@
         <div class="fld">
             <span class="ic" style="background: var(--g)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
             <input id="password" name="password" type="password" autocomplete="current-password" data-password-field placeholder="Masukkan kata sandi" aria-label="Kata sandi" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" required>
-            <button type="button" class="ic eyebtn" data-password-toggle data-password-show-icon="#ey" data-password-hide-icon="#ey" aria-label="Tampilkan password">
-                <svg viewBox="0 0 48 48" data-password-icon aria-hidden="true"><use href="#ey" /></svg>
+            <button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan password">
+                <svg viewBox="0 0 24 24" data-password-icon aria-hidden="true"><use href="#password-visible" /></svg>
                 <span class="sr-only" data-password-label>Tampilkan</span>
             </button>
         </div>

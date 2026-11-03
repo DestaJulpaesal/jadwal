@@ -26,6 +26,8 @@ class AuthenticationTest extends TestCase
         $response->assertOk()
             ->assertSee('Masuk dulu,')
             ->assertSee('Pahlawan!')
+            ->assertSee('Kembali ke beranda')
+            ->assertSee('href="'.route('home').'"', false)
             ->assertSee('Buat akun baru')
             ->assertSee('href="#mascot"', false)
             ->assertSee('href="#ml"', false)

@@ -26,7 +26,7 @@
             @else
                 @foreach ($sections as $section)
                     @if ($section['records']->isNotEmpty())
-                        <section class="surface-card overflow-hidden">
+                        <section class="surface-card global-search-section overflow-hidden">
                             <h2 class="flex items-center gap-2 border-b-2 border-line px-5 py-4 text-lg font-semibold">
                                 <x-concept-icon :name="$section['icon']" class="h-6 w-6" />
                                 {{ $section['title'] }}

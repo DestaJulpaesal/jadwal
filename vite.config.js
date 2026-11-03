@@ -7,6 +7,7 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/css/concept-b-login.css',
+                'resources/css/concept-b-home.css',
                 'resources/js/app.js',
             ],
             refresh: true,

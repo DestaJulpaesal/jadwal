@@ -13,21 +13,21 @@
             $weekdays = array_merge([array_pop($weekdays)], $weekdays);
         }
 @endphp
-    <section id="home-calendar" class="concept-card concept-card-blue dashboard-wide" x-data="{ selectedDay: '{{ $selectedDate }}' }" aria-labelledby="home-calendar-heading">
+    <section id="user-calendar" class="concept-card concept-card-blue dashboard-wide" x-data="{ selectedDay: '{{ $selectedDate }}' }" aria-labelledby="user-calendar-heading">
         <header class="concept-card-header">
             <div>
-                <div class="concept-heading mb-0"><x-concept-icon name="cl" /><div><h2 id="home-calendar-heading" class="text-lg font-semibold">Kalender</h2><p class="mt-1 text-sm">Pilih tanggal untuk melihat agenda bulanan.</p></div></div>
+                <div class="concept-heading mb-0"><x-concept-icon name="cl" /><div><h2 id="user-calendar-heading" class="text-lg font-semibold">Kalender</h2><p class="mt-1 text-sm">Pilih tanggal untuk melihat agenda bulanan.</p></div></div>
             </div>
             <a href="{{ route('user.tasks.create') }}" class="btn-secondary"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
         </header>
 
         <section class="surface-card overflow-hidden">
             <div class="flex items-center justify-between gap-2 border-b border-line p-3 sm:p-4">
-                <a href="{{ route('user.dashboard', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}#home-calendar" class="btn-secondary min-h-11 px-3" aria-label="Bulan sebelumnya">
+                <a href="{{ route('user.calendar', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}" class="btn-secondary min-h-11 px-3" aria-label="Bulan sebelumnya">
                     <span>Sebelumnya</span>
                 </a>
                 <h2 class="text-center text-base font-semibold sm:text-lg">{{ $month->translatedFormat('F Y') }}</h2>
-                <a href="{{ route('user.dashboard', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}#home-calendar" class="btn-secondary min-h-11 px-3" aria-label="Bulan berikutnya">
+                <a href="{{ route('user.calendar', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}" class="btn-secondary min-h-11 px-3" aria-label="Bulan berikutnya">
                     <span>Berikutnya</span>
                 </a>
             </div>
