@@ -29,4 +29,9 @@ class Category extends Model
     {
         return $this->hasMany(Task::class);
     }
+
+    public function habits(): HasMany
+    {
+        return $this->hasMany(Habit::class);
+    }
 }

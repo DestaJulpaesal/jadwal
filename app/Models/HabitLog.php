@@ -15,11 +15,12 @@ class HabitLog extends Model
 
     protected array $businessDateColumns = ['log_date'];
 
-    protected $fillable = ['habit_id', 'log_date', 'status', 'value', 'note'];
+    protected $fillable = ['habit_id', 'log_date', 'status', 'value', 'duration_minutes', 'performed_at', 'note'];
 
     protected $casts = [
         'status' => HabitLogStatus::class,
         'log_date' => 'date',
+        'duration_minutes' => 'integer',
     ];
 
     public function user(): BelongsTo

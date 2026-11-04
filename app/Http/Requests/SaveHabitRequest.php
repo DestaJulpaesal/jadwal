@@ -29,7 +29,10 @@ class SaveHabitRequest extends FormRequest
             'weekly_target' => ['nullable', 'integer', 'between:1,7'],
             'goal_value' => ['nullable', 'integer', 'min:1', 'max:1000000'],
             'goal_unit' => ['nullable', 'string', 'max:20'],
+            'goal_unit_other' => ['nullable', 'string', 'max:20'],
             'preferred_time' => ['nullable', 'date_format:H:i'],
+            'schedule_times' => ['nullable', 'array'],
+            'schedule_times.*' => ['nullable', 'date_format:H:i'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
             'category_id' => [
@@ -37,6 +40,8 @@ class SaveHabitRequest extends FormRequest
                 'integer',
                 Rule::exists('categories', 'id')->where('user_id', $this->user()->id),
             ],
+            'category_name' => ['nullable', 'string', 'max:60'],
+            'category_color' => ['nullable', 'regex:/\A#[0-9a-fA-F]{6}\z/'],
         ];
     }
 

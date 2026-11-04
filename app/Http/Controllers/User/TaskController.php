@@ -153,22 +153,15 @@ class TaskController extends Controller
     private function formData(): array
     {
         return [
-            'categories' => auth()->user()->categories()->orderBy('name')->get(),
+            'categories' => Category::query()->orderBy('name')->get(),
             'statuses' => TaskStatus::orderBy('name')->get(),
         ];
     }
 
     private function resolveCategory(array $validated, Request $request): ?Category
     {
-        if (! empty($validated['category_name'])) {
-            return $request->user()->categories()->firstOrCreate(
-                ['name' => $validated['category_name']],
-                ['color' => $validated['category_color'] ?? '#3B82F6']
-            );
-        }
-
         if (! empty($validated['category_id'])) {
-            $category = $request->user()->categories()->findOrFail($validated['category_id']);
+            $category = Category::query()->findOrFail($validated['category_id']);
             $this->authorize('useForTask', $category);
 
             return $category;

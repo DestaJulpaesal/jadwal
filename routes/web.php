@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\User\GoalController;
@@ -36,6 +37,10 @@ Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->name('admin.')-
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminController::class, 'show'])->name('users.show');
+    Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
+    Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
+    Route::patch('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
+    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
     Route::patch('/users/{user}/status', [AdminController::class, 'toggleStatus'])->name('users.status');
     Route::patch('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
     Route::post('/users/{user}/password-reset', [AdminController::class, 'sendPasswordResetLink'])

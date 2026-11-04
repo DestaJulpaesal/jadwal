@@ -7,6 +7,7 @@ use App\Enums\HabitLogStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveHabitRequest;
 use App\Models\Habit;
+use App\Models\Category;
 use App\Support\UserClock;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -61,7 +62,7 @@ class HabitController extends Controller
 
         return view('user.habits.create', [
             'habit' => new Habit($values),
-            'categories' => $request->user()->categories()->orderBy('name')->get(),
+            'categories' => Category::query()->orderBy('name')->get(),
             'today' => $clock->date($request->user()),
         ]);
     }
@@ -80,7 +81,7 @@ class HabitController extends Controller
 
         return view('user.habits.edit', [
             'habit' => $habit,
-            'categories' => $request->user()->categories()->orderBy('name')->get(),
+            'categories' => Category::query()->orderBy('name')->get(),
             'today' => $clock->date($request->user()),
         ]);
     }
@@ -88,7 +89,8 @@ class HabitController extends Controller
     public function update(SaveHabitRequest $request, Habit $habit)
     {
         $this->authorize('update', $habit);
-        $habit->update($this->normalizeFrequencyData($request->validated()));
+        $data = $this->normalizeFrequencyData($request->validated());
+        $habit->update($data);
 
         return redirect()->route('user.habits.index')->with('success', 'Kebiasaan berhasil diperbarui.');
     }
@@ -100,6 +102,8 @@ class HabitController extends Controller
             'log_date' => ['nullable', 'date_format:Y-m-d'],
             'status' => ['required', Rule::in(array_column(HabitLogStatus::cases(), 'value'))],
             'value' => ['nullable', 'integer', 'min:0', 'max:1000000'],
+            'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:1440'],
+            'performed_at' => ['nullable', 'date_format:H:i'],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
         $today = $clock->date($request->user());
@@ -117,6 +121,8 @@ class HabitController extends Controller
             [
                 'status' => $data['status'],
                 'value' => $data['value'] ?? ($data['status'] === HabitLogStatus::Done->value ? $habit->goal_value : null),
+                'duration_minutes' => $data['status'] === HabitLogStatus::Done->value ? ($data['duration_minutes'] ?? null) : null,
+                'performed_at' => $data['status'] === HabitLogStatus::Done->value ? ($data['performed_at'] ?? null) : null,
                 'note' => $data['note'] ?? null,
             ]
         );
@@ -154,7 +160,15 @@ class HabitController extends Controller
         $frequency = HabitFrequency::from($data['frequency']);
         $data['weekdays'] = $frequency === HabitFrequency::Weekdays ? array_map('intval', $data['weekdays']) : null;
         $data['weekly_target'] = $frequency === HabitFrequency::WeeklyCount ? (int) $data['weekly_target'] : null;
+        $data['schedule_times'] = $frequency === HabitFrequency::Weekdays
+            ? collect($data['schedule_times'] ?? [])->filter()->mapWithKeys(fn ($time, $day) => [(int) $day => $time])->all()
+            : null;
+        if (($data['goal_unit'] ?? null) === 'other') {
+            $data['goal_unit'] = trim($data['goal_unit_other'] ?? '');
+        }
+        unset($data['goal_unit_other']);
 
         return $data;
     }
+
 }

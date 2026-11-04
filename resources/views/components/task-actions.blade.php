@@ -9,7 +9,7 @@
         <form method="POST" action="{{ route('user.tasks.complete', $task) }}">
             @csrf
             @method('PATCH')
-            <button type="submit" class="btn-secondary min-h-11 min-w-11 border-green-200 px-3 text-success sm:min-w-0" aria-label="Tandai {{ $task->title }} selesai">
+            <button type="submit" class="btn-primary min-h-11 min-w-11 px-3 sm:min-w-0" aria-label="Tandai {{ $task->title }} selesai">
                 <x-concept-icon name="tk" class="h-5 w-5" />
                 <span class="hidden sm:inline">Tandai selesai</span>
             </button>

@@ -18,12 +18,13 @@ class Habit extends Model
 
     protected $fillable = [
         'category_id', 'title', 'description', 'frequency', 'weekdays', 'weekly_target',
-        'goal_value', 'goal_unit', 'preferred_time', 'starts_on', 'ends_on', 'archived_at',
+        'goal_value', 'goal_unit', 'preferred_time', 'schedule_times', 'starts_on', 'ends_on', 'archived_at',
     ];
 
     protected $casts = [
         'frequency' => HabitFrequency::class,
         'weekdays' => 'array',
+        'schedule_times' => 'array',
         'starts_on' => 'date',
         'ends_on' => 'date',
         'archived_at' => 'datetime',

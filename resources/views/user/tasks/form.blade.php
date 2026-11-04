@@ -57,20 +57,3 @@
         </div>
     </div>
 </section>
-
-<section class="rounded-xl border border-line p-4 sm:p-5">
-    <h2 class="font-semibold">Buat kategori baru <span class="font-normal text-muted">(opsional)</span></h2>
-    <p class="mt-1 text-sm text-muted">Isi nama kategori jika ingin menambahkan kategori saat menyimpan tugas.</p>
-    <div class="mt-4 grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-        <div>
-            <label for="category_name" class="field-label">Nama kategori</label>
-            <input id="category_name" name="category_name" value="{{ old('category_name') }}" maxlength="255" class="form-control" aria-invalid="{{ $errors->has('category_name') ? 'true' : 'false' }}" aria-describedby="category-name-error">
-            <x-input-error id="category-name-error" :messages="$errors->get('category_name')" />
-        </div>
-        <div>
-            <label for="category_color" class="field-label">Warna kategori</label>
-            <input id="category_color" type="color" name="category_color" value="{{ old('category_color', '#3B82F6') }}" class="h-11 w-20 rounded-lg border border-line bg-white p-1" aria-invalid="{{ $errors->has('category_color') ? 'true' : 'false' }}" aria-describedby="category-color-error">
-            <x-input-error id="category-color-error" :messages="$errors->get('category_color')" />
-        </div>
-    </div>
-</section>

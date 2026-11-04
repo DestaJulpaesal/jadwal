@@ -14,7 +14,7 @@ class CategoryPolicy
 
     public function view(User $user, Category $category): bool
     {
-        return (int) $category->user_id === (int) $user->id;
+        return $category->user_id === null;
     }
 
     public function create(User $user): bool
@@ -24,16 +24,16 @@ class CategoryPolicy
 
     public function update(User $user, Category $category): bool
     {
-        return (int) $category->user_id === (int) $user->id;
+        return $user->isAdmin() && $category->user_id === null;
     }
 
     public function delete(User $user, Category $category): bool
     {
-        return (int) $category->user_id === (int) $user->id;
+        return $user->isAdmin() && $category->user_id === null;
     }
 
     public function useForTask(User $user, Category $category): bool
     {
-        return $category->user_id === $user->id;
+        return $category->user_id === null;
     }
 }

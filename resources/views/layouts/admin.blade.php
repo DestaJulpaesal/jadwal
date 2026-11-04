@@ -49,6 +49,10 @@
                             <x-icon name="kelola-akun" class="h-5 w-5" />
                             Manajemen Akun
                         </a>
+                        <a href="{{ route('admin.categories.index') }}" @class(['nav-link w-full', 'nav-link-active' => request()->routeIs('admin.categories.*')])>
+                            <x-icon name="kelola-akun" class="h-5 w-5" />
+                            Kategori
+                        </a>
                     </div>
                 </section>
             </nav>
