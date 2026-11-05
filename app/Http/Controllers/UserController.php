@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Habit;
+use App\Models\Goal;
 use App\Models\User;
 use App\Services\AgendaService;
+use App\Services\GoalProgress;
 use App\Services\MonthlySummary;
 use App\Services\WalletBalance;
 use App\Support\UserClock;
@@ -15,7 +17,14 @@ use Illuminate\Support\Collection;
 
 class UserController extends Controller
 {
-    public function index(Request $request, UserClock $clock, AgendaService $agenda, MonthlySummary $summary, WalletBalance $balances)
+    public function index(
+        Request $request,
+        UserClock $clock,
+        AgendaService $agenda,
+        MonthlySummary $summary,
+        WalletBalance $balances,
+        GoalProgress $goalProgress
+    )
     {
         $validated = $request->validate([
             'year' => ['nullable', 'integer', 'between:2000,2100'],
@@ -85,6 +94,18 @@ class UserController extends Controller
         $monthlySummary = $summary->forMonth($user, substr($today, 0, 7));
         $wallets = $balances->forUser($user);
         $totalBalance = (int) $wallets->sum('calculated_balance');
+        $activeGoals = $user->goals()
+            ->where('status', \App\Enums\GoalStatus::Active)
+            ->with(['updates', 'habit', 'wallet'])
+            ->orderBy('due_on')
+            ->orderBy('id')
+            ->get()
+            ->take(3);
+        $activeGoals->each(function (Goal $goal) use ($goalProgress) {
+            $current = $goalProgress->current($goal);
+            $goal->setAttribute('current_value', $current);
+            $goal->setAttribute('progress_percent', $goalProgress->percent($goal, $current));
+        });
         $showOnboarding = ! $user->onboarding_dismissed_at
             && $totalTasks === 0
             && $user->habits()->exists() === false
@@ -104,6 +125,7 @@ class UserController extends Controller
             'monthlySummary',
             'wallets',
             'totalBalance',
+            'activeGoals',
             'showOnboarding',
             'dashboardSections'
         ));

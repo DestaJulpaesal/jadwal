@@ -1,7 +1,7 @@
 @props(['name', 'class' => 'h-6 w-6'])
 
 @php
-    $symbols = ['tk', 'fl', 'wl', 'cl', 'bl', 'home', 'bk', 'rc', 'us', 'ey', 'dt', 'sc', 'ml', 'lk', 'fp', 'mascot', 'spark'];
+    $symbols = ['tk', 'fl', 'wl', 'cl', 'bl', 'home', 'bk', 'rc', 'us', 'ey', 'dt', 'sc', 'ml', 'lk', 'fp', 'pr', 'mascot', 'spark'];
 
     if (! in_array($name, $symbols, true)) {
         throw new InvalidArgumentException("Ikon konsep [{$name}] tidak terdaftar.");

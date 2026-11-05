@@ -47,6 +47,7 @@
             <a href="{{ route('user.money.index') }}" class="concept-quick-link"><x-concept-icon name="wl" /><strong>Catat uang</strong><small>Pantau pemasukan dan pengeluaran</small></a>
             <a href="{{ route('user.calendar') }}" class="concept-quick-link"><x-concept-icon name="cl" /><strong>Kalender</strong><small>Lihat jadwal mendatang</small></a>
             <a href="{{ route('user.habits.index') }}" class="concept-quick-link"><x-concept-icon name="fl" /><strong>Kebiasaan</strong><small>Jaga ritme setiap hari</small></a>
+            <a href="{{ route('user.search') }}" class="concept-quick-link"><x-concept-icon name="sc" /><strong>Cari</strong><small>Temukan data dengan cepat</small></a>
         </nav>
 
         @if (in_array('attention', $dashboardSections, true))
@@ -210,6 +211,27 @@
                 @endforeach
             </section>
         @endif
+
+        <section class="concept-card concept-card-purple dashboard-panel" aria-labelledby="goals-summary-heading">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div><h2 id="goals-summary-heading" class="text-lg font-semibold">Target aktif</h2><p class="mt-1 text-sm text-muted">Langkah yang sedang kamu kejar.</p></div>
+                <a href="{{ route('user.goals.index') }}" class="dashboard-action-link">Kelola target</a>
+            </div>
+            <div class="mt-4">
+                @forelse ($activeGoals as $goal)
+                    <div class="concept-item flex-wrap">
+                        <div class="min-w-0 flex-1">
+                            <p class="break-words font-medium">{{ $goal->title }}</p>
+                            <p class="text-sm text-muted">{{ $goal->current_value }} / {{ $goal->target_value }} {{ $goal->unit }}</p>
+                            <x-progress-bar class="mt-2 max-w-xl" :value="$goal->progress_percent" :label="'Progres '.$goal->title" />
+                        </div>
+                        <strong class="shrink-0">{{ $goal->progress_percent }}%</strong>
+                    </div>
+                @empty
+                    <p class="border-t border-line pt-4 text-sm text-muted">Belum ada target aktif. <a href="{{ route('user.goals.index') }}" class="font-semibold underline">Buat target</a></p>
+                @endforelse
+            </div>
+        </section>
 
         @if (in_array('finance', $dashboardSections, true))
         <section class="concept-card concept-card-orange dashboard-panel" aria-labelledby="money-summary-heading">

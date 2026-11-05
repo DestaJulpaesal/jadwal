@@ -19,6 +19,80 @@
         </section>
         <section class="concept-card concept-card-white">
             <div class="concept-card-header">
+                <div><h2 class="text-lg font-semibold">Rencana pengeluaran</h2><p class="text-sm">Tagihan dan cicilan yang belum dibayar pada bulan ini.</p></div>
+                <strong class="text-lg" data-private>{{ rupiah($plannedTotal) }}</strong>
+            </div>
+            <ul class="concept-list">
+                @forelse ($plannedObligations as $obligation)
+                    <li class="concept-item">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-medium">{{ $obligation->title }}</p>
+                            <p class="text-sm">{{ $obligation->kind->label() }} · jatuh tempo {{ $obligation->planned_due_on->translatedFormat('j M Y') }}</p>
+                        </div>
+                        <strong class="shrink-0" data-private>{{ rupiah($obligation->amount) }}</strong>
+                    </li>
+                @empty
+                    <li class="py-4 text-sm text-muted">Tidak ada tagihan atau cicilan yang belum dibayar pada bulan ini.</li>
+                @endforelse
+            </ul>
+        </section>
+        <section class="concept-card concept-card-white">
+            <div class="concept-card-header">
+                <div><h2 class="text-lg font-semibold">Rencana utang dan piutang</h2><p class="text-sm">Sisa pembayaran atau penerimaan yang jatuh tempo pada bulan ini.</p></div>
+                <div class="text-right text-sm">
+                    <p class="text-success">Piutang masuk: <strong data-private>{{ rupiah($plannedLoanIncome) }}</strong></p>
+                    <p class="text-danger">Utang keluar: <strong data-private>{{ rupiah($plannedLoanExpense) }}</strong></p>
+                </div>
+            </div>
+            <ul class="concept-list">
+                @forelse ($plannedLoans as $loan)
+                    <li class="concept-item">
+                        <div class="min-w-0 flex-1">
+                            <p class="font-medium">{{ $loan->direction->label() }} · {{ $loan->counterparty }}</p>
+                            <p class="text-sm">Jatuh tempo {{ $loan->due_on->translatedFormat('j M Y') }}</p>
+                        </div>
+                        <strong class="shrink-0 {{ $loan->direction === \App\Enums\LoanDirection::Lent ? 'text-success' : 'text-danger' }}" data-private>
+                            {{ $loan->direction === \App\Enums\LoanDirection::Lent ? '+' : '−' }}{{ rupiah($loan->planned_amount) }}
+                        </strong>
+                    </li>
+                @empty
+                    <li class="py-4 text-sm text-muted">Tidak ada utang atau piutang jatuh tempo pada bulan ini.</li>
+                @endforelse
+            </ul>
+        </section>
+        <section class="concept-card concept-card-white">
+            <div class="concept-card-header">
+                <div class="concept-heading mb-0"><x-concept-icon name="rc" /><div><h2 class="text-lg font-semibold">Laporan bulanan</h2><p class="text-sm">Bandingkan pengeluaran dan lihat kategori terbesar.</p></div></div>
+            </div>
+            <div class="mt-4 grid gap-4 lg:grid-cols-2">
+                <div>
+                    <h3 class="font-semibold">Dibanding bulan lalu</h3>
+                    <p class="mt-2 text-sm text-muted">Pengeluaran bulan {{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $previousMonth)->translatedFormat('F') }}: <strong data-private>{{ rupiah($previous['expense']) }}</strong></p>
+                    @if ($comparison === null)
+                        <p class="mt-1 text-sm text-muted">Belum ada data pengeluaran bulan lalu untuk dibandingkan.</p>
+                    @elseif ($comparison === 0)
+                        <p class="mt-1 text-sm">Pengeluaran sama seperti bulan lalu.</p>
+                    @else
+                        <p class="mt-1 text-sm">Pengeluaran {{ abs($comparison) }}% {{ $comparison > 0 ? 'lebih tinggi' : 'lebih rendah' }} dari bulan lalu.</p>
+                    @endif
+                </div>
+                <div>
+                    <h3 class="font-semibold">Kategori pengeluaran terbesar</h3>
+                    @forelse ($reportCategories as $category)
+                        <div class="mt-3">
+                            <div class="mb-1 flex justify-between gap-3 text-sm"><span>{{ $category->category_name }}</span><strong data-private>{{ rupiah((int) $category->total) }}</strong></div>
+                            <div class="h-2 overflow-hidden rounded-full bg-gray-100" role="progressbar" aria-label="Pengeluaran {{ $category->category_name }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $largest ? (int) round($category->total * 100 / $largest) : 0 }}">
+                                <div class="h-full rounded-full bg-primary-700" style="width: {{ $largest ? (int) round($category->total * 100 / $largest) : 0 }}%"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="mt-3 text-sm text-muted">Belum ada pengeluaran berkategori pada bulan ini.</p>
+                    @endforelse
+                </div>
+            </div>
+        </section>
+        <section class="concept-card concept-card-white">
+            <div class="concept-card-header">
                 <div class="concept-heading mb-0"><x-concept-icon name="wl" /><div><h2 class="text-lg font-semibold">Dompet</h2><p class="text-sm">Saldo saat ini di setiap tempat penyimpanan uang.</p></div></div>
             </div>
             <ul class="concept-list">

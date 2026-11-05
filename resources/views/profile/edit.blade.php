@@ -4,10 +4,15 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl space-y-5">
-        <header class="mb-6">
-            <p class="text-sm font-semibold text-primary-800">Pengaturan akun</p>
-            <h1 class="mt-1 text-2xl font-semibold tracking-tight">Profil Anda</h1>
-            <p class="mt-2 text-muted">Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.</p>
+        <header class="mb-6 flex items-start justify-between gap-4">
+            <div>
+                <p class="text-sm font-semibold text-primary-800">Pengaturan akun</p>
+                <h1 class="mt-1 text-2xl font-semibold tracking-tight">Profil Anda</h1>
+                <p class="mt-2 text-muted">Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.</p>
+            </div>
+            <a href="{{ route('settings.edit') }}" class="btn-icon shrink-0" aria-label="Buka pengaturan" title="Pengaturan">
+                <x-icon name="zona-waktu" class="h-6 w-6" />
+            </a>
         </header>
 
         @if (session('status') === 'profile-updated')
@@ -23,6 +28,14 @@
         </section>
         <section class="surface-card p-5 sm:p-7">
             @include('profile.partials.update-password-form')
+        </section>
+        <section class="surface-card p-5 sm:p-7">
+            <h2 class="text-lg font-semibold">Sesi akun</h2>
+            <p class="mt-1 text-sm text-muted">Keluar dari akun ini di perangkat yang sedang digunakan.</p>
+            <form method="POST" action="{{ route('logout') }}" class="mt-4">
+                @csrf
+                <button class="btn-secondary" type="submit"><x-icon name="keluar" class="h-5 w-5" />Keluar</button>
+            </form>
         </section>
         <section class="surface-card border-red-200 p-5 sm:p-7">
             @include('profile.partials.delete-user-form')

@@ -232,6 +232,47 @@ class LifeHubTest extends TestCase
         $this->assertSame(2_000_000, app(WalletBalance::class)->forWallet($wallet));
     }
 
+    public function test_unpaid_obligations_are_shown_as_planned_money_expenses(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-15 03:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $user->obligations()->create([
+            'kind' => 'bill',
+            'title' => 'Internet',
+            'amount' => 275_000,
+            'due_day' => 20,
+            'starts_on' => '2026-11-01',
+            'remind_days_before' => 3,
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('user.money.index', ['month' => '2026-11']))
+            ->assertOk()
+            ->assertSee('Rencana pengeluaran')
+            ->assertSee('Internet')
+            ->assertSee(rupiah(275_000));
+    }
+
+    public function test_outstanding_loans_due_this_month_are_shown_as_planned_money_flows(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-05 03:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $user->loans()->create([
+            'direction' => 'lent',
+            'counterparty' => 'Budi',
+            'amount' => 1_000_000,
+            'loan_date' => '2026-10-01',
+            'due_on' => '2026-11-20',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('user.money.index', ['month' => '2026-11']))
+            ->assertOk()
+            ->assertSee('Rencana utang dan piutang')
+            ->assertSee('Budi')
+            ->assertSee(rupiah(1_000_000));
+    }
+
     public function test_obligation_periods_show_status_and_only_allow_the_oldest_due_period(): void
     {
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 03:00:00', 'UTC'));
@@ -275,6 +316,39 @@ class LifeHubTest extends TestCase
         ] as $route) {
             $this->get(route($route))->assertOk();
         }
+    }
+
+    public function test_active_goals_are_summarized_on_the_dashboard(): void
+    {
+        $user = User::factory()->create();
+        $user->goals()->create([
+            'title' => 'Dana darurat',
+            'type' => 'number',
+            'target_value' => 10,
+            'start_value' => 2,
+            'unit' => 'juta',
+            'status' => 'active',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('user.dashboard'))
+            ->assertOk()
+            ->assertSee('Target aktif')
+            ->assertSee('Dana darurat')
+            ->assertSee('0%');
+    }
+
+    public function test_dashboard_has_notification_and_search_access(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('user.dashboard'))
+            ->assertOk()
+            ->assertSee('Buka notifikasi')
+            ->assertSee('notification-icon-wrap')
+            ->assertSee('Cari')
+            ->assertSee(route('user.search'));
     }
 
     public function test_money_page_query_count_does_not_grow_with_transaction_rows(): void

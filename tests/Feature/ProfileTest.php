@@ -20,15 +20,15 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response->assertOk()
-            ->assertSee($user->name)
-            ->assertSee($user->email)
-            ->assertSee('Buka menu akun')
-            ->assertSee('sidebar-profile-menu')
-            ->assertSee('sidebar-profile-menu-popover')
-            ->assertSee(route('settings.edit'))
-            ->assertSee(route('profile.edit'))
-            ->assertSee('Foto profil');
+        $response        ->assertOk()
+        ->assertSee($user->name)
+        ->assertSee($user->email)
+        ->assertSee(route('settings.edit'))
+        ->assertSee(route('profile.edit'))
+        ->assertSee('Buka pengaturan')
+        ->assertSee('Buka profil')
+        ->assertSee('Sesi akun')
+        ->assertSee('Foto profil');
     }
 
     public function test_user_can_upload_and_replace_their_profile_photo(): void

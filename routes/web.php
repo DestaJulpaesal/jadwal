@@ -9,7 +9,6 @@ use App\Http\Controllers\User\HabitController;
 use App\Http\Controllers\User\LoanController;
 use App\Http\Controllers\User\MoneyController;
 use App\Http\Controllers\User\ObligationController;
-use App\Http\Controllers\User\ReportController;
 use App\Http\Controllers\User\SearchController;
 use App\Http\Controllers\User\TaskController as UserTaskController;
 use App\Http\Controllers\UserController;
@@ -68,7 +67,7 @@ Route::middleware($dashboardMiddleware)->group(function () {
         Route::patch('habits/{habit}/archive', [HabitController::class, 'archive'])->middleware('throttle:60,1')->name('habits.archive');
         Route::resource('habits', HabitController::class)->except(['show', 'destroy'])->middleware('throttle:60,1');
         Route::get('/money', [MoneyController::class, 'index'])->name('money.index');
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports', [MoneyController::class, 'index'])->name('reports.index');
         Route::post('/money/wallets', [MoneyController::class, 'storeWallet'])->middleware('throttle:60,1')->name('money.wallets.store');
         Route::patch('/money/wallets/{wallet}/archive', [MoneyController::class, 'archiveWallet'])->middleware('throttle:60,1')->name('money.wallets.archive');
         Route::post('/money/transactions', [MoneyController::class, 'storeTransaction'])->middleware('throttle:60,1')->name('money.transactions.store');

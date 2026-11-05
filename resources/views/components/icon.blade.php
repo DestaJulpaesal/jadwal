@@ -6,7 +6,7 @@
         'tambah', 'ubah', 'hapus', 'belum-selesai', 'selesai', 'cari', 'filter', 'menu-aksi',
         'tutup', 'lihat-password', 'sembunyikan-password', 'keluar', 'terlambat', 'bentrok',
         'galat', 'info', 'kelola-akun', 'nonaktifkan', 'zona-waktu', 'kebiasaan', 'keuangan',
-        'target', 'tagihan', 'utang',
+        'target', 'tagihan', 'utang', 'notifikasi',
     ];
 
     if (! in_array($name, $icons, true)) {

@@ -36,28 +36,31 @@
                 <span class="block min-w-0 truncate">Jadwal Harian</span>
             </a>
             <div class="user-header-actions flex shrink-0 items-center gap-2 sm:gap-3">
-                <span class="header-user-name hidden max-w-40 truncate sm:block">{{ auth()->user()->name }}</span>
                 @if (request()->routeIs('user.search'))
                     <a href="{{ route('user.dashboard') }}" class="btn-icon global-search-close" aria-label="Kembali ke beranda" title="Kembali ke beranda">
                         <x-concept-icon name="home" class="h-6 w-6" />
                     </a>
                 @else
-                    <a href="{{ route('user.search') }}" class="btn-icon global-search-launch" aria-label="Buka pencarian" title="Cari di semua data">
-                        <x-concept-icon name="sc" class="h-6 w-6" />
+                    <a href="{{ route('user.dashboard') }}#attention-heading" class="notification-button" aria-label="Buka notifikasi" title="Notifikasi">
+                        <span class="notification-icon-wrap">
+                            <x-icon name="notifikasi" class="h-8 w-8" />
+                        </span>
                     </a>
                 @endif
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button class="btn-secondary logout-button min-h-11 px-3 sm:px-4" type="submit">Keluar</button>
-                </form>
+                <a href="{{ route('profile.edit') }}" class="profile-header-link" aria-label="Buka profil" title="Profil">
+                    <span class="profile-header-frame">
+                        <x-profile-avatar :user="auth()->user()" class="h-10 w-10" />
+                        <span class="profile-header-dot" aria-hidden="true"></span>
+                    </span>
+                </a>
             </div>
         </div>
     </header>
 
     <aside class="user-sidebar fixed bottom-0 left-0 top-16 hidden w-64 lg:block">
         <div class="sidebar-inner flex h-full flex-col overflow-y-auto">
-            <div class="sidebar-content px-4 py-5">
-                <nav aria-label="Navigasi utama" class="space-y-5">
+            <div class="sidebar-content px-5 py-6">
+                <nav aria-label="Navigasi utama" class="space-y-6">
                     <section>
                         <p class="sidebar-section-label mb-2 px-3">Ringkasan</p>
                         <div class="sidebar-nav space-y-1.5">
@@ -75,15 +78,6 @@
                         <p class="sidebar-section-label mb-2 px-3">Keuangan</p>
                         <div class="sidebar-nav space-y-1.5">
                             <a href="{{ route('user.money.index') }}" class="nav-link w-full {{ request()->routeIs('user.money.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="wl" class="h-5 w-5" />Keuangan</a>
-                            <a href="{{ route('user.reports.index') }}" class="nav-link w-full {{ request()->routeIs('user.reports.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="rc" class="h-5 w-5" />Laporan bulanan</a>
-                            <a href="{{ route('user.obligations.index') }}" class="nav-link w-full {{ request()->routeIs('user.obligations.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="bl" class="h-5 w-5" />Tagihan dan cicilan</a>
-                            <a href="{{ route('user.loans.index') }}" class="nav-link w-full {{ request()->routeIs('user.loans.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="us" class="h-5 w-5" />Utang dan piutang</a>
-                        </div>
-                    </section>
-                    <section>
-                        <p class="sidebar-section-label mb-2 px-3">Perencanaan</p>
-                        <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.goals.index') }}" class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="bk" class="h-5 w-5" />Target</a>
                         </div>
                     </section>
                 </nav>
@@ -131,9 +125,9 @@
             <a href="{{ route('user.money.index') }}" class="mobile-nav-link {{ request()->routeIs('user.money.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.money.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="wl" /></span><span>Keuangan</span>
             </a>
-            <button type="button" class="mobile-nav-link {{ request()->routeIs('user.goals.*', 'user.reports.*', 'user.obligations.*', 'user.loans.*', 'settings.*', 'profile.*') ? 'mobile-nav-link-active' : '' }}" x-data x-on:click="$dispatch('open-modal', 'more-menu')">
-                <span class="mobile-nav-icon"><x-concept-icon name="dt" /></span><span>Lainnya</span>
-            </button>
+            <a href="{{ route('profile.edit') }}" class="mobile-nav-link {{ request()->routeIs('profile.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('profile.*')) aria-current="page" @endif>
+                <span class="mobile-nav-icon"><x-concept-icon name="pr" /></span><span>Profil</span>
+            </a>
         </div>
     </nav>
 
@@ -141,40 +135,11 @@
         <x-concept-icon name="spark" class="h-6 w-6" />
     </button>
 
-    <x-bottom-sheet name="more-menu" title="Lainnya">
-        <div class="space-y-4">
-            <section>
-                <p class="sidebar-section-label mb-2 px-1">Perencanaan</p>
-                <div class="grid gap-2">
-                    <a class="btn-secondary justify-start" href="{{ route('user.goals.index') }}"><x-concept-icon name="bk" class="h-5 w-5" />Target</a>
-                </div>
-            </section>
-            <section>
-                <p class="sidebar-section-label mb-2 px-1">Keuangan</p>
-                <div class="grid gap-2">
-                    <a class="btn-secondary justify-start" href="{{ route('user.reports.index') }}"><x-concept-icon name="rc" class="h-5 w-5" />Laporan bulanan</a>
-                    <a class="btn-secondary justify-start" href="{{ route('user.obligations.index') }}"><x-concept-icon name="bl" class="h-5 w-5" />Tagihan dan cicilan</a>
-                    <a class="btn-secondary justify-start" href="{{ route('user.loans.index') }}"><x-concept-icon name="us" class="h-5 w-5" />Utang dan piutang</a>
-                </div>
-            </section>
-            <section>
-                <p class="sidebar-section-label mb-2 px-1">Akun</p>
-                <div class="grid gap-2">
-                    <a class="btn-secondary justify-start" href="{{ route('settings.edit') }}"><x-concept-icon name="us" class="h-5 w-5" />Pengaturan</a>
-                    <a class="btn-secondary justify-start" href="{{ route('profile.edit') }}"><x-profile-avatar :user="auth()->user()" class="h-7 w-7" />Profil</a>
-                    <form method="POST" action="{{ route('logout') }}">@csrf<button class="btn-secondary w-full justify-start">Keluar</button></form>
-                </div>
-            </section>
-        </div>
-    </x-bottom-sheet>
     <x-bottom-sheet name="global-create" title="Mau tambah apa?">
         <div class="grid gap-2 sm:grid-cols-2">
             <a class="btn-secondary justify-start" href="{{ route('user.tasks.create') }}"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</a>
             <a class="btn-secondary justify-start" href="{{ route('user.habits.create') }}"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</a>
             <a class="btn-secondary justify-start" href="{{ route('user.money.index') }}"><x-concept-icon name="wl" class="h-5 w-5" />Catat uang</a>
-            <a class="btn-secondary justify-start" href="{{ route('user.obligations.index') }}"><x-concept-icon name="bl" class="h-5 w-5" />Tagihan atau cicilan</a>
-            <a class="btn-secondary justify-start" href="{{ route('user.loans.index') }}">Utang atau piutang</a>
-            <a class="btn-secondary justify-start" href="{{ route('user.goals.index') }}">Target</a>
         </div>
     </x-bottom-sheet>
 </body>
