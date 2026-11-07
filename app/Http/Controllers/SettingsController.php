@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -61,6 +62,6 @@ class SettingsController extends Controller
             'dashboard_sections' => $dashboardSections,
         ]);
 
-        return redirect()->route('settings.edit')->with('success', 'Pengaturan berhasil disimpan.');
+        return Feedback::success(redirect()->route('settings.edit'), 'Pengaturan berhasil disimpan.');
     }
 }

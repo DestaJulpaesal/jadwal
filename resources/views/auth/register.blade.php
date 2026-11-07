@@ -32,8 +32,8 @@
             <label class="k register-label" for="password">Kata sandi (wajib)</label>
             <div class="fld">
                 <span class="ic" style="background: var(--o)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
-                <input id="password" name="password" type="password" autocomplete="new-password" enterkeyhint="next" data-password-field placeholder="Buat kata sandi yang kuat" aria-label="Kata sandi" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" aria-describedby="password-help password-error" required>
-                <x-button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan password">
+                <input id="password" name="password" type="password" autocomplete="new-password" enterkeyhint="next" data-password-field data-password-checklist placeholder="Buat kata sandi yang kuat" aria-label="Kata sandi" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" aria-describedby="password-help password-error" required>
+                <x-button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan kata sandi">
                     <svg viewBox="0 0 24 24" data-password-icon aria-hidden="true"><use href="#password-visible" /></svg>
                     <span class="sr-only" data-password-label>Tampilkan</span>
                 </x-button>
@@ -45,6 +45,11 @@
                 </div>
                 <p class="mt-1 text-xs text-muted" data-password-strength-label>Password belum diisi.</p>
             </div>
+            <ul class="mt-2 space-y-1 text-xs text-muted" data-password-checklist aria-label="Syarat kata sandi">
+                <li data-password-rule="length">○ Minimal 8 karakter</li>
+                <li data-password-rule="mixed">○ Ada huruf besar dan kecil</li>
+                <li data-password-rule="number">○ Ada angka</li>
+            </ul>
             <x-input-error id="password-error" :messages="$errors->get('password')" />
         </div>
         <div>
@@ -53,12 +58,9 @@
                 <span class="ic" style="background: var(--b)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
                 <input id="password_confirmation" name="password_confirmation" type="password" autocomplete="new-password" enterkeyhint="done" placeholder="Ketik ulang kata sandi" aria-label="Ulangi kata sandi" aria-invalid="{{ $errors->has('password_confirmation') ? 'true' : 'false' }}" aria-describedby="password-confirmation-help password-confirmation-error" required>
             </div>
-            <p id="password-confirmation-help" class="field-help">Masukkan password baru yang sama untuk memastikan tidak ada salah ketik.</p>
+            <p id="password-confirmation-help" class="field-help">Masukkan kata sandi yang sama untuk memastikan tidak ada salah ketik.</p>
             <x-input-error id="password-confirmation-error" :messages="$errors->get('password_confirmation')" />
         </div>
-        @if (session('status'))
-            <p class="msg ok" role="status" aria-live="polite">{{ session('status') }}</p>
-        @endif
         <x-button type="submit" variant="primary" icon="tambah" class="register-go" data-loading-text="Menyiapkan ruangmu...">Buat akun</x-button>
         <p class="lnk register-links">Sudah punya akun? <a href="{{ route('login') }}">Masuk di sini</a></p>
     </form>

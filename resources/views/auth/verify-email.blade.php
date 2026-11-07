@@ -5,9 +5,6 @@
     </div>
     @if (config('auth.email_verification'))
         <p class="text-sm leading-6 text-muted">Klik tautan verifikasi yang kami kirim ke email Anda. Jika belum menerima email, Anda dapat meminta tautan baru.</p>
-        @if (session('status') === 'verification-link-sent')
-            <x-alert type="success" class="mt-5">Tautan verifikasi baru sudah dikirim ke alamat email Anda.</x-alert>
-        @endif
     @else
         <p class="text-sm leading-6 text-muted">Verifikasi email tidak diaktifkan. Anda dapat melanjutkan menggunakan akun.</p>
     @endif

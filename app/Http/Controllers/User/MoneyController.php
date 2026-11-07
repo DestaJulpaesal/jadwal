@@ -17,6 +17,7 @@ use App\Services\LoanBalance;
 use App\Services\WalletBalance;
 use App\Support\Rupiah;
 use App\Support\UserClock;
+use App\Support\Feedback;
 use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -166,7 +167,7 @@ class MoneyController extends Controller
         ]);
         $request->user()->wallets()->create($data);
 
-        return back()->with('success', 'Dompet berhasil ditambahkan.');
+        return Feedback::success(back(), 'Dompet berhasil ditambahkan.');
     }
 
     public function archiveWallet(Request $request, Wallet $wallet)
@@ -175,7 +176,7 @@ class MoneyController extends Controller
         abort_if($wallet->user_id !== $request->user()->id, 404);
         $wallet->update(['archived_at' => now()]);
 
-        return back()->with('success', 'Dompet diarsipkan.');
+        return Feedback::success(back(), 'Dompet diarsipkan.');
     }
 
     public function updateWallet(Request $request, Wallet $wallet)
@@ -187,7 +188,7 @@ class MoneyController extends Controller
         ]);
         $wallet->update($data);
 
-        return back()->with('success', 'Nama dompet berhasil diperbarui.');
+        return Feedback::success(back(), 'Nama dompet berhasil diperbarui.');
     }
 
     public function storeCategory(Request $request)
@@ -199,7 +200,7 @@ class MoneyController extends Controller
         ]);
         $request->user()->moneyCategories()->firstOrCreate($data);
 
-        return back()->with('success', 'Kategori berhasil disimpan.');
+        return Feedback::success(back(), 'Kategori berhasil disimpan.');
     }
 
     public function updateCategory(Request $request, MoneyCategory $moneyCategory)
@@ -220,7 +221,7 @@ class MoneyController extends Controller
         ]);
         $moneyCategory->update($data);
 
-        return back()->with('success', 'Nama kategori berhasil diperbarui.');
+        return Feedback::success(back(), 'Nama kategori berhasil diperbarui.');
     }
 
     public function storeTransaction(Request $request)
@@ -230,7 +231,7 @@ class MoneyController extends Controller
 
         DB::transaction(fn () => $request->user()->transactions()->create($data));
 
-        return back()->with('success', 'Transaksi berhasil dicatat.');
+        return Feedback::success(back(), 'Transaksi berhasil dicatat.');
     }
 
     public function editTransaction(Request $request, Transaction $transaction)
@@ -263,10 +264,10 @@ class MoneyController extends Controller
         $data = $this->validatedTransactionData($request);
         DB::transaction(fn () => $transaction->update($data));
 
-        return redirect()->route('user.money.index', [
+        return Feedback::success(redirect()->route('user.money.index', [
             'section' => 'transactions',
             'month' => substr($data['occurred_on'], 0, 7),
-        ])->with('success', 'Transaksi berhasil diperbarui.');
+        ]), 'Transaksi berhasil diperbarui.');
     }
 
     private function validatedTransactionData(Request $request): array

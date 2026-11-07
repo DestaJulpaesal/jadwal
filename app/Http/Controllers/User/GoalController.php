@@ -8,6 +8,7 @@ use App\Http\Requests\SaveGoalRequest;
 use App\Models\Goal;
 use App\Support\Rupiah;
 use App\Support\UserClock;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -54,7 +55,7 @@ class GoalController extends Controller
         }
         $request->user()->goals()->create($data);
 
-        return back()->with('success', 'Target berhasil ditambahkan.');
+        return Feedback::success(back(), 'Target berhasil ditambahkan.');
     }
 
     public function edit(Request $request, Goal $goal)
@@ -79,7 +80,7 @@ class GoalController extends Controller
         }
         $goal->update($data);
 
-        return redirect()->route('user.goals.index')->with('success', 'Target berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.goals.index'), 'Target berhasil diperbarui.');
     }
 
     public function updateProgress(Request $request, Goal $goal, UserClock $clock)
@@ -110,7 +111,7 @@ class GoalController extends Controller
             ]);
         });
 
-        return back()->with('success', 'Progres target berhasil diperbarui.');
+        return Feedback::success(back(), 'Progres target berhasil diperbarui.');
     }
 
     public function markAchieved(Goal $goal, \App\Services\GoalProgress $progress)
@@ -119,7 +120,7 @@ class GoalController extends Controller
         abort_unless($progress->percent($goal) >= 100, 422, 'Target belum mencapai nilai yang ditentukan.');
         $goal->update(['status' => GoalStatus::Achieved]);
 
-        return back()->with('success', 'Target ditandai tercapai.');
+        return Feedback::success(back(), 'Target ditandai tercapai.');
     }
 
     public function archive(Goal $goal)
@@ -127,6 +128,6 @@ class GoalController extends Controller
         $this->authorize('update', $goal);
         $goal->update(['status' => GoalStatus::Archived]);
 
-        return back()->with('success', 'Target diarsipkan.');
+        return Feedback::success(back(), 'Target diarsipkan.');
     }
 }

@@ -10,9 +10,10 @@
 </head>
 <body class="concept-home">
     <x-concept-b-sprite />
-    @if (session('status'))
-        <x-toast>{{ session('status') }}</x-toast>
-    @endif
+    <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
+        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+    </div>
+    <x-feedback-host />
     <header class="home-header">
         <a href="{{ route('home') }}" class="home-brand" aria-label="Jadwal Harian, beranda">
             <span class="home-brand-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg></span>

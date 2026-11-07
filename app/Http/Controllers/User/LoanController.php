@@ -9,6 +9,7 @@ use App\Models\Loan;
 use App\Services\LoanBalance;
 use App\Support\Rupiah;
 use App\Support\UserClock;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -76,7 +77,7 @@ class LoanController extends Controller
             }
         });
 
-        return back()->with('success', 'Utang/piutang berhasil dicatat.');
+        return Feedback::success(back(), 'Utang/piutang berhasil dicatat.');
     }
 
     public function edit(Request $request, Loan $loan, UserClock $clock)
@@ -171,7 +172,7 @@ class LoanController extends Controller
             }
         });
 
-        return redirect()->route('user.loans.index')->with('success', 'Utang/piutang berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.loans.index'), 'Utang/piutang berhasil diperbarui.');
     }
 
     public function repay(Request $request, Loan $loan, LoanBalance $balances, UserClock $clock)
@@ -210,7 +211,7 @@ class LoanController extends Controller
             }
         });
 
-        return back()->with('success', 'Pembayaran berhasil dicatat.');
+        return Feedback::success(back(), 'Pembayaran berhasil dicatat.');
     }
 
     public function cancelRepayment(Request $request, Loan $loan, \App\Models\LoanRepayment $repayment)
@@ -226,6 +227,6 @@ class LoanController extends Controller
             $repayment->delete();
         });
 
-        return back()->with('success', 'Pembayaran dibatalkan dan sisa utang/piutang diperbarui.');
+        return Feedback::success(back(), 'Pembayaran dibatalkan dan sisa utang/piutang diperbarui.');
     }
 }

@@ -15,14 +15,6 @@
             </x-button>
         </header>
 
-        @if (session('status') === 'profile-updated')
-            <x-alert type="success">Informasi profil berhasil diperbarui.</x-alert>
-        @elseif (session('status') === 'password-updated')
-            <x-alert type="success">Password berhasil diperbarui.</x-alert>
-        @elseif (session('status') === 'verification-link-sent')
-            <x-alert type="success">Tautan verifikasi baru sudah dikirim ke alamat email Anda.</x-alert>
-        @endif
-
         <section class="surface-card p-5 sm:p-7">
             @include('profile.partials.update-profile-information-form')
         </section>

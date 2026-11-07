@@ -1,4 +1,4 @@
-@props(['errors', 'title' => 'Periksa kembali isian berikut'])
+@props(['errors', 'title' => 'Belum tersimpan. Periksa isian berikut:'])
 
 @if (count($errors))
     <section class="mb-5 rounded-xl border border-red-300 bg-danger-soft p-4 text-danger" role="alert" tabindex="-1" data-error-summary>

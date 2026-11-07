@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\User;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -88,9 +89,10 @@ class TaskController extends Controller
             ]);
         });
 
-        return redirect()->route('user.tasks.index')
-            ->with('success', 'Tugas berhasil ditambahkan.')
-            ->with('schedule_conflicts', $this->scheduleConflicts($task));
+        return Feedback::success(
+            redirect()->route('user.tasks.index')->with('schedule_conflicts', $this->scheduleConflicts($task)),
+            'Tugas berhasil ditambahkan.'
+        );
     }
 
     public function edit(Task $task)
@@ -118,9 +120,10 @@ class TaskController extends Controller
             ]);
         });
 
-        return redirect()->route('user.tasks.index')
-            ->with('success', 'Tugas berhasil diperbarui.')
-            ->with('schedule_conflicts', $this->scheduleConflicts($task->refresh()));
+        return Feedback::success(
+            redirect()->route('user.tasks.index')->with('schedule_conflicts', $this->scheduleConflicts($task->refresh())),
+            'Tugas berhasil diperbarui.'
+        );
     }
 
     public function complete(Task $task)
@@ -130,16 +133,16 @@ class TaskController extends Controller
         $completedStatus = TaskStatus::where('is_completed', true)->first();
 
         if (! $completedStatus) {
-            return back()->with('error', 'Status "Selesai" belum tersedia. Hubungi administrator.');
+            return Feedback::error(back(), 'Status “Selesai” belum tersedia. Hubungi admin.');
         }
 
         if ($task->task_status_id === $completedStatus->id) {
-            return back()->with('success', 'Tugas ini sudah ditandai selesai.');
+            return Feedback::info(back(), 'Tugas ini sudah ditandai selesai.');
         }
 
         $task->update(['task_status_id' => $completedStatus->id]);
 
-        return back()->with('success', 'Tugas berhasil ditandai selesai.');
+        return Feedback::success(back(), 'Tugas berhasil ditandai selesai.');
     }
 
     public function destroy(Task $task)
@@ -147,7 +150,7 @@ class TaskController extends Controller
         $this->authorize('delete', $task);
         $task->delete();
 
-        return redirect()->route('user.tasks.index')->with('success', 'Tugas berhasil dihapus.');
+        return Feedback::success(redirect()->route('user.tasks.index'), 'Tugas berhasil dihapus.');
     }
 
     private function formData(): array

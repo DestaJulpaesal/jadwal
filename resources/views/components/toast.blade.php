@@ -1,10 +1,18 @@
 @props(['type' => 'success', 'action' => null])
 
 @php
-    $tone = $type === 'danger' ? 'border-red-200 bg-red-50 text-danger' : 'border-green-200 bg-green-50 text-success';
+    $type = $type === 'danger' ? 'error' : $type;
+    $tones = [
+        'success' => 'border-green-200 bg-green-50 text-success',
+        'error' => 'border-red-200 bg-red-50 text-danger',
+        'warning' => 'border-amber-200 bg-amber-50 text-warning',
+        'info' => 'border-blue-200 bg-blue-50 text-info',
+    ];
+    $tone = $tones[$type] ?? $tones['info'];
+    $duration = $action ? 8000 : 6000;
 @endphp
 
-<div x-data="{ visible: true, timer: null, start() { this.timer = setTimeout(() => this.visible = false, 6000) }, pause() { clearTimeout(this.timer) } }" x-init="start()" x-show="visible" x-transition.opacity x-on:mouseenter="pause()" x-on:mouseleave="start()" x-on:focusin="pause()" x-on:focusout="start()" role="{{ $type === 'danger' ? 'alert' : 'status' }}" aria-live="{{ $type === 'danger' ? 'assertive' : 'polite' }}" class="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-card sm:bottom-auto sm:left-auto sm:right-4 sm:top-20 sm:max-w-sm {{ $tone }}">
+<div data-toast x-data="{ visible: true, timer: null, start() { this.timer = setTimeout(() => this.visible = false, {{ $duration }}) }, pause() { clearTimeout(this.timer) } }" x-init="start()" x-show="visible" x-transition.opacity x-on:mouseenter="pause()" x-on:mouseleave="start()" x-on:pointerdown="pause()" x-on:pointerup="start()" x-on:focusin="pause()" x-on:focusout="if (!$el.contains($event.relatedTarget)) start()" role="{{ $type === 'error' ? 'alert' : 'status' }}" aria-live="{{ $type === 'error' ? 'assertive' : 'polite' }}" class="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-50 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-card sm:bottom-auto sm:left-auto sm:right-4 sm:top-20 sm:max-w-sm {{ $tone }}">
     <p class="flex-1">{{ $slot }}</p>
     @if (is_array($action) && isset($action['label'], $action['url']))
         <a class="shrink-0 font-semibold underline" href="{{ $action['url'] }}">{{ $action['label'] }}</a>

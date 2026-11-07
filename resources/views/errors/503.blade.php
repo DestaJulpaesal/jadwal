@@ -2,4 +2,4 @@
 @section('title', 'Layanan sementara tidak tersedia')
 @section('code', '503')
 @section('heading', 'Kami sedang menyiapkan layanan')
-@section('message', 'Layanan sementara tidak tersedia. Coba kembali beberapa saat lagi.')
+@section('message', 'Layanan sementara belum tersedia. Coba kembali beberapa saat lagi.')

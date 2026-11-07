@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 
@@ -60,7 +61,7 @@ class AdminController extends Controller
 
         $message = $user->is_active ? 'Akun berhasil diaktifkan.' : 'Akun berhasil dinonaktifkan.';
 
-        return redirect()->route('admin.dashboard')->with('success', $message);
+        return Feedback::success(redirect()->route('admin.dashboard'), $message);
     }
 
     public function updateRole(User $user)
@@ -90,7 +91,7 @@ class AdminController extends Controller
         $status = Password::sendResetLink(['email' => $user->email]);
 
         if ($status === Password::RESET_LINK_SENT) {
-            return back()->with('success', 'Tautan reset password berhasil dikirim ke email pengguna.');
+            return Feedback::success(back(), 'Tautan atur ulang kata sandi berhasil dikirim ke email pengguna.');
         }
 
         return back()->withErrors(['account' => __($status)]);
@@ -111,6 +112,6 @@ class AdminController extends Controller
 
         $user->delete();
 
-        return redirect()->route('admin.dashboard')->with('success', 'Akun dan data jadwal miliknya berhasil dihapus.');
+        return Feedback::success(redirect()->route('admin.dashboard'), 'Akun dan data jadwalnya berhasil dihapus.');
     }
 }

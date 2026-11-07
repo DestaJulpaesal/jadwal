@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -20,21 +21,21 @@ class AdminCategoryController extends Controller
         $data = $this->validated($request);
         Category::create(['user_id' => null, ...$data]);
 
-        return back()->with('success', 'Kategori berhasil ditambahkan.');
+        return Feedback::success(back(), 'Kategori berhasil ditambahkan.');
     }
 
     public function update(Request $request, Category $category)
     {
         $category->update($this->validated($request));
 
-        return back()->with('success', 'Kategori berhasil diperbarui.');
+        return Feedback::success(back(), 'Kategori berhasil diperbarui.');
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
 
-        return back()->with('success', 'Kategori berhasil dihapus.');
+        return Feedback::success(back(), 'Kategori berhasil dihapus.');
     }
 
     private function validated(Request $request): array

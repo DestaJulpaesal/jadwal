@@ -23,6 +23,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-canvas text-ink antialiased">
+    <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
+        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+    </div>
     <div x-data="{ sidebarOpen: false }" class="min-h-screen md:flex">
         <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-ink/40 md:hidden" @click="sidebarOpen = false"></div>
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-white transition-transform duration-200 md:translate-x-0">
@@ -72,9 +75,7 @@
                 <span class="font-semibold">@yield('heading', 'Ringkasan akun')</span>
             </header>
             <main class="mx-auto max-w-7xl p-4 pb-10 sm:p-6">
-                @if (session('success'))
-                    <x-toast>{{ session('success') }}</x-toast>
-                @endif
+                <x-feedback-host />
                 @if ($errors->has('account'))
                     <x-alert type="danger" class="mb-5">{{ $errors->first('account') }}</x-alert>
                 @endif

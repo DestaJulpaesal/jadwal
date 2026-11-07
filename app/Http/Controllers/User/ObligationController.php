@@ -12,6 +12,7 @@ use App\Models\Transaction;
 use App\Services\ObligationScheduler;
 use App\Support\Rupiah;
 use App\Support\UserClock;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -122,7 +123,7 @@ class ObligationController extends Controller
         }
         $request->user()->obligations()->create($data);
 
-        return back()->with('success', 'Tagihan berhasil ditambahkan.');
+        return Feedback::success(back(), 'Tagihan berhasil ditambahkan.');
     }
 
     public function update(Request $request, Obligation $obligation)
@@ -158,7 +159,7 @@ class ObligationController extends Controller
         }
         $obligation->update($data);
 
-        return redirect()->route('user.obligations.index')->with('success', 'Pengingat berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.obligations.index'), 'Pengingat berhasil diperbarui.');
     }
 
     public function pay(Request $request, Obligation $obligation, UserClock $clock, ObligationScheduler $scheduler)
@@ -232,7 +233,7 @@ class ObligationController extends Controller
             }
         });
 
-        return back()->with('success', 'Pembayaran berhasil dicatat.');
+        return Feedback::success(back(), 'Pembayaran berhasil dicatat.');
     }
 
     public function cancelPayment(Request $request, Obligation $obligation, ObligationPayment $payment)
@@ -248,6 +249,6 @@ class ObligationController extends Controller
             $payment->delete();
         });
 
-        return back()->with('success', 'Pembayaran dibatalkan dan catatan uangnya dipulihkan.');
+        return Feedback::success(back(), 'Pembayaran dibatalkan dan catatan uangnya dipulihkan.');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -69,7 +70,7 @@ class ProfileController extends Controller
             $this->deletePhoto($oldPhotoPath);
         }
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Feedback::success(Redirect::route('profile.edit'), __('ui.account.profile_updated'));
     }
 
     public function photo(Request $request): BinaryFileResponse

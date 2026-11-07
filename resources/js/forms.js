@@ -202,11 +202,11 @@ const initializeForms = () => {
                     + Number(/[^A-Za-z0-9]/.test(password)))
                 : 0;
             const messages = [
-                'Password belum diisi.',
-                'Lemah — gunakan password yang lebih panjang.',
+                'Kata sandi belum diisi.',
+                'Lemah — gunakan kata sandi yang lebih panjang.',
                 'Cukup — tambahkan variasi karakter.',
-                'Baik — gunakan password unik untuk akun ini.',
-                'Kuat — password panjang dan beragam.',
+                'Baik — gunakan kata sandi unik untuk akun ini.',
+                'Kuat — kata sandi panjang dan beragam.',
             ];
             const colors = ['bg-canvas', 'bg-danger', 'bg-warning', 'bg-success', 'bg-success'];
 
@@ -218,6 +218,28 @@ const initializeForms = () => {
 
         update();
         field.addEventListener('input', update);
+    });
+
+    document.querySelectorAll('[data-password-checklist]').forEach((list) => {
+        const field = document.getElementById('password');
+        if (!field) {
+            return;
+        }
+
+        const update = () => {
+            const checks = {
+                length: field.value.length >= 8,
+                mixed: /[a-z]/.test(field.value) && /[A-Z]/.test(field.value),
+                number: /\d/.test(field.value),
+            };
+            list.querySelectorAll('[data-password-rule]').forEach((item) => {
+                const passed = checks[item.dataset.passwordRule];
+                item.textContent = `${passed ? '✓' : '○'} ${item.textContent.slice(2)}`;
+                item.classList.toggle('text-success', passed);
+            });
+        };
+        field.addEventListener('input', update);
+        update();
     });
 
     document.querySelectorAll('[data-category-color-picker]').forEach((picker) => {

@@ -33,6 +33,86 @@ window.rupiahInput = (initial = '') => ({
 Alpine.start();
 
 const initializeApplicationUi = () => {
+    const toasts = document.querySelectorAll('[data-toast]');
+    toasts.forEach((toast, index) => {
+        if (index < toasts.length - 3) {
+            toast.remove();
+        }
+    });
+
+    const networkBanner = document.querySelector('[data-network-banner]');
+    const updateNetworkState = () => {
+        if (networkBanner) {
+            networkBanner.hidden = navigator.onLine;
+        }
+    };
+
+    updateNetworkState();
+    window.addEventListener('online', updateNetworkState);
+    window.addEventListener('offline', updateNetworkState);
+
+    document.querySelectorAll('[data-login-throttle]').forEach((message) => {
+        const form = message.closest('form');
+        const button = form?.querySelector('button[type="submit"]');
+        let remaining = Number(message.dataset.throttleSeconds);
+
+        if (!button || !Number.isFinite(remaining) || remaining < 1) {
+            return;
+        }
+
+        button.disabled = true;
+        const update = () => {
+            if (remaining <= 0) {
+                message.textContent = 'Silakan coba lagi.';
+                button.disabled = false;
+                return;
+            }
+
+            const minutes = Math.floor(remaining / 60);
+            const seconds = String(remaining % 60).padStart(2, '0');
+            message.textContent = `Terlalu banyak percobaan masuk. Coba lagi dalam ${minutes}:${seconds}.`;
+            remaining -= 1;
+            window.setTimeout(update, 1000);
+        };
+        update();
+    });
+
+    document.querySelectorAll('[data-reset-cooldown]').forEach((button) => {
+        let remaining = Number(button.dataset.resetCooldown);
+        if (!Number.isFinite(remaining) || remaining < 1) {
+            return;
+        }
+        button.disabled = true;
+        const update = () => {
+            if (remaining <= 0) {
+                button.disabled = false;
+                button.textContent = 'Kirim ulang tautan pengaturan ulang';
+                return;
+            }
+            button.textContent = `Kirim ulang dalam ${remaining} detik`;
+            remaining -= 1;
+            window.setTimeout(update, 1000);
+        };
+        update();
+    });
+
+    document.querySelectorAll('[data-retry-countdown]').forEach((label) => {
+        let remaining = Number(label.dataset.retrySeconds);
+        if (!Number.isFinite(remaining) || remaining < 1) {
+            return;
+        }
+        const update = () => {
+            if (remaining <= 0) {
+                label.textContent = 'Kamu bisa mencoba lagi sekarang.';
+                return;
+            }
+            label.textContent = `Coba lagi dalam ${remaining} detik.`;
+            remaining -= 1;
+            window.setTimeout(update, 1000);
+        };
+        update();
+    });
+
     let privacyHidden = document.body.dataset.privateDefault === 'true';
 
     const updatePrivacy = () => {
@@ -98,6 +178,17 @@ const initializeApplicationUi = () => {
             hint.hidden = true;
         });
     });
+
+    document.addEventListener('submit', (event) => {
+        if (navigator.onLine) {
+            return;
+        }
+
+        event.preventDefault();
+        if (networkBanner) {
+            networkBanner.hidden = false;
+        }
+    }, true);
 };
 
 if (document.readyState === 'loading') {

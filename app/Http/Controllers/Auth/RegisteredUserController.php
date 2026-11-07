@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Providers\RouteServiceProvider;
+use App\Support\Feedback;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,17 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ], [
+            'name.required' => 'Nama belum diisi.',
+            'email.required' => 'Email belum diisi.',
+            'email.email' => 'Format email belum benar. Contoh: nama@email.com',
+            'email.unique' => 'Email ini sudah dipakai. Coba masuk, atau atur ulang kata sandi.',
+            'password.required' => 'Kata sandi belum diisi.',
+            'password.confirmed' => 'Belum sama dengan kata sandi di atas.',
+        ], [
+            'name' => 'nama',
+            'email' => 'email',
+            'password' => 'kata sandi',
         ]);
 
         $user = User::create([
@@ -46,6 +58,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        return Feedback::success(redirect(RouteServiceProvider::HOME), __('ui.login.welcome', ['name' => $user->name]));
     }
 }

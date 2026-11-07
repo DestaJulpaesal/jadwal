@@ -2,4 +2,4 @@
 @section('title', 'Halaman tidak ditemukan')
 @section('code', '404')
 @section('heading', 'Halaman ini tidak ditemukan')
-@section('message', 'Tautan mungkin sudah berubah atau alamat yang Anda masukkan tidak tepat. Kembali ke beranda untuk mencari halaman yang dibutuhkan.')
+@section('message', 'Tautan mungkin sudah berubah atau alamat yang kamu masukkan tidak tepat. Kembali ke beranda untuk mencari halaman yang dibutuhkan.')

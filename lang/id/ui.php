@@ -22,4 +22,13 @@ return [
         'offline' => 'Kamu sedang offline. Perubahan akan dikirim setelah tersambung.',
         'retry' => 'Koneksi terputus. Periksa jaringan, lalu coba lagi.',
     ],
+    'password_reset' => [
+        'sent' => 'Jika email terdaftar, tautan pengaturan ulang sudah dikirim. Cek kotak masuk dan folder spam.',
+        'changed' => 'Kata sandi berhasil diubah. Silakan masuk dengan kata sandi baru.',
+        'invalid' => 'Tautan pengaturan ulang sudah tidak berlaku. Minta tautan baru untuk melanjutkan.',
+    ],
+    'account' => [
+        'profile_updated' => 'Informasi profil berhasil diperbarui.',
+        'verification_sent' => 'Tautan verifikasi baru sudah dikirim ke alamat email kamu.',
+    ],
 ];

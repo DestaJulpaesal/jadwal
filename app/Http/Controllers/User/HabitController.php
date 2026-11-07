@@ -9,6 +9,7 @@ use App\Http\Requests\SaveHabitRequest;
 use App\Models\Habit;
 use App\Models\Category;
 use App\Support\UserClock;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -72,7 +73,7 @@ class HabitController extends Controller
         $data = $this->normalizeFrequencyData($request->validated());
         $request->user()->habits()->create($data);
 
-        return redirect()->route('user.habits.index')->with('success', 'Kebiasaan berhasil ditambahkan.');
+        return Feedback::success(redirect()->route('user.habits.index'), 'Kebiasaan berhasil ditambahkan.');
     }
 
     public function edit(Request $request, Habit $habit, UserClock $clock)
@@ -92,7 +93,7 @@ class HabitController extends Controller
         $data = $this->normalizeFrequencyData($request->validated());
         $habit->update($data);
 
-        return redirect()->route('user.habits.index')->with('success', 'Kebiasaan berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.habits.index'), 'Kebiasaan berhasil diperbarui.');
     }
 
     public function checkIn(Request $request, Habit $habit, UserClock $clock)
@@ -127,7 +128,7 @@ class HabitController extends Controller
             ]
         );
 
-        return back()->with('success', 'Catatan kebiasaan berhasil disimpan.');
+        return Feedback::success(back(), 'Catatan kebiasaan berhasil disimpan.');
     }
 
     public function cancelCheckIn(Request $request, Habit $habit, UserClock $clock)
@@ -144,7 +145,7 @@ class HabitController extends Controller
         abort_if($date < $habit->starts_on->toDateString(), 422, 'Tanggal pencatatan sebelum kebiasaan dimulai.');
         $request->user()->habitLogs()->where('habit_id', $habit->id)->where('log_date', $date)->delete();
 
-        return back()->with('success', 'Tanda selesai dibatalkan.');
+        return Feedback::success(back(), 'Tanda selesai dibatalkan.');
     }
 
     public function archive(Habit $habit)
@@ -152,7 +153,7 @@ class HabitController extends Controller
         $this->authorize('update', $habit);
         $habit->update(['archived_at' => now()]);
 
-        return redirect()->route('user.habits.index')->with('success', 'Kebiasaan diarsipkan.');
+        return Feedback::success(redirect()->route('user.habits.index'), 'Kebiasaan diarsipkan.');
     }
 
     private function normalizeFrequencyData(array $data): array

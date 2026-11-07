@@ -145,7 +145,7 @@ class UserTaskTest extends TestCase
             ->from(route('user.tasks.index'))
             ->patch(route('user.tasks.complete', $task))
             ->assertRedirect(route('user.tasks.index'))
-            ->assertSessionHas('success', 'Tugas berhasil ditandai selesai.');
+            ->assertSessionHas('feedback.message', 'Tugas berhasil ditandai selesai.');
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
@@ -162,7 +162,7 @@ class UserTaskTest extends TestCase
             ->from(route('user.tasks.index'))
             ->patch(route('user.tasks.complete', $task))
             ->assertRedirect(route('user.tasks.index'))
-            ->assertSessionHas('error', 'Status "Selesai" belum tersedia. Hubungi administrator.');
+            ->assertSessionHas('feedback.message', 'Status “Selesai” belum tersedia. Hubungi admin.');
 
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,

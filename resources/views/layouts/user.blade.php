@@ -24,6 +24,9 @@
 </head>
 <body class="user-app min-h-screen bg-canvas pt-16 text-ink antialiased" data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}">
     <x-concept-b-sprite />
+    <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
+        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+    </div>
     <header class="user-header fixed inset-x-0 top-0 z-30">
         <div class="user-header-inner flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
             <a href="{{ route('user.dashboard') }}" class="user-brand flex min-h-11 min-w-0 items-center gap-3" aria-label="Jadwal Harian, Beranda">
@@ -98,12 +101,7 @@
                 </div>
             </form>
         @endif
-        @if (session('success'))
-            <x-toast>{{ session('success') }}</x-toast>
-        @endif
-        @if (session('error'))
-            <x-alert type="danger" class="mb-5">{{ session('error') }}</x-alert>
-        @endif
+        <x-feedback-host />
         @yield('content')
     </main>
 

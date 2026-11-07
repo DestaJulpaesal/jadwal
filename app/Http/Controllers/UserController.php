@@ -10,6 +10,7 @@ use App\Services\GoalProgress;
 use App\Services\MonthlySummary;
 use App\Services\WalletBalance;
 use App\Support\UserClock;
+use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use Illuminate\Support\Carbon;
@@ -135,7 +136,7 @@ class UserController extends Controller
     {
         $request->user()->forceFill(['onboarding_dismissed_at' => now()])->save();
 
-        return back()->with('success', 'Panduan awal ditutup. Anda dapat mulai lagi kapan saja.');
+        return Feedback::success(back(), 'Panduan awal ditutup. Kamu dapat memulainya lagi kapan saja.');
     }
 
     private function tasksInRange(User $user, Carbon $startUtc, Carbon $endUtc, bool $excludeCompleted = false): Collection

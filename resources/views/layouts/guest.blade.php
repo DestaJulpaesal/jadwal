@@ -14,6 +14,9 @@
 </head>
 @if (request()->routeIs('login', 'register'))
 <body class="concept-login-body">
+    <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
+        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+    </div>
     <x-concept-b-sprite />
     <div class="concept-login-shell">
         <section class="desktop-panel" aria-label="Jadwal Harian">
@@ -37,6 +40,7 @@
         </section>
         <main class="ph">
             <div class="in">
+                <x-feedback-host />
                 <a class="auth-home-link" href="{{ route('home') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7M5.5 9v11h13V9M9.5 20v-6h5v6" /></svg>
                     Kembali ke beranda
@@ -48,6 +52,9 @@
 </body>
 @else
 <body class="min-h-screen bg-canvas text-ink antialiased">
+    <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
+        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+    </div>
     <main class="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:gap-16 lg:py-12">
         <section class="hidden flex-1 lg:block">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-3 text-lg font-semibold text-ink">
@@ -63,6 +70,7 @@
             </div>
         </section>
         <section class="mx-auto w-full max-w-md flex-1 lg:mx-0">
+            <x-feedback-host />
             <a href="{{ route('home') }}" class="mb-8 inline-flex min-h-11 items-center gap-2 font-semibold text-ink lg:hidden">
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-100 text-primary-800" aria-hidden="true">
                     <x-icon name="kalender" class="h-5 w-5" />

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,8 +32,10 @@ class AuthenticatedSessionController extends Controller
             ? route('admin.dashboard')
             : route('user.dashboard');
 
-        return redirect()->intended($destination)
-            ->with('success', __('ui.login.welcome', ['name' => $request->user()->name]));
+        return Feedback::success(
+            redirect()->intended($destination),
+            __('ui.login.welcome', ['name' => $request->user()->name])
+        );
     }
 
     /**
@@ -46,6 +49,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/')->with('status', __('ui.login.logged_out'));
+        return Feedback::success(redirect('/'), __('ui.login.logged_out'));
     }
 }

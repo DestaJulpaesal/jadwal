@@ -196,7 +196,7 @@ class AdminUserManagementTest extends TestCase
         $this->actingAs($admin)
             ->post(route('admin.users.password-reset', $user))
             ->assertRedirect()
-            ->assertSessionHas('success');
+            ->assertSessionHas('feedback.type', 'success');
 
         Notification::assertSentTo($user, ResetPassword::class);
     }

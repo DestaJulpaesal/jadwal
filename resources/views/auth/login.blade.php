@@ -11,7 +11,11 @@
 
     <form method="POST" action="{{ route('login') }}" class="c login-form" id="login-form">
         @csrf
-        <x-error-summary :errors="$errors->messages()" title="Belum bisa masuk. Periksa isian berikut:" />
+        @php($loginErrors = $errors->messages())
+        @php
+            unset($loginErrors['credentials'], $loginErrors['throttle']);
+        @endphp
+        <x-error-summary :errors="$loginErrors" title="Belum bisa masuk. Periksa isian berikut:" />
         @if ($errors->has('credentials'))
             <p class="msg" role="alert" aria-live="assertive">
                 {{ $errors->first('credentials') }}
@@ -21,16 +25,23 @@
             </p>
         @endif
         @if ($errors->has('throttle'))
-            <p class="msg" role="alert" aria-live="assertive" data-login-throttle>
+            @php
+                preg_match('/(\d+):(\d{2})/', $errors->first('throttle'), $throttleParts);
+                $throttleSeconds = isset($throttleParts[1], $throttleParts[2])
+                    ? ((int) $throttleParts[1] * 60) + (int) $throttleParts[2]
+                    : 0;
+            @endphp
+            <p class="msg" role="alert" aria-live="assertive" data-login-throttle data-throttle-seconds="{{ $throttleSeconds }}">
                 {{ $errors->first('throttle') }}
             </p>
         @endif
         <label class="k login-label" for="email">Email (wajib)</label>
         <div class="fld">
             <span class="ic" style="background: var(--y)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#ml" /></svg></span>
-            <input id="email" name="email" type="email" inputmode="email" autocapitalize="none" enterkeyhint="next" autocomplete="username" value="{{ old('email') }}" placeholder="nama@email.com" aria-label="Alamat email" aria-describedby="login-email-help" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" maxlength="255" required>
+            <input id="email" name="email" type="email" inputmode="email" autocapitalize="none" enterkeyhint="next" autocomplete="username" value="{{ old('email') }}" placeholder="nama@email.com" aria-label="Alamat email" aria-describedby="login-email-help login-email-error" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" maxlength="255" required>
         </div>
         <p id="login-email-help" class="field-help">Gunakan alamat email yang terdaftar di akun kamu.</p>
+        <x-input-error id="login-email-error" :messages="$errors->get('email')" />
 
         <div class="password-heading">
             <label class="k" for="password">Kata sandi (wajib)</label>
@@ -49,10 +60,7 @@
         </div>
         <p id="login-password-help" class="field-help">Masukkan kata sandi yang kamu gunakan saat mendaftar.</p>
         <p id="login-caps-lock" class="field-help" data-caps-lock-hint hidden>Caps Lock sedang aktif.</p>
-
-        @if (session('status'))
-            <p class="msg ok" role="status" aria-live="polite">{{ session('status') }}</p>
-        @endif
+        <x-input-error id="login-password-error" :messages="$errors->get('password')" />
 
         <div class="row"><x-button type="submit" variant="primary" icon="kelola-akun" id="lg" data-loading-text="Memeriksa...">Masuk</x-button></div>
         <div class="lnk">
