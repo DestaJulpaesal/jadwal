@@ -11,8 +11,8 @@
 
     <form method="POST" action="{{ route('login') }}" class="c login-form" id="login-form">
         @csrf
-        @php($loginErrors = $errors->messages())
         @php
+            $loginErrors = $errors->messages();
             unset($loginErrors['credentials'], $loginErrors['throttle']);
         @endphp
         <x-error-summary :errors="$loginErrors" title="Belum bisa masuk. Periksa isian berikut:" />
