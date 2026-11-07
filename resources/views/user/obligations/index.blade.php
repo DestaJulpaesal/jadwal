@@ -4,32 +4,24 @@
 
 @section('content')
     <div class="mx-auto max-w-5xl space-y-6">
-        <header><p class="text-sm font-semibold text-primary-800">Pengingat berkala</p><h1 class="mt-1 text-2xl font-semibold">Tagihan dan cicilan</h1><p class="mt-2 text-sm text-muted">Pembayaran hanya dicatat pada periode yang jatuh tempo.</p></header>
-        <section class="surface-card p-5">
-            <h2 class="text-lg font-semibold">Tambah pengingat</h2>
-            @if ($errors->any())<x-alert type="danger" class="mt-3"><ul class="list-inside list-disc">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></x-alert>@endif
-            <form method="POST" action="{{ route('user.obligations.store') }}" class="mt-4 space-y-4">
+        <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div><p class="text-sm font-semibold text-primary-800">Pengingat berkala</p><h1 class="mt-1 text-2xl font-semibold">Tagihan dan cicilan</h1><p class="mt-2 text-sm text-muted">Pembayaran hanya dicatat pada periode yang jatuh tempo.</p></div>
+            <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'obligation-create')">Tambah pengingat</x-button>
+        </header>
+        <x-bottom-sheet name="obligation-create" title="Tambah pengingat" :show="request('create') === 'obligation' || (old('form_context') === 'obligation-create' && $errors->any())">
+            @if (old('form_context') === 'obligation-create')
+                <x-error-summary :errors="$errors->messages()" title="Pengingat belum tersimpan. Periksa isian berikut:" />
+            @endif
+            <form method="POST" action="{{ route('user.obligations.store') }}" class="space-y-4" data-dirty-guard>
                 @csrf
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <div><label for="kind" class="field-label">Jenis</label><select id="kind" name="kind" class="form-control"><option value="bill">Tagihan</option><option value="installment">Cicilan</option></select></div>
-                    <div><label for="title" class="field-label">Nama</label><input id="title" name="title" required maxlength="120" class="form-control"></div>
-                    <x-money-input id="amount" name="amount" label="Nominal (Rupiah)" :error="$errors->first('amount')" />
-                    <div><label for="due_day" class="field-label">Tanggal jatuh tempo (1–31)</label><input id="due_day" name="due_day" type="number" min="1" max="31" required class="form-control"></div>
+                <input type="hidden" name="form_context" value="obligation-create">
+                @include('user.obligations.form', ['lockedByPayments' => false])
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <x-button type="button" variant="secondary" icon="kembali" x-on:click="$dispatch('close')">Batal</x-button>
+                    <x-button type="submit" variant="primary" icon="tambah" loading-text="Menyimpan pengingat…">Simpan pengingat</x-button>
                 </div>
-                <details>
-                    <summary class="min-h-11 cursor-pointer py-3 font-medium text-primary-800">Pengaturan lanjutan</summary>
-                    <div class="grid gap-4 border-t border-line pt-4 sm:grid-cols-2 lg:grid-cols-4">
-                        <div><label for="starts_on" class="field-label">Mulai</label><input id="starts_on" name="starts_on" type="date" required value="{{ $today }}" class="form-control"></div>
-                        <div><label for="installments_total" class="field-label">Jumlah cicilan</label><input id="installments_total" name="installments_total" type="number" min="1" max="120" class="form-control"></div>
-                        <div><label for="remind_days_before" class="field-label">Ingatkan (hari sebelumnya)</label><input id="remind_days_before" name="remind_days_before" type="number" min="0" max="30" value="3" required class="form-control"></div>
-                        <div><label for="wallet_id" class="field-label">Dompet pembayaran</label><select id="wallet_id" name="wallet_id" class="form-control"><option value="">Pilih nanti</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}">{{ $wallet->name }}</option>@endforeach</select></div>
-                        <div><label for="money_category_id" class="field-label">Kategori pengeluaran</label><select id="money_category_id" name="money_category_id" class="form-control"><option value="">Tanpa kategori</option>@foreach ($categories as $category)<option value="{{ $category->id }}">{{ $category->name }}</option>@endforeach</select></div>
-                        <div class="sm:col-span-2"><label for="note" class="field-label">Catatan</label><input id="note" name="note" maxlength="255" class="form-control"></div>
-                    </div>
-                </details>
-                <x-button variant="primary">Simpan pengingat</x-button>
             </form>
-        </section>
+        </x-bottom-sheet>
         <section class="space-y-4">
             @forelse ($obligations as $obligation)
                 <article class="surface-card p-5">
@@ -37,6 +29,7 @@
                         <div><h2 class="font-semibold">{{ $obligation->title }}</h2><p class="text-sm text-muted">{{ $obligation->kind->label() }} · {{ rupiah($obligation->amount) }} · tanggal {{ $obligation->due_day }} setiap bulan</p>
                             @if($obligation->kind->value === 'installment')<p class="mt-1 text-sm text-muted">{{ $obligation->paid_installments }} dari {{ $obligation->installments_total }} · sisa {{ max(0, $obligation->installments_total - $obligation->paid_installments) }}</p>@endif
                         </div>
+                        <x-button href="{{ route('user.obligations.edit', $obligation) }}" variant="secondary" icon="ubah">Ubah pengingat</x-button>
                         @if ($obligation->next_due)
                             <form method="POST" action="{{ route('user.obligations.pay', $obligation) }}" class="flex flex-wrap items-end gap-2">
                                 @csrf
@@ -44,7 +37,7 @@
                                 <div><label class="field-label" for="paid-{{ $obligation->id }}">Dibayar pada</label><input id="paid-{{ $obligation->id }}" name="paid_on" type="date" value="{{ $today }}" required class="form-control"></div>
                                 <x-money-input id="paid-amount-{{ $obligation->id }}" name="amount_paid" label="Nominal" :value="$obligation->amount" />
                                 <select name="wallet_id" aria-label="Dompet pembayaran" class="form-control"><option value="">Tanpa dompet</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}" @selected($obligation->wallet_id == $wallet->id)>{{ $wallet->name }}</option>@endforeach</select>
-                                <x-button variant="primary">Tandai dibayar</x-button>
+                                <x-button variant="primary" icon="selesai" loading-text="Mencatat pembayaran…">Tandai dibayar</x-button>
                             </form>
                         @else
                             <span class="text-sm text-muted">{{ $obligation->installments_complete ? 'Semua cicilan sudah dicatat.' : 'Belum ada periode yang jatuh tempo.' }}</span>
@@ -62,11 +55,19 @@
                     @if ($obligation->payments->isNotEmpty())<p class="mt-2 text-xs text-muted">{{ $obligation->payments->count() }} pembayaran tercatat.</p>@endif
                     @foreach ($obligation->payments as $payment)
                         <div class="mt-2 flex items-center justify-between border-t border-line pt-2 text-sm"><span>Jatuh tempo {{ $payment->due_on->translatedFormat('j M Y') }} · dibayar {{ rupiah($payment->amount_paid) }}</span>
-                            <form method="POST" action="{{ route('user.obligations.payments.cancel', [$obligation, $payment]) }}">
-                                @csrf
-                                @method('DELETE')
-                                <x-button class="min-h-11 font-medium text-danger underline">Batalkan pembayaran</x-button>
-                            </form>
+                            <x-button type="button" size="sm" variant="danger" icon="kembali" x-data x-on:click="$dispatch('open-modal', 'cancel-obligation-payment-{{ $payment->id }}')">Batalkan pembayaran</x-button>
+                            <x-modal name="cancel-obligation-payment-{{ $payment->id }}" focusable>
+                                <div class="p-5 sm:p-6">
+                                    <h2 class="text-lg font-semibold">Batalkan pembayaran ini?</h2>
+                                    <p class="mt-2 text-sm text-muted">Pembayaran {{ rupiah($payment->amount_paid) }} untuk periode {{ $payment->due_on->translatedFormat('j F Y') }} akan dihapus dari catatan dan saldo dompet dihitung ulang.</p>
+                                    <form method="POST" action="{{ route('user.obligations.payments.cancel', [$obligation, $payment]) }}" class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-button type="button" variant="secondary" icon="kembali" x-on:click="$dispatch('close')">Kembali</x-button>
+                                        <x-button type="submit" variant="danger" icon="kembali" loading-text="Membatalkan pembayaran…">Batalkan pembayaran</x-button>
+                                    </form>
+                                </div>
+                            </x-modal>
                         </div>
                     @endforeach
                 </article>

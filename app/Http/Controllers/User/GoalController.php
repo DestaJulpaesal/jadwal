@@ -32,6 +32,17 @@ class GoalController extends Controller
         return view('user.goals.index', compact('goals', 'today', 'habits', 'wallets', 'goal'));
     }
 
+    public function create(Request $request)
+    {
+        $this->authorize('create', Goal::class);
+
+        return view('user.goals.create', [
+            'goal' => new Goal,
+            'habits' => $request->user()->habits()->whereNull('archived_at')->orderBy('title')->get(),
+            'wallets' => $request->user()->wallets()->whereNull('archived_at')->orderBy('name')->get(),
+        ]);
+    }
+
     public function store(SaveGoalRequest $request)
     {
         $data = $request->validated();

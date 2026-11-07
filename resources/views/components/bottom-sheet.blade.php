@@ -1,6 +1,6 @@
-@props(['name', 'title'])
+@props(['name', 'title', 'show' => false])
 
-<x-modal :name="$name" maxWidth="md" focusable>
+<x-modal :name="$name" :show="$show" maxWidth="md" focusable>
     <section class="fixed inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-2xl border border-line bg-white p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-card sm:static sm:mx-auto sm:mt-[10vh] sm:rounded-2xl sm:p-6">
         <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-line sm:hidden" aria-hidden="true"></div>
         <div class="mb-4 flex items-center justify-between gap-3">

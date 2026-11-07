@@ -6,7 +6,13 @@
     <div class="mx-auto max-w-5xl space-y-6">
         <header class="flex flex-wrap items-end justify-between gap-4">
             <div><p class="text-sm font-semibold text-primary-800">Tinjauan keuangan</p><h1 class="mt-1 text-2xl font-semibold">Laporan bulanan</h1></div>
-            <form method="GET"><label for="month" class="field-label">Bulan laporan</label><input id="month" name="month" type="month" value="{{ $month }}" class="form-control" onchange="this.form.submit()"></form>
+            <form method="GET" class="flex items-end gap-2" data-auto-submit>
+                <div>
+                    <label for="month" class="field-label">Bulan laporan</label>
+                    <input id="month" name="month" type="month" value="{{ $month }}" class="form-control">
+                </div>
+                <x-button type="submit" variant="secondary" data-submit-default>Terapkan</x-button>
+            </form>
         </header>
         <section class="grid gap-3 sm:grid-cols-3">
             <article class="surface-card p-4"><p class="text-sm text-muted">Pemasukan</p><strong class="mt-1 block text-xl" data-private>{{ rupiah($current['income']) }}</strong></article>

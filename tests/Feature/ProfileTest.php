@@ -177,6 +177,7 @@ class ProfileTest extends TestCase
         $response = $this
             ->actingAs($user)
             ->delete('/profile', [
+                'confirmation' => 'HAPUS',
                 'password' => 'password',
             ]);
 
@@ -196,6 +197,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->from('/profile')
             ->delete('/profile', [
+                'confirmation' => 'HAPUS',
                 'password' => 'wrong-password',
             ]);
 
@@ -206,13 +208,29 @@ class ProfileTest extends TestCase
         $this->assertNotNull($user->fresh());
     }
 
+    public function test_account_deletion_requires_typed_confirmation(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->delete('/profile', [
+                'confirmation' => 'HAPU',
+                'password' => 'password',
+            ])
+            ->assertRedirect('/profile')
+            ->assertSessionHasErrorsIn('userDeletion', 'confirmation');
+
+        $this->assertNotNull($user->fresh());
+    }
+
     public function test_admin_cannot_delete_the_last_active_admin_account(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)
             ->from('/profile')
-            ->delete('/profile', ['password' => 'password'])
+            ->delete('/profile', ['confirmation' => 'HAPUS', 'password' => 'password'])
             ->assertRedirect('/profile')
             ->assertSessionHasErrorsIn('userDeletion', 'account');
 

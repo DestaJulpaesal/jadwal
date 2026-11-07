@@ -385,7 +385,7 @@ h2 {
 .fld input {
     width: 100%;
     min-width: 0;
-    height: 36px;
+    min-height: 48px;
     padding: 0;
     border: 0;
     outline: 0;
@@ -412,8 +412,8 @@ h2 {
 }
 
 .fld .password-toggle {
-    width: 34px;
-    height: 34px;
+    width: 44px;
+    height: 44px;
     margin-left: 2px;
     padding: 0;
     cursor: pointer;
@@ -453,6 +453,7 @@ h2 {
     display: flex;
     align-items: center;
     gap: 5px;
+    min-height: 44px;
     margin: 0;
     font-family: var(--font-sans), sans-serif;
     font-size: 11px;
@@ -460,8 +461,8 @@ h2 {
 }
 
 .remember input {
-    width: 15px;
-    height: 15px;
+    width: 20px;
+    height: 20px;
     margin: 0;
     accent-color: var(--ink);
 }

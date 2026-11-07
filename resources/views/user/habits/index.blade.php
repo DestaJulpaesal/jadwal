@@ -110,11 +110,10 @@
                                 <x-button name="status" value="skipped" variant="secondary">Lewati hari ini</x-button>
                             </form>
                         @endif
-                        <form method="POST" action="{{ route('user.habits.archive', $habit) }}" onsubmit="return confirm('Arsipkan kebiasaan ini?')">
-                            @csrf
-                            @method('PATCH')
-                            <x-button variant="secondary">Arsipkan kebiasaan</x-button>
-                        </form>
+                        <x-confirm-action :action="route('user.habits.archive', $habit)" method="PATCH"
+                            title="Arsipkan kebiasaan?"
+                            :message="'Kebiasaan '.$habit->title.' akan disembunyikan dari daftar aktif. Riwayat aktivitasnya tetap tersimpan.'"
+                            label="Arsipkan kebiasaan" tone="secondary" icon="nonaktifkan" />
                     </div>
                     <details class="habit-history">
                         <summary class="min-h-11 cursor-pointer font-medium text-primary-800"><span>Catatan 7 hari terakhir</span><span class="habit-history-chevron" aria-hidden="true">+</span></summary>

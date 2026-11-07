@@ -10,20 +10,12 @@
                 <p class="text-sm font-semibold text-primary-800">Perbarui rencana</p>
                 <h1 class="mt-1 text-2xl font-semibold">Ubah tugas</h1>
             </header>
-            @if ($errors->any())
-                <x-alert type="danger" class="mb-5" tabindex="-1">
-                    <p class="font-semibold">Perubahan belum tersimpan. Periksa isian berikut:</p>
-                    <ul class="mt-2 list-inside list-disc">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-                </x-alert>
-            @endif
-            <form method="POST" action="{{ route('user.tasks.update', $task) }}" class="space-y-5">
+            <x-error-summary :errors="$errors->messages()" title="Perubahan belum tersimpan. Periksa isian berikut:" />
+            <form method="POST" action="{{ route('user.tasks.update', $task) }}" class="space-y-5" data-dirty-guard>
                 @csrf
                 @method('PUT')
                 @include('user.tasks.form')
-                <div class="flex flex-col-reverse gap-3 border-t border-line pt-5 sm:flex-row sm:justify-end">
-                    <x-button href="{{ route('user.tasks.index') }}" variant="secondary">Batal</x-button>
-                    <x-button type="submit" data-loading-text="Menyimpan..." variant="primary"><x-concept-icon name="tk" class="h-5 w-5" />Simpan perubahan</x-button>
-                </div>
+                <x-form-actions :cancel-url="route('user.tasks.index')" submit-label="Simpan perubahan" submit-icon="tugas" loading-label="Menyimpan perubahan…" />
             </form>
         </div>
     </div>

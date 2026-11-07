@@ -79,6 +79,101 @@ class LoanController extends Controller
         return back()->with('success', 'Utang/piutang berhasil dicatat.');
     }
 
+    public function edit(Request $request, Loan $loan, UserClock $clock)
+    {
+        $this->authorize('update', $loan);
+        abort_if($loan->user_id !== $request->user()->id || $loan->archived_at, 404);
+        $wallets = $request->user()->wallets()->whereNull('archived_at')->orderBy('name')->get();
+        $lockedByRepayments = $loan->repayments()->exists();
+        $today = $clock->date($request->user());
+
+        return view('user.loans.edit', compact('loan', 'wallets', 'lockedByRepayments', 'today'));
+    }
+
+    public function update(Request $request, Loan $loan, UserClock $clock)
+    {
+        $this->authorize('update', $loan);
+        abort_if($loan->user_id !== $request->user()->id || $loan->archived_at, 404);
+        $hasRepayments = $loan->repayments()->exists();
+        $rules = [
+            'counterparty' => ['required', 'string', 'max:80'],
+            'due_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:loan_date'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ];
+
+        if (! $hasRepayments) {
+            $request->merge(['amount' => Rupiah::normalize($request->input('amount'))]);
+            $rules += [
+                'direction' => ['required', Rule::in(array_column(LoanDirection::cases(), 'value'))],
+                'amount' => ['required', 'integer', 'between:1,'.Rupiah::MAX_AMOUNT],
+                'loan_date' => ['required', 'date_format:Y-m-d', 'before_or_equal:'.$clock->date($request->user())],
+                'wallet_id' => ['nullable', 'integer', Rule::exists('wallets', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
+            ];
+            $rules['due_on'] = ['nullable', 'date_format:Y-m-d', 'after_or_equal:loan_date'];
+        } else {
+            $rules['due_on'] = ['nullable', 'date_format:Y-m-d', 'after_or_equal:'.$loan->loan_date->toDateString()];
+        }
+
+        $data = $request->validate($rules);
+        DB::transaction(function () use ($request, $loan, $data) {
+            $lockedLoan = $request->user()->loans()->lockForUpdate()->findOrFail($loan->id);
+            $hasRepayments = $lockedLoan->repayments()->lockForUpdate()->exists();
+            $lockedFields = ['direction', 'amount', 'loan_date', 'wallet_id'];
+
+            if ($hasRepayments) {
+                foreach ($lockedFields as $field) {
+                    if (! array_key_exists($field, $data)) {
+                        continue;
+                    }
+
+                    $currentValue = match ($field) {
+                        'direction' => $lockedLoan->direction->value,
+                        'amount' => (string) $lockedLoan->amount,
+                        'loan_date' => $lockedLoan->loan_date->toDateString(),
+                        'wallet_id' => (string) ($lockedLoan->wallet_id ?? ''),
+                    };
+
+                    if ((string) $data[$field] !== $currentValue) {
+                        abort(422, 'Arah, nominal, tanggal pinjaman, dan dompet tidak dapat diubah setelah pembayaran tercatat.');
+                    }
+                }
+
+                $data = array_diff_key($data, array_flip($lockedFields));
+            }
+
+            $lockedLoan->update($data);
+            $source = $request->user()->transactions()
+                ->where('source_type', 'loan')
+                ->where('source_id', $lockedLoan->id)
+                ->first();
+
+            if ($lockedLoan->wallet_id === null) {
+                $source?->delete();
+
+                return;
+            }
+
+            $sourceData = [
+                'wallet_id' => $lockedLoan->wallet_id,
+                'type' => $lockedLoan->direction === LoanDirection::Borrowed ? TransactionType::Income : TransactionType::Expense,
+                'amount' => $lockedLoan->amount,
+                'occurred_on' => $lockedLoan->loan_date,
+                'note' => ($lockedLoan->direction === LoanDirection::Borrowed ? 'Pinjaman dari ' : 'Piutang kepada ').$lockedLoan->counterparty,
+            ];
+
+            if ($source) {
+                $source->update($sourceData);
+            } else {
+                $request->user()->transactions()->create($sourceData + [
+                    'source_type' => 'loan',
+                    'source_id' => $lockedLoan->id,
+                ]);
+            }
+        });
+
+        return redirect()->route('user.loans.index')->with('success', 'Utang/piutang berhasil diperbarui.');
+    }
+
     public function repay(Request $request, Loan $loan, LoanBalance $balances, UserClock $clock)
     {
         $this->authorize('update', $loan);

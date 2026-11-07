@@ -259,6 +259,8 @@
 
     .form-control {
         @apply min-h-11 w-full rounded-lg border-line bg-white text-ink shadow-none placeholder:text-gray-500 focus:border-primary-600 focus:ring-primary-600;
+        min-height: 48px;
+        font-size: var(--text-base);
     }
 
     .field-label {
@@ -271,6 +273,41 @@
 
     .field-error {
         @apply mt-1.5 text-sm font-medium text-danger;
+    }
+
+    .form-actions-bar {
+        position: sticky;
+        bottom: calc(84px + env(safe-area-inset-bottom));
+        z-index: var(--z-nav);
+    }
+
+    .form-discard-dialog {
+        width: min(28rem, calc(100vw - 2rem));
+        margin: auto;
+        padding: 1.5rem;
+        border: 1px solid var(--color-line);
+        border-radius: var(--radius-card);
+        background: var(--color-surface);
+        color: var(--color-ink);
+        box-shadow: var(--shadow-overlay);
+    }
+
+    .form-discard-dialog::backdrop {
+        background: rgb(0 0 0 / 48%);
+    }
+
+    .form-submit-feedback {
+        margin-top: 1rem;
+        border-radius: var(--radius-sm);
+        background: var(--color-danger-soft);
+        padding: .75rem 1rem;
+        color: var(--color-danger);
+        font-size: var(--text-sm);
+    }
+
+    textarea[data-autoresize] {
+        overflow-y: hidden;
+        resize: none;
     }
 
     .surface-card {
@@ -1801,9 +1838,9 @@
     }
 
     .user-app .habit-day-time {
-        min-height: 36px;
-        padding: 4px 7px;
-        font-size: 12px;
+        min-height: 48px;
+        padding: 6px 8px;
+        font-size: var(--text-base);
     }
 
     .user-app .habit-checkin-details {
@@ -2082,10 +2119,10 @@
     }
 
     .user-app .habit-day-time {
-        min-height: 34px;
-        padding: 3px 5px;
+        min-height: 48px;
+        padding: 6px 8px;
         border-color: #d9d0b8;
-        font-size: 11px;
+        font-size: var(--text-base);
     }
 
     .user-app .habit-form-submit {

@@ -82,3 +82,44 @@ Status: selesai secara kode; build dan format lulus. Tes lengkap mencatat 120 lu
 ### Langkah pertama fase berikutnya
 
 Buat branch Fase 2 dan audit seluruh create/edit form, termasuk route, partial, validasi, serta perilaku submit, sebelum mengubah pola formulir.
+
+## Fase 2 — Form nyaman di HP
+
+Status: selesai secara implementasi. Build, kompilasi Blade, format PHP, dan syntax JavaScript lulus. Tes lengkap: 126 lulus, 4 gagal; keempatnya sama dengan kegagalan baseline Fase 0.
+
+### Selesai
+
+- Memusatkan submit, pencegahan submit ganda, status loading, pemulihan bfcache, timeout/coba lagi, perlindungan perubahan belum tersimpan, ringkasan error, auto-submit filter, pintasan tanggal/jam, resize textarea, dan hitung karakter di `resources/js/forms.js`.
+- Memastikan inisialisasi form dan UI tetap jalan ketika modul dimuat setelah `DOMContentLoaded`.
+- Menambahkan ringkasan error, bantuan field, validasi saat blur, aksi sticky, dan perlindungan perubahan pada form tugas, kebiasaan, target, transaksi, tagihan, utang/piutang, profil, dan pengaturan.
+- Mengubah jenis kebiasaan dan target menjadi pilihan segmented; menambah pintasan waktu kebiasaan serta disclosure animatif untuk pengaturan lanjutan target.
+- Memindahkan quick-add transaksi, dompet, kategori, tagihan/cicilan, dan utang/piutang ke bottom-sheet. FAB global kini menyediakan keenam pintasan dan langsung membuka sheet terkait.
+- Menambahkan edit transaksi dan utang/piutang. Transaksi awal utang/piutang disinkronkan sebelum pembayaran; arah, nominal, tanggal awal, dan dompet dikunci setelah pembayaran agar saldo/riwayat konsisten.
+- Menambahkan pemilih warna kategori admin dengan nama warna, pratinjau teks, dan rasio kontras; penghapusan kategori/kebiasaan menggunakan dialog konfirmasi.
+- Penghapusan akun kini meminta pengguna mengetik `HAPUS` serta memasukkan password. Form password menyediakan tombol tampil/sembunyi dan indikator kekuatan.
+- Mengganti filter laporan inline `onchange` dengan handler terpusat dan tombol cadangan tanpa JavaScript.
+- Pemeriksaan browser login/register pada 360×640, 390×844, 768×1024, dan 1280×900: tidak ada overflow horizontal; kontrol teks 16 px dan tinggi 48 px. Indikator kekuatan password merespons input.
+- Tidak ada perubahan skema database. `npm run build`, `php artisan view:cache`, Pint `--test`, `node --check`, dan `git diff --check` lulus; hanya satu handler submit terdelegasi dan tidak ada atribut inline `onchange`, `onclick`, atau `onsubmit` di view.
+
+### Keputusan dan asumsi
+
+- Perubahan inti transaksi utang/piutang tidak boleh mengubah perhitungan setelah pembayaran tercatat; pihak, jatuh tempo, dan catatan tetap bisa diperbarui.
+- Pemilih warna mencakup kategori tugas/kebiasaan admin. `money_categories` tidak memiliki kolom warna; kolom baru dilarang pada fase ini, jadi warna untuk kategori uang pengguna ditunda.
+- Draf otomatis `localStorage` bersifat opsional dan tidak ditambahkan; data password tidak pernah dimasukkan ke snapshot perubahan form.
+- Empat kegagalan tes baseline tetap ada pada suite lengkap: dua di `AdminUserManagementTest` dan dua di `UserTaskTest`; tidak ada kegagalan baru.
+
+### Ditunda
+
+- Empat kegagalan baseline dari Fase 0.
+- Warna untuk kategori uang pengguna karena tidak tersedia kolom yang dapat dipakai tanpa perubahan skema.
+- Pengukuran visual browser untuk halaman terautentikasi; view terkait tercakup dalam feature tests.
+- Draf otomatis lokal; tidak wajib dan memerlukan kebijakan masa simpan/penghapusan yang lebih jelas.
+
+### Risiko regresi
+
+- Dialog dan pintasan form bergantung pada JavaScript terpusat; jalur tanpa JavaScript tetap tersedia untuk filter laporan, tetapi interaksi sheet memerlukan JavaScript.
+- Pembaruan transaksi awal utang/piutang diuji sebelum dan sesudah pembayaran; tetap lakukan pemeriksaan saldo saat integrasi data produksi.
+
+### Langkah pertama fase berikutnya
+
+Buat branch Fase 3 dan baca `04_FASE3_PESAN_VALIDASI.md`; fokus pada penyelarasan pesan validasi tanpa mengubah validasi atau perilaku bisnis.

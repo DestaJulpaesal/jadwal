@@ -1,7 +1,7 @@
 @props(['errors', 'title' => 'Periksa kembali isian berikut'])
 
 @if (count($errors))
-    <section class="mb-5 rounded-xl border border-red-300 bg-red-50 p-4 text-danger" role="alert" tabindex="-1" data-error-summary>
+    <section class="mb-5 rounded-xl border border-red-300 bg-danger-soft p-4 text-danger" role="alert" tabindex="-1" data-error-summary>
         <h2 class="font-semibold">{{ $title }}</h2>
         <ul class="mt-2 list-inside list-disc space-y-1">
             @foreach ($errors as $field => $messages)

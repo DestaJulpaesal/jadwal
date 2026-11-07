@@ -7,14 +7,13 @@
     @if (session('status'))
         <x-alert type="success" class="mb-5">{{ session('status') }}</x-alert>
     @endif
-    @if ($errors->any())
-        <x-alert type="danger" class="mb-5">{{ $errors->first() }}</x-alert>
-    @endif
+    <x-error-summary :errors="$errors->messages()" title="Tautan belum dikirim. Periksa isian berikut:" />
     <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
         @csrf
         <div>
-            <x-input-label for="email" value="Alamat email" />
-            <x-text-input id="email" name="email" type="email" class="mt-1" :value="old('email')" required autofocus autocomplete="email" maxlength="255" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" aria-describedby="email-error" />
+            <x-input-label for="email" value="Alamat email (wajib)" />
+            <x-text-input id="email" name="email" type="email" inputmode="email" autocapitalize="none" enterkeyhint="done" class="mt-1" :value="old('email')" required autofocus autocomplete="email" maxlength="255" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" aria-describedby="email-help email-error" />
+            <p id="email-help" class="field-help">Kami mengirim tautan pengaturan ulang ke alamat email akun Anda.</p>
             <x-input-error id="email-error" :messages="$errors->get('email')" />
         </div>
         <x-button type="submit" data-loading-text="Mengirim..." variant="primary" class="w-full">Kirim tautan pengaturan ulang</x-button>

@@ -4,16 +4,10 @@
 
 @section('content')
     <div class="mx-auto max-w-5xl space-y-6">
-        <header><p class="text-sm font-semibold text-primary-800">Langkah demi langkah</p><h1 class="mt-1 text-2xl font-semibold">Target</h1></header>
-        <section class="surface-card p-5">
-            <h2 class="text-lg font-semibold">Buat target</h2>
-            @if ($errors->any())<x-alert type="danger" class="mt-3"><ul class="list-inside list-disc">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul></x-alert>@endif
-            <form method="POST" action="{{ route('user.goals.store') }}" class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                @csrf
-                <div class="sm:col-span-2 lg:col-span-3">@include('user.goals.form', ['goal' => $goal])</div>
-                <div class="sm:col-span-2 lg:col-span-3"><x-button variant="primary">Simpan target</x-button></div>
-            </form>
-        </section>
+        <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div><p class="text-sm font-semibold text-primary-800">Langkah demi langkah</p><h1 class="mt-1 text-2xl font-semibold">Target</h1></div>
+            <x-button href="{{ route('user.goals.create') }}" variant="primary" icon="tambah">Buat target</x-button>
+        </header>
         <section class="space-y-4">
             @forelse ($goals as $goal)
                 <article class="surface-card p-5">

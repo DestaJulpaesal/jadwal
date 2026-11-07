@@ -676,6 +676,12 @@ html[data-color-scheme="dark"] .user-app .concept-icon {
     filter: drop-shadow(1.6px 0 0 #273139) drop-shadow(-1.6px 0 0 #273139) drop-shadow(0 1.6px 0 #273139) drop-shadow(0 -1.6px 0 #273139);
 }
 
+@media (min-width: 640px) {
+    .form-actions-bar {
+        position: static;
+    }
+}
+
 .user-app :is(input, select, textarea).form-control {
     font-size: var(--text-base);
 }

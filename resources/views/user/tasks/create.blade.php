@@ -11,19 +11,11 @@
                 <h1 class="mt-1 text-2xl font-semibold">Tambah tugas</h1>
                 <p class="mt-2 text-sm text-muted">Tambahkan detail yang membantu Anda mengingat rencana ini.</p>
             </header>
-            @if ($errors->any())
-                <x-alert type="danger" class="mb-5" tabindex="-1">
-                    <p class="font-semibold">Tugas belum tersimpan. Periksa isian berikut:</p>
-                    <ul class="mt-2 list-inside list-disc">@foreach ($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
-                </x-alert>
-            @endif
-            <form method="POST" action="{{ route('user.tasks.store') }}" class="space-y-5">
+            <x-error-summary :errors="$errors->messages()" title="Tugas belum tersimpan. Periksa isian berikut:" />
+            <form method="POST" action="{{ route('user.tasks.store') }}" class="space-y-5" data-dirty-guard>
                 @csrf
                 @include('user.tasks.form')
-                <div class="flex flex-col-reverse gap-3 border-t border-line pt-5 sm:flex-row sm:justify-end">
-                    <x-button href="{{ route('user.tasks.index') }}" variant="secondary">Batal</x-button>
-                    <x-button type="submit" data-loading-text="Menyimpan..." variant="primary"><x-concept-icon name="tk" class="h-5 w-5" />Simpan tugas</x-button>
-                </div>
+                <x-form-actions :cancel-url="route('user.tasks.index')" submit-label="Simpan tugas" submit-icon="tugas" loading-label="Menyimpan tugas…" />
             </form>
         </div>
     </div>

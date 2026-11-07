@@ -88,7 +88,11 @@ class ProfileController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $request->validateWithBag('userDeletion', [
+            'confirmation' => ['required', 'in:HAPUS'],
             'password' => ['required', 'current_password'],
+        ], [
+            'confirmation.required' => 'Ketik HAPUS untuk mengonfirmasi penghapusan akun.',
+            'confirmation.in' => 'Ketik HAPUS dengan benar untuk mengonfirmasi penghapusan akun.',
         ]);
 
         $user = $request->user();

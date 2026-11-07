@@ -1,3 +1,9 @@
+@php
+    $frequencyOptions = collect(\App\Enums\HabitFrequency::cases())
+        ->mapWithKeys(fn ($frequency) => [$frequency->value => $frequency->label()])
+        ->all();
+@endphp
+
 <section class="habit-form-section">
     <div class="habit-form-section-heading">
         <span class="habit-form-step">1</span>
@@ -5,12 +11,21 @@
     </div>
     <div class="habit-form-grid">
         <div class="habit-form-field habit-form-field-wide">
-            <label for="title" class="field-label">Nama kebiasaan</label>
-            <input id="title" name="title" value="{{ old('title', $habit->title) }}" required maxlength="120" class="form-control" placeholder="Contoh: Lari pagi">
+            <label for="title" class="field-label">Nama kebiasaan (wajib)</label>
+            <input id="title" name="title" value="{{ old('title', $habit->title) }}" required maxlength="120" class="form-control"
+                placeholder="Contoh: Lari pagi" autocapitalize="sentences" enterkeyhint="next" data-validate-on-blur
+                aria-invalid="{{ $errors->has('title') ? 'true' : 'false' }}"
+                aria-describedby="title-help @if ($errors->has('title')) title-error @endif">
+            <p id="title-help" class="field-help">Tulis nama kebiasaan yang mudah dikenali.</p>
+            <x-input-error id="title-error" :messages="$errors->get('title')" />
         </div>
         <div class="habit-form-field habit-form-field-wide">
             <label for="description" class="field-label">Tujuan singkat <span class="habit-optional">(opsional)</span></label>
-            <textarea id="description" name="description" rows="2" maxlength="500" class="form-control" placeholder="Contoh: Biar badan lebih bugar">{{ old('description', $habit->description) }}</textarea>
+            <textarea id="description" name="description" rows="2" maxlength="500" class="form-control" placeholder="Contoh: Biar badan lebih bugar"
+                data-autoresize autocomplete="off" enterkeyhint="next" aria-describedby="description-help @if ($errors->has('description')) description-error @endif">{{ old('description', $habit->description) }}</textarea>
+            <p id="description-help" class="field-help">Jelaskan alasan atau detail kebiasaan ini (opsional).</p>
+            <x-input-error id="description-error" :messages="$errors->get('description')" />
+            <p class="mt-1 text-right text-xs text-muted" data-character-count-for="description">{{ strlen(old('description', $habit->description ?? '')) }}/500</p>
         </div>
     </div>
 </section>
@@ -22,17 +37,14 @@
     </div>
     <div class="habit-form-grid">
         <div class="habit-form-field habit-form-field-wide">
-            <label for="frequency" class="field-label">Pola kebiasaan</label>
-            <select id="frequency" name="frequency" required class="form-control">
-                @foreach (\App\Enums\HabitFrequency::cases() as $frequency)
-                    <option value="{{ $frequency->value }}" @selected(old('frequency', $habit->frequency?->value ?? 'daily') === $frequency->value)>{{ $frequency->label() }}</option>
-                @endforeach
-            </select>
-            <p id="frequency-help" class="field-help">Setiap hari berarti semua hari masuk perhitungan.</p>
+            <x-segmented name="frequency" label="Pola kebiasaan" :options="$frequencyOptions"
+                :value="old('frequency', $habit->frequency?->value ?? 'daily')"
+                help="Seberapa sering kamu ingin melakukan kebiasaan ini?" required :error="$errors->first('frequency')" />
         </div>
         <div id="weekly-target-field" class="habit-form-field">
-            <label for="weekly_target" class="field-label">Target per minggu</label>
-            <div class="habit-input-with-suffix"><input id="weekly_target" name="weekly_target" type="number" min="1" max="7" value="{{ old('weekly_target', $habit->weekly_target) }}" class="form-control" placeholder="3"><span>kali</span></div>
+            <label for="weekly_target" class="field-label">Target per minggu (wajib untuk frekuensi mingguan)</label>
+            <div class="habit-input-with-suffix"><input id="weekly_target" name="weekly_target" type="number" min="1" max="7" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" value="{{ old('weekly_target', $habit->weekly_target) }}" class="form-control" placeholder="3" aria-describedby="weekly-target-help"><span>kali</span></div>
+            <p id="weekly-target-help" class="field-help">Jumlah minimal kebiasaan yang ingin kamu lakukan tiap minggu.</p>
         </div>
         <fieldset id="weekdays-field" class="habit-form-field habit-form-field-wide">
             <legend class="field-label">Hari latihan <span class="habit-optional">pilih minimal satu</span></legend>
@@ -44,15 +56,17 @@
                     </label>
                 @endforeach
             </div>
-            <p class="field-help">Jam tiap hari boleh berbeda. Kosongkan jika waktunya fleksibel.</p>
+            <p class="field-help">Frekuensi hari tertentu: pilih hari latihan. Jam boleh berbeda; kosongkan jika fleksibel.</p>
         </fieldset>
         <div class="habit-form-field">
-            <label for="starts_on" class="field-label">Mulai</label>
-            <input id="starts_on" name="starts_on" type="date" required value="{{ old('starts_on', $habit->starts_on?->toDateString() ?? $today) }}" class="form-control">
+            <x-datetime-quick id="starts_on" name="starts_on" label="Mulai" type="date"
+                :value="$habit->starts_on?->toDateString() ?? $today" help="Tanggal mulai menghitung konsistensi kebiasaan."
+                :error="$errors->first('starts_on')" required />
         </div>
         <div class="habit-form-field">
-            <label for="ends_on" class="field-label">Selesai sampai <span class="habit-optional">(opsional)</span></label>
-            <input id="ends_on" name="ends_on" type="date" value="{{ old('ends_on', $habit->ends_on?->toDateString()) }}" class="form-control">
+            <x-datetime-quick id="ends_on" name="ends_on" label="Selesai sampai" type="date"
+                :value="$habit->ends_on?->toDateString()" help="Kosongkan jika kebiasaan ini tidak memiliki tanggal selesai."
+                :error="$errors->first('ends_on')" optional />
         </div>
     </div>
 </section>
@@ -71,8 +85,8 @@
     <div class="habit-form-grid">
         <div class="habit-form-field">
             <label for="goal_value" class="field-label">Jumlah target <span class="habit-optional">(opsional)</span></label>
-            <input id="goal_value" name="goal_value" type="number" min="1" max="1000000" value="{{ old('goal_value', $habit->goal_value) }}" class="form-control" placeholder="Contoh: 30" inputmode="numeric">
-            <p class="field-help">Isi angkanya saja, misalnya <b>30</b>.</p>
+            <input id="goal_value" name="goal_value" type="number" min="1" max="1000000" value="{{ old('goal_value', $habit->goal_value) }}" class="form-control" placeholder="Contoh: 30" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" aria-describedby="goal-value-help">
+            <p id="goal-value-help" class="field-help">Jumlah target yang ingin dicapai tiap kali, misalnya 8 gelas.</p>
         </div>
         <div class="habit-form-field">
             <label for="goal_unit" class="field-label">Satuan target</label>
@@ -83,16 +97,17 @@
                 @endforeach
                 <option value="other" @selected(old('goal_unit', $habit->goal_unit) === 'other' || ($habit->goal_unit && ! in_array($habit->goal_unit, ['menit', 'jam', 'km', 'meter', 'langkah', 'halaman', 'gelas', 'kali'], true)))>Lainnya</option>
             </select>
-            <input id="goal_unit_other" name="goal_unit_other" maxlength="20" value="{{ old('goal_unit_other', $habit->goal_unit && ! in_array($habit->goal_unit, ['menit', 'jam', 'km', 'meter', 'langkah', 'halaman', 'gelas', 'kali'], true) ? $habit->goal_unit : '') }}" placeholder="Tulis satuan sendiri" class="form-control mt-2">
-            <p class="field-help">Pilih apa yang ingin dihitung, misalnya km untuk jarak lari.</p>
+            <input id="goal_unit_other" name="goal_unit_other" maxlength="20" value="{{ old('goal_unit_other', $habit->goal_unit && ! in_array($habit->goal_unit, ['menit', 'jam', 'km', 'meter', 'langkah', 'halaman', 'gelas', 'kali'], true) ? $habit->goal_unit : '') }}" placeholder="Tulis satuan sendiri" class="form-control mt-2" aria-label="Satuan target lainnya" autocapitalize="sentences">
+            <p class="field-help">Satuan menjelaskan target nilai, misalnya gelas, menit, atau halaman.</p>
         </div>
         <div id="habit-target-preview" class="habit-target-preview habit-form-field-wide" aria-live="polite">
             <span>Targetmu akan terlihat di sini setelah angka dan satuan diisi.</span>
         </div>
         <div class="habit-form-field">
-            <label for="preferred_time" class="field-label">Jam default <span class="habit-optional">(opsional)</span></label>
-            <input id="preferred_time" name="preferred_time" type="time" value="{{ old('preferred_time', $habit->preferred_time) }}" class="form-control">
-            <p class="field-help">Dipakai sebagai jam cadangan untuk hari yang belum diatur.</p>
+            <x-datetime-quick id="preferred_time" name="preferred_time" label="Jam default" type="time"
+                :value="$habit->preferred_time" help="Jam pengingat cadangan untuk hari yang belum diatur."
+                :shortcuts="[]" :time-shortcuts="['08:00' => 'Pagi 08.00', '12:00' => 'Siang 12.00', '16:00' => 'Sore 16.00', '20:00' => 'Malam 20.00']"
+                :error="$errors->first('preferred_time')" optional />
         </div>
         <div class="habit-form-field">
             <label for="category_id" class="field-label">Kategori <span class="habit-optional">(opsional)</span></label>
@@ -104,22 +119,28 @@
 
 <script>
     (() => {
-        const frequency = document.getElementById('frequency');
+        const frequencyFields = document.querySelectorAll('.habit-form [name="frequency"]');
         const weekdays = document.getElementById('weekdays-field');
         const weeklyTarget = document.getElementById('weekly-target-field');
         const help = document.getElementById('frequency-help');
         const update = () => {
-            const isWeekdays = frequency.value === 'weekdays';
-            const isWeekly = frequency.value === 'weekly_count';
+            const frequency = document.querySelector('.habit-form [name="frequency"]:checked')?.value ?? 'daily';
+            const isWeekdays = frequency === 'weekdays';
+            const isWeekly = frequency === 'weekly_count';
             weekdays.hidden = !isWeekdays;
             weeklyTarget.hidden = !isWeekly;
+            weekdays.querySelectorAll('input').forEach((input) => { input.disabled = !isWeekdays; });
+            weeklyTarget.querySelectorAll('input').forEach((input) => {
+                input.disabled = !isWeekly;
+                input.required = isWeekly;
+            });
             help.textContent = isWeekdays
                 ? 'Pilih hari yang memang ingin kamu lakukan. Hari lain tidak dihitung sebagai gagal.'
                 : isWeekly
                     ? 'Contoh: target 3 kali berarti cukup selesai tiga kali dalam seminggu.'
                     : 'Setiap hari berarti semua hari masuk perhitungan.';
         };
-        frequency.addEventListener('change', update);
+        frequencyFields.forEach((field) => field.addEventListener('change', update));
         update();
 
         const goalValue = document.getElementById('goal_value');
@@ -139,6 +160,7 @@
         goalUnitOther.addEventListener('input', updateTargetPreview);
         const updateGoalUnit = () => {
             goalUnitOther.hidden = goalUnit.value !== 'other';
+            goalUnitOther.disabled = goalUnit.value !== 'other';
             if (goalUnit.value !== 'other') goalUnitOther.value = '';
         };
         goalUnit.addEventListener('change', updateGoalUnit);

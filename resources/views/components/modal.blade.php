@@ -28,6 +28,14 @@ $maxWidth = [
         lastFocusable() { return this.focusables().slice(-1)[0] },
         nextFocusable() { return this.focusables()[this.nextFocusableIndex()] || this.firstFocusable() },
         prevFocusable() { return this.focusables()[this.prevFocusableIndex()] || this.lastFocusable() },
+        requestClose() {
+            const form = this.$el.querySelector('form[data-dirty-guard]');
+            if (form && window.isDirtyForm(form)) {
+                window.confirmDiscardChanges(() => this.show = false);
+                return;
+            }
+            this.show = false;
+        },
         nextFocusableIndex() { return (this.focusables().indexOf(document.activeElement) + 1) % (this.focusables().length + 1) },
         prevFocusableIndex() { return Math.max(0, this.focusables().indexOf(document.activeElement)) -1 },
     }"
@@ -41,8 +49,8 @@ $maxWidth = [
     })"
     x-on:open-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
     x-on:close-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
-    x-on:close.stop="show = false"
-    x-on:keydown.escape.window="show = false"
+    x-on:close.stop="requestClose()"
+    x-on:keydown.escape.window="requestClose()"
     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
     x-show="show"
@@ -52,7 +60,7 @@ $maxWidth = [
     <div
         x-show="show"
         class="fixed inset-0 transition-all"
-        x-on:click="show = false"
+        x-on:click="requestClose()"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"

@@ -84,7 +84,21 @@ class ObligationController extends Controller
         $categories = $request->user()->moneyCategories()->where('type', MoneyCategoryType::Expense->value)
             ->whereNull('archived_at')->orderBy('name')->get();
 
-        return view('user.obligations.index', compact('obligations', 'wallets', 'categories', 'today', 'scheduler'));
+        $obligation = new Obligation;
+
+        return view('user.obligations.index', compact('obligations', 'wallets', 'categories', 'today', 'scheduler', 'obligation'));
+    }
+
+    public function edit(Request $request, Obligation $obligation)
+    {
+        $this->authorize('update', $obligation);
+        abort_if($obligation->user_id !== $request->user()->id || $obligation->archived_at, 404);
+        $wallets = $request->user()->wallets()->whereNull('archived_at')->orderBy('name')->get();
+        $categories = $request->user()->moneyCategories()->where('type', MoneyCategoryType::Expense->value)
+            ->whereNull('archived_at')->orderBy('name')->get();
+        $lockedByPayments = $obligation->payments()->exists();
+
+        return view('user.obligations.edit', compact('obligation', 'wallets', 'categories', 'lockedByPayments'));
     }
 
     public function store(Request $request, UserClock $clock)
@@ -109,6 +123,42 @@ class ObligationController extends Controller
         $request->user()->obligations()->create($data);
 
         return back()->with('success', 'Tagihan berhasil ditambahkan.');
+    }
+
+    public function update(Request $request, Obligation $obligation)
+    {
+        $this->authorize('update', $obligation);
+        abort_if($obligation->user_id !== $request->user()->id || $obligation->archived_at, 404);
+        $request->merge(['amount' => Rupiah::normalize($request->input('amount'))]);
+        $hasPayments = $obligation->payments()->exists();
+        $rules = [
+            'title' => ['required', 'string', 'max:120'],
+            'amount' => ['required', 'integer', 'between:1,'.Rupiah::MAX_AMOUNT],
+            'remind_days_before' => ['required', 'integer', 'between:0,30'],
+            'note' => ['nullable', 'string', 'max:255'],
+            'wallet_id' => ['nullable', 'integer', Rule::exists('wallets', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
+            'money_category_id' => ['nullable', 'integer', Rule::exists('money_categories', 'id')->where('user_id', $request->user()->id)->where('type', MoneyCategoryType::Expense->value)->whereNull('archived_at')],
+        ];
+
+        if (! $hasPayments) {
+            $rules += [
+                'kind' => ['required', Rule::in(array_column(ObligationKind::cases(), 'value'))],
+                'due_day' => ['required', 'integer', 'between:1,31'],
+                'starts_on' => ['required', 'date_format:Y-m-d'],
+                'installments_total' => ['nullable', 'integer', 'between:1,120'],
+            ];
+        }
+
+        $data = $request->validate($rules);
+        if (! $hasPayments && ($data['kind'] ?? null) === ObligationKind::Installment->value) {
+            $request->validate(['installments_total' => ['required', 'integer', 'between:1,120']]);
+        }
+        if (! $hasPayments && ($data['kind'] ?? null) !== ObligationKind::Installment->value) {
+            $data['installments_total'] = null;
+        }
+        $obligation->update($data);
+
+        return redirect()->route('user.obligations.index')->with('success', 'Pengingat berhasil diperbarui.');
     }
 
     public function pay(Request $request, Obligation $obligation, UserClock $clock, ObligationScheduler $scheduler)

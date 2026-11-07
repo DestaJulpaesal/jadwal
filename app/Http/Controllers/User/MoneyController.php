@@ -41,7 +41,12 @@ class MoneyController extends Controller
             }
         }
         $today = $clock->date($user);
-        $month = $request->validate(['month' => ['nullable', 'date_format:Y-m']])['month'] ?? substr($today, 0, 7);
+        $filters = $request->validate([
+            'month' => ['nullable', 'date_format:Y-m'],
+            'section' => ['nullable', Rule::in(['overview', 'transactions', 'wallets', 'reports'])],
+        ]);
+        $month = $filters['month'] ?? substr($today, 0, 7);
+        $section = $filters['section'] ?? ($request->routeIs('user.reports.index') ? 'reports' : 'overview');
         $wallets = $balances->forUser($user);
         $transactions = $user->transactions()->with(['wallet', 'destinationWallet', 'moneyCategory'])
             ->whereBetween('occurred_on', [
@@ -145,7 +150,8 @@ class MoneyController extends Controller
             'plannedTotal',
             'plannedLoans',
             'plannedLoanIncome',
-            'plannedLoanExpense'
+            'plannedLoanExpense',
+            'section'
         ));
     }
 
@@ -172,6 +178,18 @@ class MoneyController extends Controller
         return back()->with('success', 'Dompet diarsipkan.');
     }
 
+    public function updateWallet(Request $request, Wallet $wallet)
+    {
+        $this->authorize('update', $wallet);
+        abort_if($wallet->user_id !== $request->user()->id || $wallet->archived_at, 404);
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:60'],
+        ]);
+        $wallet->update($data);
+
+        return back()->with('success', 'Nama dompet berhasil diperbarui.');
+    }
+
     public function storeCategory(Request $request)
     {
         $this->authorize('create', MoneyCategory::class);
@@ -184,9 +202,75 @@ class MoneyController extends Controller
         return back()->with('success', 'Kategori berhasil disimpan.');
     }
 
+    public function updateCategory(Request $request, MoneyCategory $moneyCategory)
+    {
+        $this->authorize('update', $moneyCategory);
+        abort_if($moneyCategory->user_id !== $request->user()->id || $moneyCategory->archived_at, 404);
+        $data = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:60',
+                Rule::unique('money_categories', 'name')
+                    ->where('user_id', $request->user()->id)
+                    ->where('type', $moneyCategory->type->value)
+                    ->whereNull('archived_at')
+                    ->ignore($moneyCategory->id),
+            ],
+        ]);
+        $moneyCategory->update($data);
+
+        return back()->with('success', 'Nama kategori berhasil diperbarui.');
+    }
+
     public function storeTransaction(Request $request)
     {
         $this->authorize('create', Transaction::class);
+        $data = $this->validatedTransactionData($request);
+
+        DB::transaction(fn () => $request->user()->transactions()->create($data));
+
+        return back()->with('success', 'Transaksi berhasil dicatat.');
+    }
+
+    public function editTransaction(Request $request, Transaction $transaction)
+    {
+        $this->authorize('update', $transaction);
+        abort_if($transaction->user_id !== $request->user()->id || $transaction->source_type !== null, 404);
+        abort_if(
+            $transaction->wallet?->archived_at
+                || $transaction->destinationWallet?->archived_at
+                || $transaction->moneyCategory?->archived_at,
+            404
+        );
+        $wallets = $request->user()->wallets()
+            ->whereNull('archived_at')
+            ->orderBy('name')
+            ->get();
+        $categories = $request->user()->moneyCategories()
+            ->whereNull('archived_at')
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get();
+
+        return view('user.money.transactions.edit', compact('transaction', 'wallets', 'categories'));
+    }
+
+    public function updateTransaction(Request $request, Transaction $transaction)
+    {
+        $this->authorize('update', $transaction);
+        abort_if($transaction->user_id !== $request->user()->id || $transaction->source_type !== null, 404);
+        $data = $this->validatedTransactionData($request);
+        DB::transaction(fn () => $transaction->update($data));
+
+        return redirect()->route('user.money.index', [
+            'section' => 'transactions',
+            'month' => substr($data['occurred_on'], 0, 7),
+        ])->with('success', 'Transaksi berhasil diperbarui.');
+    }
+
+    private function validatedTransactionData(Request $request): array
+    {
         $request->merge(['amount' => Rupiah::normalize($request->input('amount'))]);
         $data = $request->validate([
             'type' => ['required', Rule::in(array_column(TransactionType::cases(), 'value'))],
@@ -208,8 +292,6 @@ class MoneyController extends Controller
             abort_unless($category->type->value === $data['type'], 422, 'Jenis kategori tidak sesuai dengan transaksi.');
         }
 
-        DB::transaction(fn () => $request->user()->transactions()->create($data));
-
-        return back()->with('success', 'Transaksi berhasil dicatat.');
+        return $data;
     }
 }

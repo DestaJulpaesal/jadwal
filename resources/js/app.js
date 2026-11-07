@@ -3,6 +3,7 @@ import '@fontsource/figtree/400.css';
 import '@fontsource/figtree/500.css';
 import '@fontsource/figtree/600.css';
 import '@fontsource/figtree/700.css';
+import './forms';
 
 import Alpine from 'alpinejs';
 
@@ -31,7 +32,7 @@ window.rupiahInput = (initial = '') => ({
 
 Alpine.start();
 
-document.addEventListener('DOMContentLoaded', () => {
+const initializeApplicationUi = () => {
     let privacyHidden = document.body.dataset.privateDefault === 'true';
 
     const updatePrivacy = () => {
@@ -59,33 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    document.querySelectorAll('.user-app form').forEach((form) => {
-        form.addEventListener('submit', (event) => {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                form.reportValidity();
-                form.querySelector(':invalid')?.focus();
-                return;
-            }
-
-            form.setAttribute('aria-busy', 'true');
-            form.querySelectorAll('button[type="submit"]').forEach((button) => {
-                button.disabled = true;
-                button.classList.add('is-submitting');
-                if (button.dataset.loadingText) {
-                    button.dataset.defaultText = button.textContent.trim();
-                    button.childNodes.forEach((node) => {
-                        if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) {
-                            node.textContent = ` ${button.dataset.loadingText}`;
-                        }
-                    });
-                }
-            });
-        });
-    });
-
     document.addEventListener('click', (event) => {
-        const toggle = event.target.closest('[data-password-toggle]');
+        const toggle = event.target.closest?.('[data-password-toggle]');
 
         if (!toggle) {
             return;
@@ -106,24 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
             showPassword ? toggle.dataset.passwordHideIcon : toggle.dataset.passwordShowIcon,
         );
     });
+};
 
-    document.querySelectorAll('form').forEach((form) => {
-        form.addEventListener('submit', (event) => {
-            if (form.dataset.submitting === 'true') {
-                event.preventDefault();
-                return;
-            }
-
-            form.dataset.submitting = 'true';
-            const button = form.querySelector('button[type="submit"]:not([disabled])');
-
-            if (button) {
-                button.dataset.originalText = button.textContent.trim();
-                button.textContent = button.dataset.loadingText || 'Menyimpan...';
-                button.disabled = true;
-            }
-        });
-    });
-
-    document.querySelector('[aria-invalid="true"]')?.focus();
-});
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeApplicationUi, { once: true });
+} else {
+    initializeApplicationUi();
+}

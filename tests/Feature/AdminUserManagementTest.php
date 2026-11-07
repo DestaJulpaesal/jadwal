@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,6 +33,20 @@ class AdminUserManagementTest extends TestCase
             ->assertSee('Buka menu akun')
             ->assertSee(route('settings.edit'))
             ->assertSee(route('profile.edit'));
+    }
+
+    public function test_admin_category_editor_shows_named_colors_and_contrast_preview(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        Category::query()->create(['name' => 'Kesehatan', 'color' => '#2563EB']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.categories.index'))
+            ->assertOk()
+            ->assertSee('warna bernama')
+            ->assertSee('Biru')
+            ->assertSee('Contoh teks kategori')
+            ->assertSee('kontras');
     }
 
     public function test_admin_can_search_and_filter_accounts(): void

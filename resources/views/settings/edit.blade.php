@@ -29,18 +29,9 @@
             <p class="mt-2 text-muted">Atur tampilan, pengingat, dan informasi yang muncul di dashboard.</p>
         </header>
 
-        @if ($errors->any())
-            <x-alert type="danger">
-                <p class="font-semibold">Periksa kembali pengaturan berikut:</p>
-                <ul class="mt-2 list-inside list-disc">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </x-alert>
-        @endif
+        <x-error-summary :errors="$errors->messages()" title="Pengaturan belum disimpan. Periksa isian berikut:" />
 
-        <form method="POST" action="{{ route('settings.update') }}" class="space-y-5">
+        <form method="POST" action="{{ route('settings.update') }}" class="space-y-5" data-dirty-guard>
             @csrf
             @method('PATCH')
 
@@ -51,7 +42,7 @@
                 </div>
 
                 <div>
-                    <label for="timezone" class="field-label">Zona waktu</label>
+                    <label for="timezone" class="field-label">Zona waktu (wajib)</label>
                     <select id="timezone" name="timezone" class="form-control" required>
                         <optgroup label="Indonesia">
                             @foreach (['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura'] as $timezone)
@@ -70,8 +61,8 @@
                     <p class="field-help">Waktu tugas dan jadwal email mengikuti zona waktu ini.</p>
                 </div>
 
-                <fieldset>
-                    <legend class="field-label">Awal minggu</legend>
+                <fieldset id="week_starts_on">
+                    <legend class="field-label">Awal minggu (wajib)</legend>
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach (['monday' => 'Senin', 'sunday' => 'Minggu'] as $value => $label)
                             <label class="settings-choice">
@@ -84,12 +75,13 @@
                 </fieldset>
 
                 <div>
-                    <label for="theme" class="field-label">Tema</label>
+                    <label for="theme" class="field-label">Tema (wajib)</label>
                     <select id="theme" name="theme" class="form-control" required>
                         <option value="light" @selected(old('theme', $user->theme ?? 'light') === 'light')>Terang</option>
                         <option value="dark" @selected(old('theme', $user->theme) === 'dark')>Gelap</option>
                         <option value="system" @selected(old('theme', $user->theme ?? 'light') === 'system')>Ikuti pengaturan perangkat</option>
                     </select>
+                    <p class="field-help">Tentukan apakah aplikasi memakai tampilan terang, gelap, atau mengikuti perangkat.</p>
                 </div>
             </section>
 
@@ -110,13 +102,14 @@
                 </label>
 
                 <div>
-                    <label for="digest_time" class="field-label">Jam pengiriman</label>
+                    <label for="digest_time" class="field-label">Jam pengiriman (wajib)</label>
                     <input id="digest_time" name="digest_time" type="time" value="{{ old('digest_time', $user->digest_time ?: '07:00') }}" class="form-control sm:max-w-xs" required>
                     <p class="field-help">Mengikuti zona waktu akun. Default: 07.00.</p>
                 </div>
 
-                <fieldset>
-                    <legend class="field-label">Hari pengiriman</legend>
+                <fieldset id="digest_days">
+                    <legend class="field-label">Hari pengiriman (wajib)</legend>
+                    <p class="field-help">Pilih setidaknya satu hari untuk menerima ringkasan harian.</p>
                     <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
                         @foreach ([1 => 'Senin', 2 => 'Selasa', 3 => 'Rabu', 4 => 'Kamis', 5 => 'Jumat', 6 => 'Sabtu', 7 => 'Minggu'] as $day => $label)
                             <label class="settings-choice">
@@ -146,8 +139,8 @@
                     <input type="checkbox" name="hide_financial_amounts" value="1" @checked(old('hide_financial_amounts', $user->hide_financial_amounts))>
                 </label>
 
-                <fieldset>
-                    <legend class="field-label">Informasi di dashboard</legend>
+                <fieldset id="dashboard_sections">
+                    <legend class="field-label">Informasi di dashboard (opsional)</legend>
                     <p class="field-help mb-3 mt-0">Matikan kartu yang tidak ingin kamu lihat. Perlu perhatian mencakup tugas yang terlewat.</p>
                     <input type="hidden" name="dashboard_sections[attention]" value="0">
                     <input type="hidden" name="dashboard_sections[habits]" value="0">
@@ -165,9 +158,7 @@
                 </fieldset>
             </section>
 
-            <div class="flex justify-end">
-                <x-button type="submit" variant="primary">Simpan pengaturan</x-button>
-            </div>
+            <x-form-actions :cancel-url="route('settings.edit')" submit-label="Simpan pengaturan" loading-label="Menyimpan pengaturan…" />
         </form>
     </div>
 @endsection

@@ -77,13 +77,17 @@
         @if ($icon)
             <x-icon :name="$icon" class="h-5 w-5" />
         @endif
-        {{ $slot }}
+        @unless ($iconOnly)
+            <span data-button-label>{{ $slot }}</span>
+        @endunless
     </a>
 @else
     <button @if ($type) type="{{ $type }}" @endif @if ($loadingText) data-loading-text="{{ $loadingText }}" @endif {{ $attributes->merge(['class' => trim($classes.' '.$class)]) }}>
         @if ($icon)
             <x-icon :name="$icon" class="h-5 w-5" />
         @endif
-        {{ $slot }}
+        @unless ($iconOnly)
+            <span data-button-label>{{ $slot }}</span>
+        @endunless
     </button>
 @endif

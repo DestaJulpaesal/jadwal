@@ -124,6 +124,56 @@ class LifeHubTest extends TestCase
         );
     }
 
+    public function test_manual_transactions_can_be_edited_without_breaking_wallet_balances(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $wallet = $owner->wallets()->create(['name' => 'Tunai', 'type' => WalletType::Cash, 'opening_balance' => 100_000]);
+        $otherWallet = $owner->wallets()->create(['name' => 'Bank', 'type' => WalletType::Bank]);
+        $transaction = $owner->transactions()->create([
+            'wallet_id' => $wallet->id,
+            'type' => TransactionType::Expense,
+            'amount' => 25_000,
+            'occurred_on' => '2026-11-02',
+        ]);
+
+        $this->actingAs($owner)->get(route('user.money.transactions.edit', $transaction))->assertOk();
+        $this->actingAs($other)->get(route('user.money.transactions.edit', $transaction))->assertForbidden();
+
+        $this->actingAs($owner)->patch(route('user.money.transactions.update', $transaction), [
+            'type' => TransactionType::Income->value,
+            'amount' => '35.000',
+            'wallet_id' => $otherWallet->id,
+            'occurred_on' => '2026-12-03',
+            'note' => 'Pengembalian',
+        ])->assertRedirect(route('user.money.index', ['section' => 'transactions', 'month' => '2026-12']));
+
+        $this->assertSame(100_000, app(WalletBalance::class)->forWallet($wallet));
+        $this->assertSame(35_000, app(WalletBalance::class)->forWallet($otherWallet));
+        $this->assertDatabaseHas('transactions', [
+            'id' => $transaction->id,
+            'type' => TransactionType::Income->value,
+            'amount' => 35_000,
+            'wallet_id' => $otherWallet->id,
+        ]);
+    }
+
+    public function test_money_views_provide_separate_tabs_and_quick_add_forms(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user)
+            ->get(route('user.money.index', ['section' => 'transactions']))
+            ->assertOk()
+            ->assertSee('Catat transaksi')
+            ->assertSee('transaction-create')
+            ->assertDontSee('onchange=');
+
+        $this->get(route('user.money.index', ['section' => 'wallets']))
+            ->assertOk()
+            ->assertSee('Tambah dompet')
+            ->assertSee('money-category-create');
+    }
+
     public function test_monthly_report_compares_months_and_lists_largest_expense_categories(): void
     {
         $user = User::factory()->create();
@@ -228,6 +278,61 @@ class LifeHubTest extends TestCase
 
         $this->delete(route('user.obligations.payments.cancel', [$obligation, $payment]))->assertRedirect();
         $this->assertDatabaseMissing('obligation_payments', ['id' => $payment->id]);
+    }
+
+    public function test_obligation_edits_preserve_locked_schedule_after_a_payment(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $wallet = $owner->wallets()->create([
+            'name' => 'Bank',
+            'type' => WalletType::Bank,
+            'opening_balance' => 2_000_000,
+        ]);
+        $obligation = $owner->obligations()->create([
+            'kind' => 'installment',
+            'title' => 'Cicilan laptop',
+            'amount' => 500_000,
+            'wallet_id' => $wallet->id,
+            'due_day' => 15,
+            'starts_on' => '2026-01-15',
+            'installments_total' => 12,
+            'remind_days_before' => 3,
+        ]);
+        $owner->obligationPayments()->create([
+            'obligation_id' => $obligation->id,
+            'due_on' => '2026-01-15',
+            'paid_on' => '2026-01-15',
+            'amount_paid' => 500_000,
+        ]);
+
+        $this->actingAs($owner)->get(route('user.obligations.edit', $obligation))
+            ->assertOk()
+            ->assertSee('dikunci');
+        $this->actingAs($other)->patch(route('user.obligations.update', $obligation), [
+            'title' => 'Tidak boleh',
+            'amount' => 1,
+            'remind_days_before' => 3,
+        ])->assertForbidden();
+
+        $this->actingAs($owner)->patch(route('user.obligations.update', $obligation), [
+            'title' => 'Cicilan komputer',
+            'amount' => '600.000',
+            'due_day' => 1,
+            'starts_on' => '2026-04-01',
+            'installments_total' => 2,
+            'remind_days_before' => 5,
+            'note' => 'Perubahan jadwal ditahan',
+        ])->assertRedirect(route('user.obligations.index'));
+
+        $this->assertDatabaseHas('obligations', [
+            'id' => $obligation->id,
+            'title' => 'Cicilan komputer',
+            'amount' => 600_000,
+            'due_day' => 15,
+            'starts_on' => '2026-01-15',
+            'installments_total' => 12,
+        ]);
         $this->assertDatabaseCount('transactions', 0);
         $this->assertSame(2_000_000, app(WalletBalance::class)->forWallet($wallet));
     }
@@ -442,6 +547,68 @@ class LifeHubTest extends TestCase
             'paid_on' => '2026-11-11',
         ])->assertUnprocessable();
         $this->assertDatabaseCount('loan_repayments', 1);
+    }
+
+    public function test_loan_edits_sync_the_opening_transaction_and_preserve_terms_after_repayment(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-11 03:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $firstWallet = $user->wallets()->create(['name' => 'Tunai', 'type' => WalletType::Cash, 'opening_balance' => 500_000]);
+        $secondWallet = $user->wallets()->create(['name' => 'Bank', 'type' => WalletType::Bank, 'opening_balance' => 500_000]);
+
+        $this->actingAs($user)->post(route('user.loans.store'), [
+            'direction' => 'lent',
+            'counterparty' => 'Budi',
+            'amount' => '100.000',
+            'loan_date' => '2026-11-01',
+            'due_on' => '2026-11-20',
+            'wallet_id' => $firstWallet->id,
+        ])->assertRedirect();
+        $loan = $user->loans()->firstOrFail();
+
+        $this->get(route('user.loans.edit', $loan))->assertOk();
+        $this->patch(route('user.loans.update', $loan), [
+            'direction' => 'borrowed',
+            'counterparty' => 'Sari',
+            'amount' => '200.000',
+            'loan_date' => '2026-11-02',
+            'due_on' => '2026-11-21',
+            'wallet_id' => $secondWallet->id,
+            'note' => 'Kesepakatan baru',
+        ])->assertRedirect(route('user.loans.index'));
+
+        $loan->refresh();
+        $this->assertSame('borrowed', $loan->direction->value);
+        $this->assertSame('Sari', $loan->counterparty);
+        $this->assertDatabaseHas('transactions', [
+            'source_type' => 'loan',
+            'source_id' => $loan->id,
+            'wallet_id' => $secondWallet->id,
+            'type' => TransactionType::Income->value,
+            'amount' => 200_000,
+            'occurred_on' => '2026-11-02',
+            'note' => 'Pinjaman dari Sari',
+        ]);
+
+        $this->post(route('user.loans.repay', $loan), [
+            'amount' => '50.000',
+            'paid_on' => '2026-11-10',
+        ])->assertRedirect();
+        $this->patch(route('user.loans.update', $loan), [
+            'direction' => 'lent',
+            'counterparty' => 'Sari baru',
+            'amount' => '300.000',
+            'loan_date' => '2026-11-03',
+            'due_on' => '2026-11-22',
+            'wallet_id' => $firstWallet->id,
+        ])->assertRedirect(route('user.loans.index'));
+
+        $loan->refresh();
+        $this->assertSame('borrowed', $loan->direction->value);
+        $this->assertSame(200_000, $loan->amount);
+        $this->assertSame('2026-11-02', $loan->loan_date->toDateString());
+        $this->assertSame($secondWallet->id, $loan->wallet_id);
+        $this->assertSame('Sari baru', $loan->counterparty);
     }
 
     public function test_admin_is_forbidden_from_all_private_modules(): void

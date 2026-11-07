@@ -135,9 +135,24 @@
 
     <x-bottom-sheet name="global-create" title="Mau tambah apa?">
         <div class="grid gap-2 sm:grid-cols-2">
-            <x-button href="{{ route('user.tasks.create') }}" variant="secondary" class="justify-start"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</x-button>
-            <x-button href="{{ route('user.habits.create') }}" variant="secondary" class="justify-start"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</x-button>
-            <x-button href="{{ route('user.money.index') }}" variant="secondary" class="justify-start"><x-concept-icon name="wl" class="h-5 w-5" />Catat uang</x-button>
+            <x-button href="{{ route('user.tasks.create') }}" variant="secondary" class="min-h-16 justify-start gap-3">
+                <x-concept-icon name="tk" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Tugas</strong><span class="text-xs text-muted">Catat hal yang perlu dikerjakan.</span></span>
+            </x-button>
+            <x-button href="{{ route('user.habits.create') }}" variant="secondary" class="min-h-16 justify-start gap-3">
+                <x-concept-icon name="fl" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Kebiasaan</strong><span class="text-xs text-muted">Mulai rutinitas yang ingin dijaga.</span></span>
+            </x-button>
+            <x-button href="{{ route('user.money.index', ['section' => 'transactions', 'create' => 'transaction']) }}" variant="secondary" class="min-h-16 justify-start gap-3">
+                <x-concept-icon name="wl" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Catat uang</strong><span class="text-xs text-muted">Simpan pemasukan, pengeluaran, atau transfer.</span></span>
+            </x-button>
+            <x-button href="{{ route('user.goals.create') }}" variant="secondary" class="min-h-16 justify-start gap-3">
+                <x-icon name="target" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Target</strong><span class="text-xs text-muted">Tentukan hasil yang ingin dicapai.</span></span>
+            </x-button>
+            <x-button href="{{ route('user.obligations.index', ['create' => 'obligation']) }}" variant="secondary" class="min-h-16 justify-start gap-3">
+                <x-icon name="kalender" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Tagihan / cicilan</strong><span class="text-xs text-muted">Atur jadwal pembayaran rutin.</span></span>
+            </x-button>
+            <x-button href="{{ route('user.loans.index', ['create' => 'loan']) }}" variant="secondary" class="min-h-16 justify-start gap-3">
+                <x-icon name="utang" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Utang / piutang</strong><span class="text-xs text-muted">Catat kesepakatan dan pelunasannya.</span></span>
+            </x-button>
         </div>
     </x-bottom-sheet>
 </body>
