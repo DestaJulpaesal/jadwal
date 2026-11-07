@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Panduan tampilan · Jadwal Harian</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-canvas text-ink">
+@extends('layouts.base')
+
+@section('title', 'Panduan tampilan')
+@section('body-class', 'min-h-screen bg-canvas text-ink')
+@section('body')
     <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <x-page-header eyebrow="Hanya tersedia di lingkungan lokal" title="Panduan tampilan" description="Contoh komponen dan pola visual untuk halaman baru.">
             <x-button href="{{ route('home') }}" variant="secondary"><x-icon name="kembali" class="h-5 w-5" />Kembali ke beranda</x-button>
@@ -152,5 +147,4 @@
             </section>
         </div>
     </main>
-</body>
-</html>
+@endsection

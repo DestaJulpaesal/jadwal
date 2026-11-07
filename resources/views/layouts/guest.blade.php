@@ -1,19 +1,14 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Akun') · Jadwal Harian</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
+@extends('layouts.base')
+
+@section('title', 'Akun')
+@section('body-class', request()->routeIs('login', 'register') ? 'concept-login-body' : 'min-h-screen bg-canvas text-ink antialiased')
+@section('extra-assets')
     @if (request()->routeIs('login', 'register'))
-        @vite(['resources/css/app.css', 'resources/css/pages/login.css', 'resources/js/app.js'])
-    @else
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite(['resources/css/pages/login.css'])
     @endif
-</head>
+@endsection
+@section('body')
 @if (request()->routeIs('login', 'register'))
-<body class="concept-login-body">
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
     </div>
@@ -49,9 +44,7 @@
             </div>
         </main>
     </div>
-</body>
 @else
-<body class="min-h-screen bg-canvas text-ink antialiased">
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
     </div>
@@ -83,6 +76,5 @@
             <p class="mt-6 text-center text-sm text-muted"><a href="{{ route('home') }}" class="underline-offset-4 hover:underline">Kembali ke beranda</a></p>
         </section>
     </main>
-</body>
 @endif
-</html>
+@endsection

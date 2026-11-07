@@ -1,28 +1,11 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ auth()->user()->theme ?? 'light' }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Beranda') · Jadwal Harian</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
-    <script>
-        (() => {
-            const root = document.documentElement;
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-            const applyTheme = () => {
-                root.dataset.colorScheme = root.dataset.theme === 'system'
-                    ? (prefersDark.matches ? 'dark' : 'light')
-                    : root.dataset.theme;
-            };
+@extends('layouts.base')
 
-            applyTheme();
-            prefersDark.addEventListener('change', applyTheme);
-        })();
-    </script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="user-app min-h-screen bg-canvas pt-16 text-ink antialiased" data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}">
+@section('body-class', 'user-app min-h-screen bg-canvas pt-16 text-ink antialiased')
+@section('body-attributes')
+    data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}"
+@endsection
+
+@section('body')
     <x-concept-b-sprite />
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
@@ -65,6 +48,7 @@
                         <p class="sidebar-section-label mb-2 px-3">Ringkasan</p>
                         <div class="sidebar-nav space-y-1.5">
                             <a href="{{ route('user.dashboard') }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') ? 'nav-link-active' : '' }}"><x-concept-icon name="home" class="h-5 w-5" />Beranda</a>
+                            <a href="{{ route('user.calendar') }}" class="nav-link w-full {{ request()->routeIs('user.calendar') ? 'nav-link-active' : '' }}"><x-concept-icon name="cl" class="h-5 w-5" />Kalender</a>
                         </div>
                     </section>
                     <section>
@@ -72,14 +56,29 @@
                         <div class="sidebar-nav space-y-1.5">
                             <a href="{{ route('user.tasks.index') }}" class="nav-link w-full {{ request()->routeIs('user.tasks.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</a>
                             <a href="{{ route('user.habits.index') }}" class="nav-link w-full {{ request()->routeIs('user.habits.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</a>
+                            <a href="{{ route('user.goals.index') }}" class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}"><x-icon name="target" class="h-5 w-5" />Target</a>
                         </div>
                     </section>
                     <section>
                         <p class="sidebar-section-label mb-2 px-3">Keuangan</p>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.money.index') }}" class="nav-link w-full {{ request()->routeIs('user.money.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="wl" class="h-5 w-5" />Keuangan</a>
+                            <a href="{{ route('user.money.index', ['section' => 'overview']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section', 'overview') === 'overview' ? 'nav-link-active' : '' }}"><x-concept-icon name="wl" class="h-5 w-5" />Ringkasan</a>
+                            <a href="{{ route('user.money.index', ['section' => 'transactions']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'transactions' ? 'nav-link-active' : '' }}"><x-icon name="keuangan" class="h-5 w-5" />Transaksi</a>
+                            <a href="{{ route('user.money.index', ['section' => 'wallets']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'wallets' ? 'nav-link-active' : '' }}"><x-icon name="keuangan" class="h-5 w-5" />Dompet</a>
+                            <a href="{{ route('user.obligations.index') }}" class="nav-link w-full {{ request()->routeIs('user.obligations.*') ? 'nav-link-active' : '' }}"><x-icon name="tagihan" class="h-5 w-5" />Tagihan & cicilan</a>
+                            <a href="{{ route('user.loans.index') }}" class="nav-link w-full {{ request()->routeIs('user.loans.*') ? 'nav-link-active' : '' }}"><x-icon name="utang" class="h-5 w-5" />Utang-piutang</a>
+                            <a href="{{ route('user.reports.index') }}" class="nav-link w-full {{ request()->routeIs('user.reports.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="rc" class="h-5 w-5" />Laporan</a>
                         </div>
                     </section>
+                    <section>
+                        <p class="sidebar-section-label mb-2 px-3">Akun</p>
+                        <div class="sidebar-nav space-y-1.5">
+                            <a href="{{ route('settings.edit') }}" class="nav-link w-full {{ request()->routeIs('settings.*') ? 'nav-link-active' : '' }}"><x-icon name="zona-waktu" class="h-5 w-5" />Pengaturan</a>
+                            <a href="{{ route('profile.edit') }}" class="nav-link w-full {{ request()->routeIs('profile.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="pr" class="h-5 w-5" />Profil</a>
+                        </div>
+                    </section>
+                    <a href="{{ route('user.search') }}" class="nav-link w-full {{ request()->routeIs('user.search') ? 'nav-link-active' : '' }}"><x-concept-icon name="sc" class="h-5 w-5" />Pencarian</a>
+                    <a href="{{ route('user.more') }}#bantuan" class="nav-link w-full"><x-icon name="info" class="h-5 w-5" />Bantuan</a>
                 </nav>
             </div>
             <div class="sidebar-profile-footer">
@@ -105,6 +104,9 @@
         @yield('content')
     </main>
 
+    @php
+        $isMoreActive = request()->routeIs('user.more', 'user.calendar', 'user.goals.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*', 'user.search', 'settings.*', 'profile.*');
+    @endphp
     <nav id="mobileNavigationMenu" class="mobile-nav fixed bottom-0 z-40 lg:hidden" aria-label="Navigasi utama">
         <span class="mobile-nav-shape" aria-hidden="true"></span>
         <div class="mobile-nav-grid grid grid-cols-5 items-stretch">
@@ -120,8 +122,8 @@
             <a href="{{ route('user.money.index') }}" class="mobile-nav-link {{ request()->routeIs('user.money.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.money.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="wl" /></span><span>Keuangan</span>
             </a>
-            <a href="{{ route('profile.edit') }}" class="mobile-nav-link {{ request()->routeIs('profile.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('profile.*')) aria-current="page" @endif>
-                <span class="mobile-nav-icon"><x-concept-icon name="pr" /></span><span>Profil</span>
+            <a href="{{ route('user.more') }}" class="mobile-nav-link {{ $isMoreActive ? 'mobile-nav-link-active' : '' }}" @if ($isMoreActive) aria-current="page" @endif>
+                <span class="mobile-nav-icon"><x-icon name="menu" /></span><span>Lainnya</span>
             </a>
         </div>
     </nav>
@@ -153,5 +155,4 @@
             </x-button>
         </div>
     </x-bottom-sheet>
-</body>
-</html>
+@endsection

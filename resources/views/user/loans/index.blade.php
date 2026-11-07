@@ -4,10 +4,9 @@
 
 @section('content')
     <div class="mx-auto max-w-5xl space-y-6">
-        <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div><p class="text-sm font-semibold text-primary-800">Catatan kesepakatan</p><h1 class="mt-1 text-2xl font-semibold">Utang dan piutang</h1></div>
+        <x-page-header eyebrow="Catatan kesepakatan" title="Utang dan piutang" description="Pantau pinjaman, piutang, dan pembayaran yang sudah dicatat.">
             <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'loan-create')">Tambah catatan</x-button>
-        </header>
+        </x-page-header>
         <x-bottom-sheet name="loan-create" title="Tambah utang/piutang" :show="request('create') === 'loan' || (old('form_context') === 'loan-create' && $errors->any())">
             @if (old('form_context') === 'loan-create')
                 <x-error-summary :errors="$errors->messages()" title="Utang/piutang belum tersimpan. Periksa isian berikut:" />
@@ -54,7 +53,15 @@
                     @endforeach
                 </article>
             @empty
-                <div class="surface-card p-8 text-center text-muted">Belum ada catatan utang/piutang.</div>
+                <x-empty-state
+                    class="surface-card"
+                    title="Belum ada catatan utang-piutang."
+                    description="Catat kesepakatan agar jumlah dan tanggal pembayaran mudah diikuti."
+                    :action-url="route('user.loans.index', ['create' => 'loan'])"
+                    action-label="Tambah catatan pertama"
+                >
+                    <x-slot:icon><x-icon name="utang" /></x-slot:icon>
+                </x-empty-state>
             @endforelse
         </section>
     </div>

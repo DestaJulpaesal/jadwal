@@ -4,6 +4,7 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl">
+        <x-button href="{{ route('user.obligations.index') }}" variant="ghost" icon="kembali" class="mb-3">Kembali</x-button>
         <section class="surface-card p-5 sm:p-8">
             <header class="mb-6">
                 <p class="text-sm font-semibold text-primary-800">Pengingat berkala</p>

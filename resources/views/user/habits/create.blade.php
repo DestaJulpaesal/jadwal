@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl">
-        <a href="{{ route('user.habits.index') }}" class="habit-form-back">← Kembali ke kebiasaan</a>
+        <x-button href="{{ route('user.habits.index') }}" variant="ghost" icon="kembali" class="mb-3">Kembali</x-button>
         <div class="surface-card habit-form-shell mt-4 p-5 sm:p-8">
             <div class="habit-form-heading">
                 <span class="habit-form-icon"><x-concept-icon name="fl" class="h-8 w-8" /></span>

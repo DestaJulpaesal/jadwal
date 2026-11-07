@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl">
-        <a href="{{ route('user.tasks.index') }}" class="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary-800 underline-offset-4 hover:underline">Kembali ke daftar tugas</a>
+        <x-button href="{{ route('user.tasks.index') }}" variant="ghost" icon="kembali" class="mb-3">Kembali</x-button>
         <div class="surface-card mt-3 p-5 sm:p-8">
             <header class="mb-6">
                 <p class="text-sm font-semibold text-primary-800">Perbarui rencana</p>

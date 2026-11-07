@@ -1,14 +1,11 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Jadwal Harian — Atur hari dengan lebih tenang</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
-    @vite(['resources/css/app.css', 'resources/css/pages/home.css', 'resources/js/app.js'])
-</head>
-<body class="concept-home">
+@extends('layouts.base')
+
+@section('document-title', 'Jadwal Harian — Atur hari dengan lebih tenang')
+@section('body-class', 'concept-home')
+@section('extra-assets')
+    @vite(['resources/css/pages/home.css'])
+@endsection
+@section('body')
     <x-concept-b-sprite />
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
@@ -124,5 +121,4 @@
             </div>
         </div>
     </footer>
-</body>
-</html>
+@endsection

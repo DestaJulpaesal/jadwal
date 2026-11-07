@@ -1,28 +1,8 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="{{ auth()->user()->theme ?? 'light' }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Panel admin') · Jadwal Harian</title>
-    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
-    <script>
-        (() => {
-            const root = document.documentElement;
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-            const applyTheme = () => {
-                root.dataset.colorScheme = root.dataset.theme === 'system'
-                    ? (prefersDark.matches ? 'dark' : 'light')
-                    : root.dataset.theme;
-            };
+@extends('layouts.base')
 
-            applyTheme();
-            prefersDark.addEventListener('change', applyTheme);
-        })();
-    </script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-canvas text-ink antialiased">
+@section('title', 'Panel admin')
+@section('body-class', 'min-h-screen bg-canvas text-ink antialiased')
+@section('body')
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
     </div>
@@ -83,5 +63,4 @@
             </main>
         </div>
     </div>
-</body>
-</html>
+@endsection

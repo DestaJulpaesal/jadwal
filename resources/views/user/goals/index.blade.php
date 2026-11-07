@@ -4,10 +4,9 @@
 
 @section('content')
     <div class="mx-auto max-w-5xl space-y-6">
-        <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div><p class="text-sm font-semibold text-primary-800">Langkah demi langkah</p><h1 class="mt-1 text-2xl font-semibold">Target</h1></div>
+        <x-page-header eyebrow="Langkah demi langkah" title="Target" description="Pantau kemajuan dari hal yang ingin kamu capai.">
             <x-button href="{{ route('user.goals.create') }}" variant="primary" icon="tambah">Buat target</x-button>
-        </header>
+        </x-page-header>
         <section class="space-y-4">
             @forelse ($goals as $goal)
                 <article class="surface-card p-5">
@@ -40,7 +39,15 @@
                     @if($goal->remaining_per_day)<p class="mt-2 text-sm text-muted">Sisa {{ rupiah(max(0, $goal->target_value - $goal->current_value)) }}, sekitar {{ rupiah($goal->remaining_per_day) }} per hari.</p>@endif
                 </article>
             @empty
-                <div class="surface-card p-8 text-center text-muted">Belum ada target aktif.</div>
+                <x-empty-state
+                    class="surface-card"
+                    title="Belum ada target aktif."
+                    description="Buat satu target agar kemajuanmu lebih mudah dipantau."
+                    :action-url="route('user.goals.create')"
+                    action-label="Buat target pertama"
+                >
+                    <x-slot:icon><x-icon name="target" /></x-slot:icon>
+                </x-empty-state>
             @endforelse
         </section>
     </div>

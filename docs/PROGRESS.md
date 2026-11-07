@@ -124,39 +124,59 @@ Status: selesai secara implementasi. Build, kompilasi Blade, format PHP, dan syn
 
 Buat branch Fase 3 dan baca `04_FASE3_PESAN_VALIDASI.md`; fokus pada penyelarasan pesan validasi tanpa mengubah validasi atau perilaku bisnis.
 
-## Fase 3 — Pesan, validasi, dan umpan balik (sedang dikerjakan)
+## Fase 3 — Pesan, validasi, dan umpan balik (sebagian)
 
 Status: sebagian. Implementasi berlanjut di branch `polish/fase-3-pesan-validasi`; fondasi feedback/auth sudah dibuat, tetapi checklist belum seluruhnya terpenuhi.
 
-### Selesai sejauh ini
+### Sudah diterapkan
 
 - Menambahkan katalog awal `lang/id/ui.php` dan melengkapi atribut validasi untuk field utama tugas, kebiasaan, target, profil, dan autentikasi.
 - Menambahkan `messages()` dan `attributes()` pada lima FormRequest yang ada; pesan kepemilikan kategori tidak lagi menyebut kepemilikan.
-- Menambahkan `App\Support\Feedback` dan memindahkan seluruh flash sukses/error controller dari key session terpisah ke payload terpadu; layout user/admin/guest menampilkan satu host feedback.
+- Menambahkan `App\Support\Feedback` dan memindahkan flash sukses/error controller ke payload terpadu; tidak ditemukan lagi `session('success')` atau `session('error')` manual.
 - Memperjelas pesan login generik dan menampilkan pesan akun nonaktif hanya setelah kata sandi yang benar; kesalahan kata sandi yang salah tetap generik.
 - Menambahkan petunjuk Caps Lock dan syarat kata sandi dasar yang hidup, hitung mundur throttle, pesan berhasil masuk/keluar, anti-enumerasi reset kata sandi, jeda toast saat hover/fokus/sentuhan, dan redirect sesi kedaluwarsa ke halaman Masuk.
-- Menambahkan banner offline yang mencegah submit saat terputus; halaman error 429/500/503 menyediakan aksi coba lagi dan 429 menampilkan hitung mundur bila header tersedia.
-- Menambahkan tes feedback/login/reset: 16 tes terarah lulus; suite penuh terakhir sebelum perbaikan Blade mencatat 130 lulus, empat kegagalan baseline, dan satu kegagalan baru akibat sintaks Blade yang sudah diperbaiki. Build, Pint, syntax JS, dan cache Blade lulus.
-- Pemeriksaan browser halaman Masuk pada lebar 360, 390, 768, dan 1280 px tidak menemukan overflow horizontal.
+- Menambahkan banner offline yang mencegah submit saat terputus, aksi coba lagi untuk kegagalan koneksi, halaman error 403/404/419/429/500/503, serta hitung mundur 429 bila header tersedia.
+- Respons lupa kata sandi sama untuk email terdaftar/tidak terdaftar; tes anti-enumerasi sudah ada.
+- Tes helper/login/reset dan akses lintas pengguna tersedia, tetapi belum mencakup setiap jalur validasi inline.
 
 ### Belum selesai — jangan tandai fase ini sebagai selesai
 
-- Helper flash terpadu belum diterapkan ke seluruh controller; `session('success')` manual masih tersebar.
-- Toast belum punya antrean maksimal tiga dan aksi urungkan; pemetaan seluruh jenis feedback ke toast/alert juga belum selesai.
-- Hitung mundur throttle hidup dan penonaktifan tombol Masuk belum ditambahkan.
-- Respons lupa kata sandi belum diseragamkan; syarat kata sandi bocor saat pendaftaran belum ditangani.
-- Offline banner/umpan balik kegagalan jaringan belum dibuat.
-- Katalog pesan dan attributes belum diaudit untuk setiap aturan validasi inline/controller; tes tiap jalur validasi inline dan tes akses lintas pengguna belum ditambahkan.
-- Syarat kata sandi bocor belum diperiksa. Tidak ada pemeriksaan layanan eksternal yang digunakan karena dapat mengirim sidik jari kata sandi ke pihak ketiga tanpa persetujuan.
-- Istilah “kamu”/“kata sandi” belum diselaraskan di seluruh UI dan email; halaman error sudah lebih ramah tetapi belum melalui audit teks menyeluruh.
-- Antrean toast maksimal tiga hanya membatasi elemen host pada halaman, belum ada antrean terpisah untuk beberapa pesan tertunda. Aksi flash mendukung label/URL tetapi belum ada operasi urungkan yang terhubung.
+- Katalog UI belum mencakup semua pesan controller/validasi inline; audit bahasa untuk seluruh UI dan email belum selesai.
+- Belum ada antrean toast yang menunggu giliran atau aksi urungkan yang benar-benar membatalkan perubahan.
+- Pemeriksaan kata sandi bocor tidak ditambahkan: layanan eksternal dapat menerima sidik jari kata sandi tanpa persetujuan eksplisit.
+- Audit lintas-pengguna serta tes tiap jalur validasi inline masih perlu dilengkapi.
 
 ### Risiko dan keputusan sementara
 
 - Akun nonaktif dibedakan hanya setelah verifikasi kata sandi cocok, sesuai kebutuhan UX tanpa mengungkap status saat kredensial salah.
-- Fase ini menyentuh autentikasi dan pesan global; validasi penuh wajib dijalankan lagi setelah flash terpusat dan perubahan alur reset kata sandi.
+- Tidak ada pengiriman sidik jari kata sandi ke layanan eksternal.
+- Fase ini menyentuh autentikasi dan pesan global; validasi penuh wajib dijalankan lagi setelah audit bahasa dan pengujian validasi inline.
 - Empat kegagalan baseline suite penuh tetap ada: dua `AdminUserManagementTest` dan dua `UserTaskTest`.
 
 ### Langkah berikutnya
 
-Lanjutkan audit menyeluruh bahasa dan validasi inline, kemudian mulai Fase 4 hanya setelah keputusan tertulis bahwa sisa butir Fase 3 ditangani sebagai risiko terdokumentasi.
+Selesaikan audit bahasa dan validasi inline sebelum menyatakan Fase 3 selesai.
+
+## Fase 4 — Navigasi dan struktur halaman (sedang dikerjakan; belum boleh ditandai selesai)
+
+### Selesai pada implementasi saat ini
+
+- Menambahkan `layouts/base`; seluruh layout web user/admin/guest/error, beranda, dan styleguide kini menggunakannya. Layout email tetap memakai kerangka HTML email.
+- Menambahkan halaman `Lainnya`, mengganti slot Profil pada bottom-nav, dan melengkapi tautan sidebar untuk kalender, target, bagian keuangan, tagihan, utang-piutang, laporan, pengaturan, dan profil.
+- Menghubungkan `reports.index` ke `ReportController` dan menjaga nama rute yang sudah ada.
+- Memperbaiki penanda tab aktif Keuangan agar tetap benar saat URL memuat parameter bulan.
+- Menyeragamkan header daftar tugas, target, tagihan, utang-piutang, laporan, dan halaman Lainnya; menambahkan tombol Kembali berikon pada halaman buat/ubah.
+- Menambahkan ikon, penjelasan, dan CTA pada empty state target, tagihan, utang-piutang, transaksi, pencarian, serta daftar tugas.
+- Memastikan formulir login muat tanpa scroll pada 360×640; tidak ada overflow horizontal pada 360, 390, 768, dan 1280 px.
+- Tes terarah: 14 lulus; suite penuh: 133 lulus dan 4 gagal pada kegagalan baseline yang sudah tercatat. Cache Blade, build Vite, Pint, dan `git diff --check` lulus.
+
+### Belum selesai
+
+- Header halaman belum diseragamkan di semua halaman; navigasi kembali/breadcrumb belum diaudit.
+- Empty state dan CTA setiap daftar, serta onboarding 3 langkah dengan status ceklis, belum diaudit menyeluruh.
+- Notifikasi masih menavigasi ke bagian Perlu perhatian di beranda, belum menjadi panel/sheet terpisah.
+- Audit penuh aksi daftar pada layar HP/desktop dan pengukuran browser untuk halaman terautentikasi masih perlu dilakukan.
+
+### Langkah berikutnya
+
+Fase 3 masih memiliki butir wajib terbuka. Selesaikan audit dan closeout Fase 3 sebelum menandai Fase 4 selesai; setelah itu tuntaskan audit header, empty state/onboarding, dan panel Perlu perhatian.

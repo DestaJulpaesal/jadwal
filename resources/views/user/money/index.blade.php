@@ -13,13 +13,13 @@
             <p class="concept-chip">{{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $month)->translatedFormat('F Y') }}</p>
         </header>
         <x-tabs :tabs="[
-            ['label' => 'Ringkasan', 'url' => route('user.money.index', ['section' => 'overview'])],
-            ['label' => 'Transaksi', 'url' => route('user.money.index', ['section' => 'transactions'])],
-            ['label' => 'Dompet & kategori', 'url' => route('user.money.index', ['section' => 'wallets'])],
-            ['label' => 'Tagihan', 'url' => route('user.obligations.index')],
-            ['label' => 'Utang', 'url' => route('user.loans.index')],
-            ['label' => 'Laporan', 'url' => route('user.reports.index')],
-        ]" :active="request()->fullUrl()" />
+            ['key' => 'overview', 'label' => 'Ringkasan', 'url' => route('user.money.index', ['section' => 'overview', 'month' => $month])],
+            ['key' => 'transactions', 'label' => 'Transaksi', 'url' => route('user.money.index', ['section' => 'transactions', 'month' => $month])],
+            ['key' => 'wallets', 'label' => 'Dompet & kategori', 'url' => route('user.money.index', ['section' => 'wallets', 'month' => $month])],
+            ['key' => 'obligations', 'label' => 'Tagihan', 'url' => route('user.obligations.index', ['month' => $month])],
+            ['key' => 'loans', 'label' => 'Utang-piutang', 'url' => route('user.loans.index', ['month' => $month])],
+            ['key' => 'reports', 'label' => 'Laporan', 'url' => route('user.reports.index', ['month' => $month])],
+        ]" :active="request()->routeIs('user.obligations.*') ? 'obligations' : (request()->routeIs('user.loans.*') ? 'loans' : (request()->routeIs('user.reports.*') ? 'reports' : $section))" />
         @if (in_array($section, ['overview', 'reports'], true))
         <section class="money-summary-grid" aria-label="Ringkasan keuangan">
             <article class="money-summary-card"><p class="text-sm">Pemasukan</p><p class="display-number mt-1" data-private>{{ rupiah($totals['income']) }}</p></article>
@@ -212,7 +212,16 @@
                             @endif
                         </li>
                     @empty
-                        <li class="py-5 text-sm text-muted">Belum ada transaksi pada bulan ini.</li>
+                        <li class="list-none">
+                            <x-empty-state
+                                title="Belum ada transaksi pada bulan ini."
+                                description="Catat pemasukan, pengeluaran, atau transfer untuk mulai melihat arus uang."
+                                :action-url="route('user.money.index', ['section' => 'transactions', 'create' => 'transaction'])"
+                                action-label="Catat transaksi pertama"
+                            >
+                                <x-slot:icon><x-icon name="keuangan" /></x-slot:icon>
+                            </x-empty-state>
+                        </li>
                     @endforelse
                 </ul>
                 <div class="mt-4">{{ $transactions->links() }}</div>

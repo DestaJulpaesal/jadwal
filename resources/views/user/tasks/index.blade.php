@@ -4,14 +4,9 @@
 
 @section('content')
     <div class="mx-auto max-w-6xl">
-        <header class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-                <p class="text-sm font-semibold text-primary-800">Ruang kerja pribadi</p>
-                <h1 class="mt-1 text-2xl font-semibold tracking-tight">Daftar tugas</h1>
-                <p class="mt-2 text-muted">Cari, saring, dan perbarui rencana Anda.</p>
-            </div>
+        <x-page-header class="mb-6" eyebrow="Ruang kerja pribadi" title="Daftar tugas" description="Cari, saring, dan perbarui rencanamu.">
             <x-button href="{{ route('user.tasks.create') }}" variant="primary" class="hidden md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</x-button>
-        </header>
+        </x-page-header>
 
         @if (session('schedule_conflicts'))
             <x-alert type="warning" class="mb-5">
@@ -57,6 +52,7 @@
         <section class="surface-card overflow-hidden">
             @if ($tasks->isEmpty())
                 <div class="px-5 py-12 text-center sm:px-8">
+                    <span class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-primary-800"><x-concept-icon name="tk" class="h-7 w-7" /></span>
                     <h2 class="text-lg font-semibold">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Tidak ada tugas yang cocok.' : 'Belum ada tugas.' }}</h2>
                     <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Coba ubah kata pencarian atau filter, atau tampilkan semua tugas.' : 'Tambahkan tugas pertama Anda agar rencana mudah diingat dan diatur.' }}</p>
                     <div class="mt-5 flex flex-col justify-center gap-2 sm:flex-row">

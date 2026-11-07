@@ -4,10 +4,9 @@
 
 @section('content')
     <div class="mx-auto max-w-5xl space-y-6">
-        <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div><p class="text-sm font-semibold text-primary-800">Pengingat berkala</p><h1 class="mt-1 text-2xl font-semibold">Tagihan dan cicilan</h1><p class="mt-2 text-sm text-muted">Pembayaran hanya dicatat pada periode yang jatuh tempo.</p></div>
+        <x-page-header eyebrow="Pengingat berkala" title="Tagihan dan cicilan" description="Pembayaran hanya dicatat pada periode yang jatuh tempo.">
             <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'obligation-create')">Tambah pengingat</x-button>
-        </header>
+        </x-page-header>
         <x-bottom-sheet name="obligation-create" title="Tambah pengingat" :show="request('create') === 'obligation' || (old('form_context') === 'obligation-create' && $errors->any())">
             @if (old('form_context') === 'obligation-create')
                 <x-error-summary :errors="$errors->messages()" title="Pengingat belum tersimpan. Periksa isian berikut:" />
@@ -72,7 +71,15 @@
                     @endforeach
                 </article>
             @empty
-                <div class="surface-card p-8 text-center text-muted">Belum ada tagihan atau cicilan.</div>
+                <x-empty-state
+                    class="surface-card"
+                    title="Belum ada tagihan atau cicilan."
+                    description="Catat pembayaran rutin agar tanggal jatuh tempo mudah diingat."
+                    :action-url="route('user.obligations.index', ['create' => 'obligation'])"
+                    action-label="Tambah tagihan pertama"
+                >
+                    <x-slot:icon><x-icon name="tagihan" /></x-slot:icon>
+                </x-empty-state>
             @endforelse
         </section>
     </div>
