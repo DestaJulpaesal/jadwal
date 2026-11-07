@@ -107,7 +107,7 @@
                 <div><label class="field-label" for="wallet_name">Nama dompet</label><input id="wallet_name" name="name" required maxlength="60" class="form-control"></div>
                 <div><label class="field-label" for="wallet_type">Jenis</label><select id="wallet_type" name="type" class="form-control">@foreach ($walletTypes as $type)<option value="{{ $type->value }}">{{ $type->label() }}</option>@endforeach</select></div>
                 <x-money-input id="opening_balance" name="opening_balance" label="Saldo awal (Rupiah)" value="0" />
-                <button class="btn-primary">Tambah dompet</button>
+                <x-button variant="primary">Tambah dompet</x-button>
             </form>
         </section>
         <div class="money-panel-grid grid gap-5">
@@ -145,14 +145,14 @@
                             <div><label for="note" class="field-label">Catatan</label><input id="note" name="note" maxlength="255" class="form-control"></div>
                         </div>
                     </details>
-                    <button class="btn-primary w-full">Simpan transaksi</button>
+                    <x-button variant="primary" class="w-full">Simpan transaksi</x-button>
                 </form>
                 <details class="mt-5 border-t border-line pt-4"><summary class="cursor-pointer font-medium">Tambah kategori</summary>
                     <form method="POST" action="{{ route('user.money.categories.store') }}" class="mt-3 space-y-3">
                         @csrf
                         <div><label for="category_name" class="field-label">Nama kategori</label><input id="category_name" name="name" maxlength="60" required class="form-control"></div>
                         <div><label for="category_type" class="field-label">Jenis</label><select id="category_type" name="type" class="form-control"><option value="expense">Pengeluaran</option><option value="income">Pemasukan</option></select></div>
-                        <button class="btn-secondary">Simpan kategori</button>
+                        <x-button variant="secondary">Simpan kategori</x-button>
                     </form>
                 </details>
             </section>

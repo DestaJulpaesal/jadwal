@@ -2,10 +2,10 @@
 
 @php
     $styles = [
-        'success' => 'border-green-200 bg-green-50 text-success',
-        'warning' => 'border-amber-200 bg-amber-50 text-warning',
-        'danger' => 'border-red-200 bg-red-50 text-danger',
-        'info' => 'border-blue-200 bg-blue-50 text-info',
+        'success' => 'border-line bg-success-soft text-success',
+        'warning' => 'border-line bg-warning-soft text-warning',
+        'danger' => 'border-line bg-danger-soft text-danger',
+        'info' => 'border-line bg-info-soft text-info',
     ];
     $icons = [
         'success' => 'selesai',
@@ -17,10 +17,6 @@
 @endphp
 
 <div {{ $attributes->merge(['class' => 'flex items-start gap-3 rounded-lg border px-4 py-3 text-sm '.$styles[$type]]) }} role="{{ $role }}">
-    @if (request()->routeIs('user.*'))
-        <x-concept-icon :name="match ($type) { 'success' => 'tk', 'warning' => 'bl', 'danger' => 'sc', default => 'ml' }" class="mt-0.5 h-5 w-5" />
-    @else
-        <x-icon :name="$icons[$type]" class="mt-0.5 h-5 w-5" />
-    @endif
+    <x-icon :name="$icons[$type]" class="mt-0.5 h-5 w-5" />
     <div class="min-w-0 flex-1">{{ $slot }}</div>
 </div>

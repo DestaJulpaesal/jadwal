@@ -1,6 +1,6 @@
 @import './tokens.css';
-@import './base.css';
-@import './components/legacy.css';
+@import './base.css' layer(base);
+@import './components/legacy.css' layer(components);
 @import './layouts/legacy.css';
 
 @tailwind base;

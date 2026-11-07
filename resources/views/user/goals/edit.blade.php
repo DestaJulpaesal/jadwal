@@ -12,7 +12,7 @@
                 @csrf
                 @method('PUT')
                 @include('user.goals.form')
-                <button class="btn-primary">Simpan perubahan</button>
+                <x-button variant="primary">Simpan perubahan</x-button>
             </form>
         </section>
     </div>

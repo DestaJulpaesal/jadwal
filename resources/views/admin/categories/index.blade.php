@@ -22,13 +22,13 @@
                             @method('PATCH')
                             <input name="name" value="{{ $category->name }}" maxlength="60" class="form-control min-h-10 max-w-xs flex-1">
                             <input name="color" type="color" value="{{ $category->displayColor() }}" class="h-10 w-12 rounded-lg border border-line bg-white p-1">
-                            <button class="btn-secondary min-h-10 px-3">Simpan</button>
+                            <x-button variant="secondary" class="min-h-10 px-3">Simpan</x-button>
                         </form>
                         <span class="text-xs text-muted">{{ $category->tasks_count + $category->habits_count }} dipakai</span>
                         <form method="POST" action="{{ route('admin.categories.destroy', $category) }}" onsubmit="return confirm('Hapus kategori ini?')">
                             @csrf
                             @method('DELETE')
-                            <button class="btn-quiet min-h-10 text-danger">Hapus</button>
+                            <x-button variant="ghost" class="min-h-10 text-danger">Hapus</x-button>
                         </form>
                     </div>
                 @empty
@@ -43,7 +43,7 @@
                 @csrf
                 <div><label for="name" class="field-label">Nama kategori</label><input id="name" name="name" required maxlength="60" class="form-control" placeholder="Kesehatan"></div>
                 <div><label for="color" class="field-label">Warna</label><input id="color" name="color" type="color" value="#3B82F6" class="h-11 w-20 rounded-lg border border-line bg-white p-1"></div>
-                <button class="btn-primary w-full">Tambah kategori</button>
+                <x-button variant="primary" class="w-full">Tambah kategori</x-button>
             </form>
         </section>
     </div>

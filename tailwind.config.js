@@ -8,6 +8,18 @@ export default {
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
     ],
+    safelist: [
+        'button',
+        'button--primary',
+        'button--secondary',
+        'button--ghost',
+        'button--danger',
+        'button--success',
+        'button--sm',
+        'button--md',
+        'button--lg',
+        'button--icon-only',
+    ],
 
     theme: {
         extend: {
@@ -29,9 +41,13 @@ export default {
                     900: 'var(--color-primary-900)',
                 },
                 success: 'var(--color-success)',
+                'success-soft': 'var(--color-success-soft)',
                 warning: 'var(--color-warning)',
+                'warning-soft': 'var(--color-warning-soft)',
                 danger: 'var(--color-danger)',
+                'danger-soft': 'var(--color-danger-soft)',
                 info: 'var(--color-info)',
+                'info-soft': 'var(--color-info-soft)',
             },
             boxShadow: {
                 card: 'var(--shadow-card)',

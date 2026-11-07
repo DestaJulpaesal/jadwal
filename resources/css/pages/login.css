@@ -21,11 +21,11 @@ body.concept-login-body {
 }
 
 ::view-transition-old(home-page) {
-    animation: home-page-out .18s ease-in both;
+    animation: home-page-out var(--dur-fast) var(--ease-standard)-in both;
 }
 
 ::view-transition-new(home-page) {
-    animation: home-page-in .38s cubic-bezier(.2, .75, .25, 1) both;
+    animation: home-page-in var(--dur-slow) var(--ease-enter) both;
 }
 
 @keyframes home-page-in {
@@ -41,7 +41,7 @@ html {
     min-height: 100%;
     background: #f1efe8;
     color: var(--ink);
-    font: 14px/1.35 "Nunito", sans-serif;
+    font: 14px/1.35 var(--font-sans), sans-serif;
 }
 
 body.concept-login-body {
@@ -91,11 +91,11 @@ body.concept-login-body {
     background: #fff;
     box-shadow: 2px 2px 0 var(--ink);
     color: var(--ink);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 13px;
     font-weight: 800;
     text-decoration: none;
-    transition: transform .12s ease, box-shadow .12s ease;
+    transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
 }
 
 .auth-home-link svg {
@@ -145,7 +145,7 @@ body.concept-login-body {
 
 h1 {
     margin: 0;
-    font-family: "Bagel Fat One", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 29px;
     font-weight: 400;
     line-height: 1.08;
@@ -154,7 +154,7 @@ h1 {
 
 h2 {
     margin: 0;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 17px;
     font-weight: 800;
 }
@@ -168,7 +168,7 @@ h2 {
 
 .k {
     margin: 0;
-    font-family: "Caveat", cursive;
+    font-family: var(--font-sans), cursive;
     font-size: 19px;
     font-weight: 700;
     line-height: 1;
@@ -187,7 +187,7 @@ h2 {
     border: 2px solid var(--ink);
     border-radius: 99px;
     background: #fff;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
@@ -391,8 +391,8 @@ h2 {
     outline: 0;
     background: none;
     color: var(--ink);
-    font-family: "Nunito", sans-serif;
-    font-size: 14px;
+    font-family: var(--font-sans), sans-serif;
+    font-size: 16px;
     font-weight: 800;
 }
 
@@ -420,7 +420,7 @@ h2 {
     border: 0;
     border-radius: 50%;
     background: transparent;
-    transition: transform .12s ease;
+    transition: transform var(--dur-fast) var(--ease-standard);
 }
 
 .fld .password-toggle:hover {
@@ -454,7 +454,7 @@ h2 {
     align-items: center;
     gap: 5px;
     margin: 0;
-    font-family: "Nunito", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 11px;
     font-weight: 700;
 }
@@ -478,7 +478,7 @@ h2 {
     min-height: 18px;
     margin: 0 0 8px;
     color: #b3321b;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 12.5px;
     font-weight: 800;
 }
@@ -496,7 +496,7 @@ h2 {
     background: var(--y);
     box-shadow: 4px 4px 0 var(--ink);
     color: var(--ink);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 17px;
     font-weight: 800;
 }
@@ -519,7 +519,7 @@ h2 {
     justify-content: space-between;
     gap: 8px;
     margin-top: 14px;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 13px;
     font-weight: 800;
 }
@@ -541,7 +541,7 @@ h2 {
     background: #fff;
     box-shadow: 3px 3px 0 var(--ink);
     text-align: center;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 12.5px;
     font-weight: 700;
 }
@@ -619,7 +619,7 @@ h2 {
         96% { transform: translateY(0); }
     }
 
-    .bobf { animation: bobf 3.2s ease-in-out infinite; }
+    .bobf { animation: bobf 3var(--dur-base) var(--ease-standard)-in-out infinite; }
 
     @keyframes bobf {
         50% { transform: translateY(-5px); }
@@ -714,7 +714,7 @@ h2 {
         border-radius: 16px;
         background: #fff;
         box-shadow: 3px 3px 0 var(--ink);
-        font-family: "Baloo 2", sans-serif;
+        font-family: var(--font-sans), sans-serif;
         font-weight: 700;
     }
 }

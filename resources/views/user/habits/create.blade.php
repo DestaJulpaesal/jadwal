@@ -14,7 +14,7 @@
             <form method="POST" action="{{ route('user.habits.store') }}" class="habit-form">
                 @csrf
                 @include('user.habits.form')
-                <button class="btn-primary habit-form-submit w-full sm:w-auto">Simpan kebiasaan</button>
+                <x-button variant="primary" class="habit-form-submit w-full sm:w-auto">Simpan kebiasaan</x-button>
             </form>
         </div>
     </div>

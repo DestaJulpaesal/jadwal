@@ -10,7 +10,7 @@
                 <h1 class="mt-1 text-2xl font-semibold tracking-tight">Daftar tugas</h1>
                 <p class="mt-2 text-muted">Cari, saring, dan perbarui rencana Anda.</p>
             </div>
-            <a href="{{ route('user.tasks.create') }}" class="btn-primary hidden md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
+            <x-button href="{{ route('user.tasks.create') }}" variant="primary" class="hidden md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</x-button>
         </header>
 
         @if (session('schedule_conflicts'))
@@ -49,8 +49,8 @@
                 </select>
             </div>
             <div class="flex gap-2 sm:col-span-2 lg:col-span-1">
-                <button type="submit" class="btn-primary flex-1 lg:flex-none">Terapkan</button>
-                <a href="{{ route('user.tasks.index') }}" class="btn-secondary flex-1 lg:flex-none">Reset</a>
+                <x-button type="submit" variant="primary" class="flex-1 lg:flex-none">Terapkan</x-button>
+                <x-button href="{{ route('user.tasks.index') }}" variant="secondary" class="flex-1 lg:flex-none">Reset</x-button>
             </div>
         </form>
 
@@ -61,9 +61,9 @@
                     <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Coba ubah kata pencarian atau filter, atau tampilkan semua tugas.' : 'Tambahkan tugas pertama Anda agar rencana mudah diingat dan diatur.' }}</p>
                     <div class="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
                         @if (request()->hasAny(['search', 'status_id', 'due']))
-                            <a href="{{ route('user.tasks.index') }}" class="btn-secondary">Tampilkan semua tugas</a>
+                            <x-button href="{{ route('user.tasks.index') }}" variant="secondary">Tampilkan semua tugas</x-button>
                         @endif
-                        <a href="{{ route('user.tasks.create') }}" class="btn-primary">Tambah tugas</a>
+                        <x-button href="{{ route('user.tasks.create') }}" variant="primary">Tambah tugas</x-button>
                     </div>
                 </div>
             @else

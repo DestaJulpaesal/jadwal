@@ -14,12 +14,9 @@
 @endphp
 
 <div>
-    <button type="button" class="{{ $tone === 'danger' ? 'btn-danger' : 'btn-secondary' }} min-h-11 px-3 py-1.5 text-xs" x-data x-on:click="$dispatch('open-modal', '{{ $dialogId }}')">
-        @if (! request()->routeIs('user.*'))
-            <x-icon :name="$actionIcon" class="h-5 w-5" />
-        @endif
+    <x-button :variant="$tone === 'danger' ? 'danger' : 'secondary'" size="sm" :icon="$actionIcon" x-data x-on:click="$dispatch('open-modal', '{{ $dialogId }}')">
         {{ $label }}
-    </button>
+    </x-button>
     <x-modal :name="$dialogId" focusable>
         <section class="p-5 sm:p-6">
             <h2 class="text-lg font-semibold">{{ $title }}</h2>
@@ -31,12 +28,9 @@
                     @if (strtoupper($method) !== 'POST')
                         @method($method)
                     @endif
-                    <button type="submit" class="{{ $tone === 'danger' ? 'btn-danger' : 'btn-primary' }} w-full sm:w-auto">
-                        @if (! request()->routeIs('user.*'))
-                            <x-icon :name="$actionIcon" class="h-5 w-5" />
-                        @endif
+                    <x-button type="submit" :variant="$tone === 'danger' ? 'danger' : 'primary'" :icon="$actionIcon" class="w-full sm:w-auto">
                         {{ $label }}
-                    </button>
+                    </x-button>
                 </form>
             </div>
         </section>

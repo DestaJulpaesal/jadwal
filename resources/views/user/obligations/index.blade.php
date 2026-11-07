@@ -27,7 +27,7 @@
                         <div class="sm:col-span-2"><label for="note" class="field-label">Catatan</label><input id="note" name="note" maxlength="255" class="form-control"></div>
                     </div>
                 </details>
-                <button class="btn-primary">Simpan pengingat</button>
+                <x-button variant="primary">Simpan pengingat</x-button>
             </form>
         </section>
         <section class="space-y-4">
@@ -44,7 +44,7 @@
                                 <div><label class="field-label" for="paid-{{ $obligation->id }}">Dibayar pada</label><input id="paid-{{ $obligation->id }}" name="paid_on" type="date" value="{{ $today }}" required class="form-control"></div>
                                 <x-money-input id="paid-amount-{{ $obligation->id }}" name="amount_paid" label="Nominal" :value="$obligation->amount" />
                                 <select name="wallet_id" aria-label="Dompet pembayaran" class="form-control"><option value="">Tanpa dompet</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}" @selected($obligation->wallet_id == $wallet->id)>{{ $wallet->name }}</option>@endforeach</select>
-                                <button class="btn-primary">Tandai dibayar</button>
+                                <x-button variant="primary">Tandai dibayar</x-button>
                             </form>
                         @else
                             <span class="text-sm text-muted">{{ $obligation->installments_complete ? 'Semua cicilan sudah dicatat.' : 'Belum ada periode yang jatuh tempo.' }}</span>
@@ -65,7 +65,7 @@
                             <form method="POST" action="{{ route('user.obligations.payments.cancel', [$obligation, $payment]) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button class="min-h-11 font-medium text-danger underline">Batalkan pembayaran</button>
+                                <x-button class="min-h-11 font-medium text-danger underline">Batalkan pembayaran</x-button>
                             </form>
                         </div>
                     @endforeach

@@ -36,10 +36,10 @@
             <div class="fld">
                 <span class="ic" style="background: var(--o)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
                 <input id="password" name="password" type="password" autocomplete="new-password" data-password-field placeholder="Buat kata sandi yang kuat" aria-label="Kata sandi" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" aria-describedby="password-help password-error" required>
-                <button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan password">
+                <x-button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan password">
                     <svg viewBox="0 0 24 24" data-password-icon aria-hidden="true"><use href="#password-visible" /></svg>
                     <span class="sr-only" data-password-label>Tampilkan</span>
-                </button>
+                </x-button>
             </div>
             <p id="password-help" class="register-help">Pilih kata sandi yang kuat dan mudah kamu ingat.</p>
             <x-input-error id="password-error" :messages="$errors->get('password')" />
@@ -55,7 +55,7 @@
         @if (session('status'))
             <p class="msg ok" role="status" aria-live="polite">{{ session('status') }}</p>
         @endif
-        <button type="submit" class="go register-go" data-loading-text="Menyiapkan ruangmu...">Buat akun</button>
+        <x-button type="submit" variant="primary" icon="tambah" class="register-go" data-loading-text="Menyiapkan ruangmu...">Buat akun</x-button>
         <p class="lnk register-links">Sudah punya akun? <a href="{{ route('login') }}">Masuk di sini</a></p>
     </form>
 </x-guest-layout>

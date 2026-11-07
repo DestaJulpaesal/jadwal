@@ -15,7 +15,7 @@
                 @csrf
                 @method('PUT')
                 @include('user.habits.form')
-                <button class="btn-primary habit-form-submit w-full sm:w-auto">Simpan perubahan</button>
+                <x-button variant="primary" class="habit-form-submit w-full sm:w-auto">Simpan perubahan</x-button>
             </form>
         </div>
     </div>

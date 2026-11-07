@@ -5,13 +5,7 @@
         <div class="mx-auto mb-4 h-1 w-10 rounded-full bg-line sm:hidden" aria-hidden="true"></div>
         <div class="mb-4 flex items-center justify-between gap-3">
             <h2 class="text-lg font-semibold">{{ $title }}</h2>
-            <button type="button" class="{{ request()->routeIs('user.*') ? 'btn-secondary' : 'btn-icon' }}" aria-label="Tutup" x-on:click="$dispatch('close')">
-                @if (request()->routeIs('user.*'))
-                    Tutup
-                @else
-                    <x-icon name="tutup" class="h-5 w-5" />
-                @endif
-            </button>
+            <x-button variant="ghost" icon="tutup" icon-only aria-label="Tutup" title="Tutup" x-on:click="$dispatch('close')" />
         </div>
         {{ $slot }}
     </section>

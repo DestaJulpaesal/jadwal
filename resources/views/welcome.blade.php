@@ -6,9 +6,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Jadwal Harian — Atur hari dengan lebih tenang</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}?v=3">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/css/pages/home.css', 'resources/js/app.js'])
 </head>
 <body class="concept-home">

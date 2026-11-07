@@ -60,15 +60,15 @@
                 <x-sidebar-profile-card :user="auth()->user()" />
                 <form method="POST" action="{{ route('logout') }}" class="mt-3">
                     @csrf
-                    <button class="btn-quiet w-full justify-start" type="submit"><x-icon name="keluar" class="h-5 w-5" />Keluar</button>
+                    <x-button type="submit" variant="ghost" class="w-full justify-start"><x-icon name="keluar" class="h-5 w-5" />Keluar</x-button>
                 </form>
             </div>
         </aside>
         <div class="min-w-0 flex-1 md:ml-64">
             <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-white px-4 sm:px-6">
-                <button type="button" class="btn-icon md:hidden" @click="sidebarOpen = !sidebarOpen" :aria-expanded="sidebarOpen.toString()" aria-label="Buka navigasi admin">
+                <x-button type="button" @click="sidebarOpen = !sidebarOpen" ::aria-expanded="sidebarOpen.toString()" aria-label="Buka navigasi admin" title="Buka navigasi admin" variant="ghost" class="md:hidden">
                     <x-icon name="menu" class="h-5 w-5" />
-                </button>
+                </x-button>
                 <span class="font-semibold">@yield('heading', 'Ringkasan akun')</span>
             </header>
             <main class="mx-auto max-w-7xl p-4 pb-10 sm:p-6">

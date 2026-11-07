@@ -20,7 +20,7 @@
                 <div><label for="loan_date" class="field-label">Tanggal transaksi</label><input id="loan_date" name="loan_date" type="date" required value="{{ $today }}" class="form-control"></div>
                 <div><label for="due_on" class="field-label">Jatuh tempo (opsional)</label><input id="due_on" name="due_on" type="date" class="form-control"></div>
                 <div><label for="wallet_id" class="field-label">Dompet (opsional)</label><select id="wallet_id" name="wallet_id" class="form-control"><option value="">Tidak mengubah saldo</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}">{{ $wallet->name }}</option>@endforeach</select></div>
-                <div class="sm:col-span-2 lg:col-span-3"><button class="btn-primary">Simpan</button></div>
+                <div class="sm:col-span-2 lg:col-span-3"><x-button variant="primary">Simpan</x-button></div>
             </form>
         </section>
         <section class="space-y-4">
@@ -34,7 +34,7 @@
                                 <x-money-input id="repay-amount-{{ $loan->id }}" name="amount" label="Nominal" />
                                 <div><label class="field-label" for="repay-date-{{ $loan->id }}">Tanggal</label><input id="repay-date-{{ $loan->id }}" name="paid_on" type="date" value="{{ $today }}" required class="form-control"></div>
                                 <select name="wallet_id" aria-label="Dompet" class="form-control"><option value="">Tanpa dompet</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}">{{ $wallet->name }}</option>@endforeach</select>
-                                <button class="btn-primary">Catat pembayaran</button>
+                                <x-button variant="primary">Catat pembayaran</x-button>
                             </form>
                         @else <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-800">Lunas</span> @endif
                     </div>
@@ -44,7 +44,7 @@
                             <form method="POST" action="{{ route('user.loans.repayments.cancel', [$loan, $repayment]) }}">
                                 @csrf
                                 @method('DELETE')
-                                <button class="min-h-11 font-medium text-danger underline">Batalkan</button>
+                                <x-button class="min-h-11 font-medium text-danger underline">Batalkan</x-button>
                             </form>
                         </div>
                     @endforeach

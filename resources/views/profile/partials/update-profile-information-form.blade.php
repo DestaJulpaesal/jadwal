@@ -46,9 +46,9 @@
             <x-input-error id="email-error" :messages="$errors->get('email')" />
             @if (config('auth.email_verification') && $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <p class="mt-2 text-sm text-warning">Alamat email Anda belum diverifikasi.</p>
-                <button form="send-verification" class="mt-2 min-h-11 text-sm font-semibold text-primary-800 underline underline-offset-4">Kirim ulang tautan verifikasi</button>
+                <x-button form="send-verification" class="mt-2 min-h-11 text-sm font-semibold text-primary-800 underline underline-offset-4">Kirim ulang tautan verifikasi</x-button>
             @endif
         </div>
-        <button type="submit" class="btn-primary">Simpan perubahan</button>
+        <x-button type="submit" variant="primary">Simpan perubahan</x-button>
     </form>
 </section>

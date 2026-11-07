@@ -166,7 +166,7 @@
             </section>
 
             <div class="flex justify-end">
-                <button type="submit" class="btn-primary">Simpan pengaturan</button>
+                <x-button type="submit" variant="primary">Simpan pengaturan</x-button>
             </div>
         </form>
     </div>

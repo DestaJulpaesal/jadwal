@@ -20,9 +20,6 @@
             prefersDark.addEventListener('change', applyTheme);
         })();
     </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Baloo+2:wght@600;700;800&family=Caveat:wght@600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="user-app min-h-screen bg-canvas pt-16 text-ink antialiased" data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}">
@@ -37,9 +34,9 @@
             </a>
             <div class="user-header-actions flex shrink-0 items-center gap-2 sm:gap-3">
                 @if (request()->routeIs('user.search'))
-                    <a href="{{ route('user.dashboard') }}" class="btn-icon global-search-close" aria-label="Kembali ke beranda" title="Kembali ke beranda">
+                    <x-button href="{{ route('user.dashboard') }}" aria-label="Kembali ke beranda" title="Kembali ke beranda" variant="ghost" class="global-search-close">
                         <x-concept-icon name="home" class="h-6 w-6" />
-                    </a>
+                    </x-button>
                 @else
                     <a href="{{ route('user.dashboard') }}#attention-heading" class="notification-button" aria-label="Buka notifikasi" title="Notifikasi">
                         <span class="notification-icon-wrap">
@@ -95,9 +92,9 @@
                 <div class="global-search-control">
                     <x-concept-icon name="sc" class="global-search-icon h-5 w-5" />
                     <input id="global-search" name="q" type="search" value="{{ request('q') }}" maxlength="100" required autocomplete="off" placeholder="Cari tugas, kebiasaan, transaksi..." class="global-search-input">
-                    <button type="submit" class="global-search-button" data-loading-text="Mencari..." aria-label="Cari">
+                    <x-button type="submit" variant="primary" icon-only data-loading-text="Mencari..." aria-label="Cari" title="Cari" icon="cari">
                         <x-concept-icon name="sc" class="h-5 w-5" />
-                    </button>
+                    </x-button>
                 </div>
             </form>
         @endif
@@ -131,15 +128,16 @@
         </div>
     </nav>
 
-    <button type="button" class="mobile-create-button fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-700 text-white shadow-card hover:bg-primary-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 lg:bottom-8 lg:right-8" x-data x-on:click="$dispatch('open-modal', 'global-create')" aria-label="Tambah data">
-        <x-concept-icon name="spark" class="h-6 w-6" />
-    </button>
+    <x-button type="button" class="mobile-create-button fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary-700 text-white shadow-card hover:bg-primary-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700 lg:bottom-8 lg:right-8 lg:w-auto lg:rounded-lg" x-data x-on:click="$dispatch('open-modal', 'global-create')" aria-label="Tambah baru" title="Tambah baru">
+        <x-icon name="tambah" class="h-6 w-6" />
+        <span class="hidden lg:inline">Tambah baru</span>
+    </x-button>
 
     <x-bottom-sheet name="global-create" title="Mau tambah apa?">
         <div class="grid gap-2 sm:grid-cols-2">
-            <a class="btn-secondary justify-start" href="{{ route('user.tasks.create') }}"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</a>
-            <a class="btn-secondary justify-start" href="{{ route('user.habits.create') }}"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</a>
-            <a class="btn-secondary justify-start" href="{{ route('user.money.index') }}"><x-concept-icon name="wl" class="h-5 w-5" />Catat uang</a>
+            <x-button href="{{ route('user.tasks.create') }}" variant="secondary" class="justify-start"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</x-button>
+            <x-button href="{{ route('user.habits.create') }}" variant="secondary" class="justify-start"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</x-button>
+            <x-button href="{{ route('user.money.index') }}" variant="secondary" class="justify-start"><x-concept-icon name="wl" class="h-5 w-5" />Catat uang</x-button>
         </div>
     </x-bottom-sheet>
 </body>

@@ -20,8 +20,8 @@
             <option value="admin" @selected(($filters['role'] ?? '') === 'admin')>Admin</option>
         </select>
         <div class="flex gap-2">
-            <button type="submit" class="btn-primary">Terapkan</button>
-            <a href="{{ route('admin.users.index') }}" class="btn-secondary">Reset</a>
+            <x-button type="submit" variant="primary">Terapkan</x-button>
+            <x-button href="{{ route('admin.users.index') }}" variant="secondary">Reset</x-button>
         </div>
     </form>
 
@@ -55,7 +55,7 @@
                             <td class="px-5 py-4">
                                 @if ($user->id !== auth()->id())
                                     <div class="flex flex-wrap gap-2">
-                                        <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail</a>
+                                        <x-button href="{{ route('admin.users.show', $user) }}" variant="secondary" class="min-h-11 px-3 py-1.5 text-xs">Detail</x-button>
                                         <x-confirm-action
                                             :action="route('admin.users.status', $user)"
                                             method="PATCH"
@@ -74,7 +74,7 @@
                                         />
                                     </div>
                                 @else
-                                    <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail akun</a>
+                                    <x-button href="{{ route('admin.users.show', $user) }}" variant="secondary" class="min-h-11 px-3 py-1.5 text-xs">Detail akun</x-button>
                                 @endif
                             </td>
                         </tr>
@@ -96,7 +96,7 @@
                     <p class="text-xs text-muted">{{ $user->isAdmin() ? 'Admin' : 'Pengguna' }} · Dibuat {{ $user->created_at->translatedFormat('d M Y') }}</p>
                     @if ($user->id !== auth()->id())
                         <div class="flex flex-wrap gap-2">
-                            <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail</a>
+                            <x-button href="{{ route('admin.users.show', $user) }}" variant="secondary" class="min-h-11 px-3 py-1.5 text-xs">Detail</x-button>
                             <x-confirm-action
                                 :action="route('admin.users.status', $user)"
                                 method="PATCH"
@@ -115,7 +115,7 @@
                             />
                         </div>
                     @else
-                        <a href="{{ route('admin.users.show', $user) }}" class="btn-secondary min-h-11 px-3 py-1.5 text-xs">Detail akun</a>
+                        <x-button href="{{ route('admin.users.show', $user) }}" variant="secondary" class="min-h-11 px-3 py-1.5 text-xs">Detail akun</x-button>
                     @endif
                 </li>
             @endforeach

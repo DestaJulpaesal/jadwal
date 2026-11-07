@@ -7,9 +7,9 @@
         </p>
         <div class="flex items-center justify-between gap-1">
             @if ($paginator->onFirstPage())
-                <span class="btn-secondary min-h-11 cursor-not-allowed px-3 opacity-50" aria-disabled="true">Sebelumnya</span>
+                <span class="button button--secondary button--md min-h-11 cursor-not-allowed px-3 opacity-50" aria-disabled="true">Sebelumnya</span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="btn-secondary min-h-11 px-3">Sebelumnya</a>
+                <x-button href="{{ $paginator->previousPageUrl() }}" rel="prev" variant="secondary" icon="sebelumnya">Sebelumnya</x-button>
             @endif
             <div class="hidden items-center gap-1 sm:flex">
                 @foreach ($elements as $element)
@@ -27,9 +27,9 @@
                 @endforeach
             </div>
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="btn-secondary min-h-11 px-3">Berikutnya</a>
+                <x-button href="{{ $paginator->nextPageUrl() }}" rel="next" variant="secondary" icon="berikutnya">Berikutnya</x-button>
             @else
-                <span class="btn-secondary min-h-11 cursor-not-allowed px-3 opacity-50" aria-disabled="true">Berikutnya</span>
+                <span class="button button--secondary button--md min-h-11 cursor-not-allowed px-3 opacity-50" aria-disabled="true">Berikutnya</span>
             @endif
         </div>
     </nav>

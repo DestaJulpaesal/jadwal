@@ -22,9 +22,9 @@
                         <b data-private>{{ rupiah($totalBalance) }}</b>
                         <div class="concept-stat-label">
                             <span>saldo</span>
-                            <button type="button" class="privacy-toggle privacy-toggle-stat" data-privacy-toggle aria-label="Sembunyikan nominal" aria-pressed="false">
+                            <x-button type="button" class="privacy-toggle privacy-toggle-stat" data-privacy-toggle aria-label="Sembunyikan nominal" aria-pressed="false">
                                 <x-concept-icon name="lk" />
-                            </button>
+                            </x-button>
                         </div>
                     </div>
                 @endif
@@ -91,7 +91,7 @@
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="log_date" value="{{ $today }}">
-                            <button class="dashboard-action dashboard-action-secondary">Batalkan catatan</button>
+                            <x-button class="dashboard-action dashboard-action-secondary">Batalkan catatan</x-button>
                         </form>
                     @else
                         <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" class="flex shrink-0 gap-2">
@@ -99,7 +99,7 @@
                             <input type="hidden" name="log_date" value="{{ $today }}">
                             <input type="hidden" name="status" value="done">
                             @if($habit->goal_value)<input type="hidden" name="value" value="{{ $habit->goal_value }}">@endif
-                            <button class="dashboard-action dashboard-action-primary"><x-concept-icon name="spark" class="h-4 w-4" />Selesaikan hari ini</button>
+                            <x-button class="dashboard-action dashboard-action-primary"><x-concept-icon name="spark" class="h-4 w-4" />Selesaikan hari ini</x-button>
                         </form>
                     @endif
                 </div>
@@ -252,7 +252,7 @@
             <section class="surface-card mt-6 border-primary-200 p-5 sm:p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4">
                     <div><h2 class="text-lg font-semibold">Mulai dari mana?</h2><p class="mt-1 text-sm text-muted">Pilih satu langkah kecil. Anda bisa melanjutkan kapan saja.</p></div>
-                    <form method="POST" action="{{ route('user.onboarding.dismiss') }}">@csrf<button class="dashboard-action dashboard-action-quiet">Tutup panduan</button></form>
+                    <form method="POST" action="{{ route('user.onboarding.dismiss') }}">@csrf<x-button class="dashboard-action dashboard-action-quiet">Tutup panduan</x-button></form>
                 </div>
                 <ol class="mt-4 grid gap-3 sm:grid-cols-3">
                     <li><a href="{{ route('user.tasks.create') }}" class="block min-h-14 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">1. Tambah tugas pertama</a></li>

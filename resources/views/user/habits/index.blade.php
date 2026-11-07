@@ -14,7 +14,7 @@
                     <span class="habit-date-pill">{{ \Illuminate\Support\Carbon::parse($today)->translatedFormat('l, j F Y') }}</span>
                 </div>
             </div>
-            <a href="{{ route('user.habits.create') }}" class="btn-primary habit-add-button"><x-concept-icon name="spark" class="h-5 w-5" />Tambah kebiasaan</a>
+            <x-button href="{{ route('user.habits.create') }}" variant="primary" class="habit-add-button"><x-concept-icon name="spark" class="h-5 w-5" />Tambah kebiasaan</x-button>
         </header>
         <div class="habit-stats habit-overview">
             <article class="habit-stat habit-stat-blue">
@@ -79,13 +79,13 @@
                             <strong>Aksi kebiasaan</strong>
                             <span>Catat aktivitas hari ini atau kelola kebiasaan.</span>
                         </div>
-                        <a class="btn-secondary habit-edit-button" href="{{ route('user.habits.edit', $habit) }}">Edit kebiasaan</a>
+                        <x-button href="{{ route('user.habits.edit', $habit) }}" variant="secondary" class="habit-edit-button">Edit kebiasaan</x-button>
                         @if ($habit->today_log?->status->value === 'done')
                             <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}">
                                 @csrf
                                 @method('DELETE')
                                 <input type="hidden" name="log_date" value="{{ $today }}">
-                                <button class="btn-secondary habit-main-action">Batalkan catatan hari ini</button>
+                                <x-button variant="secondary" class="habit-main-action">Batalkan catatan hari ini</x-button>
                             </form>
                         @else
                             <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" class="flex flex-wrap items-center gap-2">
@@ -106,14 +106,14 @@
                                         <label class="habit-checkin-wide"><span>{{ $habit->goal_unit ? 'Hasil ('.$habit->goal_unit.')' : 'Hasil / catatan singkat' }}</span><input name="value" type="number" min="0" max="1000000" value="{{ $habit->goal_value }}" placeholder="Opsional"></label>
                                     </div>
                                 </details>
-                                <button class="btn-primary habit-main-action">Selesai hari ini</button>
-                                <button name="status" value="skipped" class="btn-secondary">Lewati hari ini</button>
+                                <x-button variant="primary" class="habit-main-action">Selesai hari ini</x-button>
+                                <x-button name="status" value="skipped" variant="secondary">Lewati hari ini</x-button>
                             </form>
                         @endif
                         <form method="POST" action="{{ route('user.habits.archive', $habit) }}" onsubmit="return confirm('Arsipkan kebiasaan ini?')">
                             @csrf
                             @method('PATCH')
-                            <button class="btn-secondary">Arsipkan kebiasaan</button>
+                            <x-button variant="secondary">Arsipkan kebiasaan</x-button>
                         </form>
                     </div>
                     <details class="habit-history">
@@ -138,7 +138,7 @@
                                                 @csrf
                                                 @method('DELETE')
                                                 <input type="hidden" name="log_date" value="{{ $logDate }}">
-                                                <button class="mt-1 min-h-11 font-medium text-primary-800 underline">Batalkan</button>
+                                                <x-button class="mt-1 min-h-11 font-medium text-primary-800 underline">Batalkan</x-button>
                                             </form>
                                         @else
                                             <form method="POST" action="{{ route('user.habits.check-in', $habit) }}">
@@ -146,7 +146,7 @@
                                                 <input type="hidden" name="log_date" value="{{ $logDate }}">
                                                 <input type="hidden" name="status" value="done">
                                                 @if ($habit->goal_value)<input type="hidden" name="value" value="{{ $habit->goal_value }}">@endif
-                                                <button class="mt-1 min-h-11 font-medium text-primary-800 underline">Tandai selesai</button>
+                                                <x-button class="mt-1 min-h-11 font-medium text-primary-800 underline">Tandai selesai</x-button>
                                             </form>
                                         @endif
                                     </div>
@@ -159,10 +159,10 @@
                 <section class="concept-card concept-card-yellow px-5 py-12 text-center">
                     <h2 class="text-lg font-semibold">Belum ada kebiasaan</h2>
                     <p class="mt-2 text-sm text-muted">Mulai dengan satu kebiasaan kecil yang ingin dijaga.</p>
-                    <a href="{{ route('user.habits.create', ['preset' => 0]) }}" class="btn-primary mt-5">Mulai belajar 30 menit</a>
+                    <x-button href="{{ route('user.habits.create', ['preset' => 0]) }}" variant="primary" icon="tambah" class="mt-5">Mulai kebiasaan 30 menit</x-button>
                     <div class="mt-4 flex flex-wrap justify-center gap-2">
                         @foreach (config('presets.habits') as $index => $preset)
-                            @if ($index > 0)<a href="{{ route('user.habits.create', ['preset' => $index]) }}" class="btn-secondary">{{ $preset['title'] }}</a>@endif
+                            @if ($index > 0)<x-button href="{{ route('user.habits.create', ['preset' => $index]) }}" variant="secondary" icon="tambah">{{ $preset['title'] }}</x-button>@endif
                         @endforeach
                     </div>
                 </section>

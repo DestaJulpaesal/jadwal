@@ -4,7 +4,7 @@
         <p class="mt-1 text-sm leading-6 text-muted">Penghapusan akun akan menghapus semua tugas dan kategori Anda secara permanen. Tindakan ini tidak dapat dibatalkan.</p>
     </header>
 
-    <button type="button" class="btn-danger" x-data x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">Hapus akun</button>
+    <x-button type="button" x-data x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')" variant="danger">Hapus akun</x-button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
         <form method="post" action="{{ route('profile.destroy') }}" class="p-5 sm:p-6">

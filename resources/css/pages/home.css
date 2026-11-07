@@ -7,11 +7,11 @@
 }
 
 ::view-transition-old(home-page) {
-    animation: home-page-out .18s ease-in both;
+    animation: home-page-out var(--dur-fast) var(--ease-standard)-in both;
 }
 
 ::view-transition-new(home-page) {
-    animation: home-page-in .38s cubic-bezier(.2, .75, .25, 1) both;
+    animation: home-page-in var(--dur-slow) var(--ease-enter) both;
 }
 
 @keyframes home-page-in {
@@ -34,7 +34,7 @@
     margin: 0;
     color: var(--home-ink);
     background: #f1efe8;
-    font: 600 15px/1.5 "Nunito", sans-serif;
+    font: 600 15px/1.5 var(--font-sans), sans-serif;
 }
 
 .concept-home *,
@@ -70,11 +70,11 @@
 .home-brand {
     gap: 10px;
     color: var(--home-ink);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 19px;
     font-weight: 800;
     text-decoration: none;
-    transition: transform .18s ease;
+    transition: transform var(--dur-fast) var(--ease-standard);
 }
 
 .home-brand:hover {
@@ -90,7 +90,7 @@
     border-radius: 13px;
     background: var(--home-green);
     box-shadow: 2px 2px 0 var(--home-ink);
-    transition: transform .2s ease, box-shadow .2s ease;
+    transition: transform var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
 }
 
 .home-brand:hover .home-brand-icon {
@@ -113,7 +113,7 @@
     color: var(--home-ink);
     font-weight: 800;
     text-decoration: none;
-    transition: color .16s ease, transform .16s ease;
+    transition: color var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
 }
 
 .home-login:hover {
@@ -123,7 +123,7 @@
 
 .home-login svg,
 .home-button svg {
-    transition: transform .18s ease;
+    transition: transform var(--dur-fast) var(--ease-standard);
 }
 
 .home-login:hover svg {
@@ -145,11 +145,11 @@
     border-radius: 14px;
     box-shadow: 3px 3px 0 var(--home-ink);
     color: var(--home-ink);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 15px;
     font-weight: 800;
     text-decoration: none;
-    transition: transform .18s cubic-bezier(.2, .8, .2, 1), box-shadow .18s ease, filter .18s ease;
+    transition: transform .18s var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), filter var(--dur-fast) var(--ease-standard);
 }
 
 .home-button:hover {
@@ -181,11 +181,11 @@
 }
 
 .home-plus {
-    font-family: "Nunito", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 25px;
     font-weight: 700;
     line-height: .8;
-    transition: transform .2s cubic-bezier(.2, .8, .2, 1);
+    transition: transform .2s var(--ease-standard);
 }
 
 .home-hero {
@@ -205,7 +205,7 @@
     border-radius: 30px;
     background: var(--home-cream) radial-gradient(#e9d9a6 1.2px, transparent 1.4px) 0 0/16px 16px;
     box-shadow: 6px 6px 0 var(--home-ink);
-    animation: home-card-enter .55s cubic-bezier(.2, .75, .25, 1) both;
+    animation: home-card-enter var(--dur-slow) var(--ease-enter) both;
 }
 
 .home-spark {
@@ -229,7 +229,7 @@
     border: 2px solid var(--home-ink);
     border-radius: 99px;
     background: #fff;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 13px;
     font-weight: 800;
 }
@@ -242,7 +242,7 @@
 .hero-copy-card h1 {
     max-width: 470px;
     margin: 0;
-    font-family: "Bagel Fat One", "Baloo 2", sans-serif;
+    font-family: var(--font-sans), var(--font-sans), sans-serif;
     font-size: clamp(36px, 4vw, 52px);
     font-weight: 400;
     line-height: 1.04;
@@ -296,7 +296,7 @@
     border-radius: 25px;
     background: #fff;
     box-shadow: 5px 5px 0 var(--home-ink);
-    animation: home-card-enter .6s .1s cubic-bezier(.2, .75, .25, 1) both;
+    animation: home-card-enter var(--dur-slow) .1s var(--ease-enter) both;
 }
 
 .agenda-card:hover {
@@ -315,14 +315,14 @@
 
 .home-script {
     margin: 0 0 2px;
-    font-family: "Caveat", cursive;
+    font-family: var(--font-sans), cursive;
     font-size: 20px;
     font-weight: 700;
 }
 
 .agenda-heading h2 {
     margin: 0;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 23px;
     font-weight: 800;
 }
@@ -333,7 +333,7 @@
     border: 2px solid var(--home-ink);
     border-radius: 99px;
     background: var(--home-yellow);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 12px;
     font-weight: 800;
 }
@@ -350,7 +350,7 @@
     align-items: start;
     gap: 10px;
     padding: 17px 0;
-    transition: padding-inline .18s ease, background-color .18s ease;
+    transition: padding-inline var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
 }
 
 .agenda-list li:hover {
@@ -365,7 +365,7 @@
 .agenda-list time {
     padding-top: 6px;
     color: #315d4d;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 15px;
     font-weight: 800;
 }
@@ -382,7 +382,7 @@
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    transition: transform .2s cubic-bezier(.2, .8, .2, 1);
+    transition: transform .2s var(--ease-standard);
 }
 
 .agenda-list li:hover .agenda-icon {
@@ -403,7 +403,7 @@
 
 .agenda-list h3 {
     margin: 4px 0 2px;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 16px;
     font-weight: 800;
     line-height: 1.25;
@@ -451,8 +451,8 @@
     background-image: radial-gradient(rgb(27 27 27 / 9%) 1px, transparent 1.2px);
     background-size: 13px 13px;
     box-shadow: 4px 4px 0 var(--home-ink);
-    transition: transform .2s cubic-bezier(.2, .8, .2, 1), box-shadow .2s ease;
-    animation: home-card-enter .55s cubic-bezier(.2, .75, .25, 1) both;
+    transition: transform .2s var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
+    animation: home-card-enter var(--dur-slow) var(--ease-enter) both;
 }
 
 .feature-card:nth-child(2) {
@@ -472,7 +472,7 @@
     width: 54px;
     height: 54px;
     border-radius: 16px;
-    transition: transform .22s cubic-bezier(.2, .8, .2, 1);
+    transition: transform .22s var(--ease-standard);
 }
 
 .feature-card:hover .feature-icon {
@@ -486,7 +486,7 @@
 
 .feature-card h2 {
     margin: 12px 0 4px;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 19px;
     font-weight: 800;
 }
@@ -518,7 +518,7 @@
 
 .footer-divider-label {
     color: #777064;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 10px;
     font-weight: 800;
     letter-spacing: 1.4px;
@@ -569,7 +569,7 @@
     border: 2px solid var(--home-ink);
     background: var(--home-green);
     box-shadow: 2px 2px 0 var(--home-ink);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 11px;
     font-weight: 800;
     letter-spacing: .8px;
@@ -614,7 +614,7 @@
 
 .footer-invite-message {
     margin: 0;
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 21px;
     font-weight: 800;
 }
@@ -694,7 +694,7 @@
     align-items: center;
     gap: 10px;
     color: var(--home-ink);
-    font-family: "Baloo 2", sans-serif;
+    font-family: var(--font-sans), sans-serif;
     font-size: 17px;
     font-weight: 800;
     text-decoration: none;
@@ -726,7 +726,7 @@
 .footer-quote {
     margin: 3px 0 0;
     color: #8b806d;
-    font-family: "Caveat", cursive;
+    font-family: var(--font-sans), cursive;
     font-size: 16px;
     font-weight: 700;
 }

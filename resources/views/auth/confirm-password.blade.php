@@ -13,13 +13,13 @@
             <x-input-label for="password" value="Password" />
             <div class="mt-1 flex gap-2">
                 <x-text-input id="password" name="password" type="password" class="min-w-0 flex-1" required autofocus autocomplete="current-password" data-password-field aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" aria-describedby="password-error" />
-                <button type="button" class="btn-secondary px-3" data-password-toggle data-password-show-icon="{{ asset('icons/sprite.svg#icon-lihat-password') }}" data-password-hide-icon="{{ asset('icons/sprite.svg#icon-sembunyikan-password') }}" aria-label="Tampilkan password">
+                <x-button type="button" data-password-toggle data-password-show-icon="{{ asset('icons/sprite.svg#icon-lihat-password') }}" data-password-hide-icon="{{ asset('icons/sprite.svg#icon-sembunyikan-password') }}" aria-label="Tampilkan password" variant="secondary" class="px-3">
                     <x-icon name="lihat-password" class="h-5 w-5" data-password-icon />
                     <span data-password-label>Tampilkan</span>
-                </button>
+                </x-button>
             </div>
             <x-input-error id="password-error" :messages="$errors->get('password')" />
         </div>
-        <button type="submit" class="btn-primary w-full" data-loading-text="Memeriksa...">Konfirmasi</button>
+        <x-button type="submit" data-loading-text="Memeriksa..." variant="primary" class="w-full">Konfirmasi</x-button>
     </form>
 </x-guest-layout>

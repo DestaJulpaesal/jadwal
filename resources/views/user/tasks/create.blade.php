@@ -21,8 +21,8 @@
                 @csrf
                 @include('user.tasks.form')
                 <div class="flex flex-col-reverse gap-3 border-t border-line pt-5 sm:flex-row sm:justify-end">
-                    <a href="{{ route('user.tasks.index') }}" class="btn-secondary">Batal</a>
-                    <button type="submit" class="btn-primary" data-loading-text="Menyimpan..."><x-concept-icon name="tk" class="h-5 w-5" />Simpan tugas</button>
+                    <x-button href="{{ route('user.tasks.index') }}" variant="secondary">Batal</x-button>
+                    <x-button type="submit" data-loading-text="Menyimpan..." variant="primary"><x-concept-icon name="tk" class="h-5 w-5" />Simpan tugas</x-button>
                 </div>
             </form>
         </div>

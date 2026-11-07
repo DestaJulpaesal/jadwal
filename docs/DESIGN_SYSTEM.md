@@ -8,7 +8,7 @@ Ramah, tenang, terpercaya, dan mudah dibaca. Permukaan putih berada di atas lata
 
 ## Token desain
 
-Token didefinisikan di `tailwind.config.js` dan sebagai variabel CSS di `resources/css/app.css`.
+Token didefinisikan di `tailwind.config.js` dan `resources/css/tokens.css`.
 
 | Peran | Nilai |
 |---|---|
@@ -23,7 +23,7 @@ Token didefinisikan di `tailwind.config.js` dan sebagai variabel CSS di `resourc
 | Bahaya | `#a3312c` |
 | Informasi | `#245d81` |
 
-Semua token teks pada permukaan putih memiliki rasio kontras minimal 6,39:1 (primer), melampaui WCAG AA 4,5:1 untuk teks normal. Periksa kembali kontras jika menambahkan kombinasi baru; jangan memakai warna sebagai satu-satunya penanda status.
+Pasangan teks dan permukaan yang dipakai komponen melampaui WCAG AA 4,5:1. Pada tema terang: ink/surface 15,04:1, muted/surface 6,52:1, muted/canvas 6,12:1, dan primary/surface 6,39:1; teks status di latar soft berada pada rentang 6,04–6,48:1. Pada tema gelap: ink/surface 11,70:1, muted/surface 7,80:1, primary/foreground tombol 8,91:1, dan teks status di latar soft berada pada rentang 6,58–7,81:1. Tema user gelap memakai pasangan primary khusus dengan rasio 10,97:1. Nilai dihitung dari token sRGB dengan rumus WCAG; ukur kembali pasangan baru dan jangan memakai warna sebagai satu-satunya penanda status.
 
 Figtree di-self-host melalui `@fontsource/figtree`; gunakan sans-serif sistem sebagai cadangan. Skala teks utama: 12–14 px untuk keterangan, 16 px untuk isi, 20–24 px untuk judul bagian, 32–48 px untuk judul halaman/landing. Maksimal satu keluarga font.
 
@@ -35,6 +35,8 @@ Gunakan skala Tailwind yang tersedia untuk jarak (kelipatan 4 px), sudut 8 px un
 - `<x-primary-button>` dan `.btn-primary`: satu aksi utama per bagian.
 - `<x-secondary-button>` dan `.btn-secondary`: aksi pendamping atau batal.
 - `<x-danger-button>` dan `.btn-danger`: tindakan yang menghapus atau berdampak besar.
+- `<x-button variant="primary|secondary|ghost|danger" size="sm|md|lg">`: gunakan untuk tombol dan tautan bergaya tombol. Sertakan ikon yang menggambarkan tindakan di sebelah kiri; pakai `icon-only` hanya untuk tindakan universal dan selalu sediakan `aria-label` serta `title`.
+- Tombol tanpa `icon` eksplisit mencoba memilih ikon dari label; tetap tentukan `icon` langsung bila label kurang spesifik atau ikon hasil inferensi tidak tepat.
 - `<x-input-label>`, `<x-text-input>`, `<x-input-error>`, `.form-control`, dan `<x-field>`: label selalu terlihat; bantuan dan error berada dekat kolom.
 - `[data-password-toggle]`: tombol tampil/sembunyikan password dengan label aksesibel.
 - `<x-status-badge>`: status memiliki teks dan warna.
@@ -67,6 +69,13 @@ Komponen shell admin mengambil pola navigasi samping dan header dari Flowbite Ad
 - **Kalender:** titik ringkas di grid ponsel dan agenda tanggal terpilih di bawahnya; grid penuh untuk layar besar.
 - **Form keuangan:** tampilkan maksimal lima kolom dasar; rincian opsional berada dalam `<details>` dengan label yang jelas.
 - **Laporan:** ringkasan angka, perbandingan bulan sebelumnya, dan kategori terbesar; nilai dan progress tetap tersedia sebagai teks, bukan warna saja.
+
+### Aturan tombol
+
+- Gunakan `primary` untuk satu aksi utama, `secondary` untuk tindakan pendamping, `ghost` untuk tindakan ringan, dan `danger` hanya untuk tindakan berisiko yang sudah dikonfirmasi. Variasi status memakai token warna `*-soft` agar tetap terbaca di tema gelap.
+- Label menjelaskan hasil dan objek, misalnya “Simpan tugas”, “Tambah dompet”, atau “Hapus transaksi”; hindari label “OK”, “Ya”, dan “Proses”.
+- Ukuran `md` adalah bawaan. Gunakan `lg` pada aksi utama form di ponsel dan `sm` hanya untuk konteks padat, dengan area sentuh tetap sekurangnya 44 px pada layar kecil.
+- Tombol ikon saja harus punya nama aksesibel dan `title` yang memberi tooltip.
 
 ## UX writing
 

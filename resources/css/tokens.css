@@ -1,6 +1,7 @@
 /* Design tokens shared by every entrypoint. */
 :root {
     color-scheme: light;
+    --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
     --ink: #1b1b1b;
     --bg: #fff4d6;
     --y: #ffd23f;
@@ -17,13 +18,111 @@
     --color-primary-dark: #174e3a;
     --color-primary-50: #eff6f1;
     --color-primary-100: #dcebe1;
+    --color-primary-200: #b7d4c2;
+    --color-primary-300: #8ebba2;
+    --color-primary-400: #64a181;
+    --color-primary-500: #438763;
     --color-primary-600: #287654;
     --color-primary-700: #226b50;
     --color-primary-800: #174e3a;
     --color-primary-900: #143d30;
     --color-success: #216747;
+    --color-success-foreground: #ffffff;
+    --color-success-soft: #eaf5ee;
     --color-warning: #85520b;
+    --color-warning-soft: #fff5df;
     --color-danger: #a3312c;
+    --color-danger-foreground: #ffffff;
+    --color-danger-soft: #fff0ef;
     --color-info: #245d81;
+    --color-info-soft: #edf6fb;
     --shadow-card: 0 2px 8px rgb(23 53 39 / 6%);
+    --color-surface-raised: #ffffff;
+    --color-primary-foreground: #ffffff;
+
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-7: 1.75rem;
+    --space-8: 2rem;
+    --space-9: 2.25rem;
+    --space-10: 2.5rem;
+    --space-11: 2.75rem;
+    --space-12: 3rem;
+
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-xl: 1.25rem;
+    --radius-full: 9999px;
+    --radius-button: var(--radius-sm);
+    --radius-input: var(--radius-sm);
+    --radius-card: var(--radius-md);
+
+    --shadow-xs: 0 1px 2px rgb(23 53 39 / 8%);
+    --shadow-raised: 0 8px 24px rgb(23 53 39 / 12%);
+    --shadow-overlay: 0 16px 48px rgb(23 53 39 / 20%);
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+
+    --dur-instant: 80ms;
+    --dur-fast: 140ms;
+    --dur-base: 200ms;
+    --dur-slow: 320ms;
+    --ease-standard: cubic-bezier(.2, 0, 0, 1);
+    --ease-enter: cubic-bezier(.05, .7, .1, 1);
+    --ease-exit: cubic-bezier(.3, 0, .8, .15);
+    --ease-spring: cubic-bezier(.2, 1.4, .4, 1);
+
+    --z-header: 30;
+    --z-nav: 40;
+    --z-fab: 45;
+    --z-sheet: 50;
+    --z-modal: 60;
+    --z-toast: 70;
+}
+
+html[data-color-scheme="dark"] {
+    --color-canvas: #182126;
+    --color-surface: #273139;
+    --color-ink: #edf2ef;
+    --color-muted: #c1c8c8;
+    --color-line: #44515a;
+    --color-primary: #8ecfae;
+    --color-primary-dark: #b7d4c2;
+    --color-primary-50: #20392c;
+    --color-primary-100: #294536;
+    --color-primary-200: #395c48;
+    --color-primary-300: #527c61;
+    --color-primary-400: #69997a;
+    --color-primary-500: #7fb894;
+    --color-primary-600: #8ecfae;
+    --color-primary-700: #8ecfae;
+    --color-primary-800: #b7d4c2;
+    --color-primary-900: #d7ecdf;
+    --color-success: #9cdbad;
+    --color-success-soft: #20392c;
+    --color-warning: #f0c271;
+    --color-warning-soft: #45371e;
+    --color-danger: #f5a6a0;
+    --color-danger-soft: #472b2a;
+    --color-info: #9dc9ed;
+    --color-info-soft: #223946;
+    --color-surface-raised: #303b42;
+    --color-primary-foreground: #14251d;
+    --color-danger-foreground: #301817;
+    --color-success-foreground: #14251d;
+    --shadow-xs: 0 1px 2px rgb(0 0 0 / 20%);
+    --shadow-card: 0 2px 8px rgb(0 0 0 / 24%);
+    --shadow-raised: 0 8px 24px rgb(0 0 0 / 32%);
+    --shadow-overlay: 0 16px 48px rgb(0 0 0 / 45%);
 }

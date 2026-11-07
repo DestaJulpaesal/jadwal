@@ -27,10 +27,10 @@
         <div class="fld">
             <span class="ic" style="background: var(--g)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
             <input id="password" name="password" type="password" autocomplete="current-password" data-password-field placeholder="Masukkan kata sandi" aria-label="Kata sandi" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" required>
-            <button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan password">
+            <x-button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan password">
                 <svg viewBox="0 0 24 24" data-password-icon aria-hidden="true"><use href="#password-visible" /></svg>
                 <span class="sr-only" data-password-label>Tampilkan</span>
-            </button>
+            </x-button>
         </div>
 
         @if ($errors->any())
@@ -41,7 +41,7 @@
             <p class="msg" aria-hidden="true"></p>
         @endif
 
-        <div class="row"><button type="submit" class="go" id="lg" data-loading-text="Memeriksa...">Masuk</button></div>
+        <div class="row"><x-button type="submit" variant="primary" icon="kelola-akun" id="lg" data-loading-text="Memeriksa...">Masuk</x-button></div>
         <div class="lnk">
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}">Lupa kata sandi?</a>

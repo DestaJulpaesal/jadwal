@@ -17,7 +17,7 @@
             <x-text-input id="email" name="email" type="email" class="mt-1" :value="old('email')" required autofocus autocomplete="email" maxlength="255" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" aria-describedby="email-error" />
             <x-input-error id="email-error" :messages="$errors->get('email')" />
         </div>
-        <button type="submit" class="btn-primary w-full" data-loading-text="Mengirim...">Kirim tautan pengaturan ulang</button>
+        <x-button type="submit" data-loading-text="Mengirim..." variant="primary" class="w-full">Kirim tautan pengaturan ulang</x-button>
         <p class="border-t border-line pt-5 text-center text-sm text-muted"><a href="{{ route('login') }}" class="font-semibold text-primary-800 underline-offset-4 hover:underline">Kembali ke halaman masuk</a></p>
     </form>
 </x-guest-layout>

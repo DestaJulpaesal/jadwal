@@ -15,13 +15,13 @@
         <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
             @auth
                 @if (auth()->user()->isAdmin())
-                    <a href="{{ route('admin.dashboard') }}" class="btn-primary">Kembali ke panel admin</a>
+                    <x-button href="{{ route('admin.dashboard') }}" variant="primary">Kembali ke panel admin</x-button>
                 @else
-                    <a href="{{ route('user.dashboard') }}" class="btn-primary">Kembali ke beranda</a>
+                    <x-button href="{{ route('user.dashboard') }}" variant="primary">Kembali ke beranda</x-button>
                 @endif
             @else
-                <a href="{{ route('home') }}" class="btn-primary">Kembali ke beranda</a>
-                <a href="{{ route('login') }}" class="btn-secondary">Masuk</a>
+                <x-button href="{{ route('home') }}" variant="primary">Kembali ke beranda</x-button>
+                <x-button href="{{ route('login') }}" variant="secondary">Masuk</x-button>
             @endauth
         </div>
     </main>

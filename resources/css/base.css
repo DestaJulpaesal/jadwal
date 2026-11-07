@@ -1,29 +1,27 @@
 /* Base element rules. */
-@layer base {
-    html {
-        scroll-behavior: smooth;
-        -webkit-tap-highlight-color: transparent;
-    }
+html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+}
 
-    body {
-        background-color: var(--color-canvas);
-        color: var(--color-ink);
-    }
+body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+}
 
-    a,
-    button,
-    input,
-    select,
-    textarea {
-        -webkit-tap-highlight-color: transparent;
-    }
+a,
+button,
+input,
+select,
+textarea {
+    -webkit-tap-highlight-color: transparent;
+}
 
-    :focus-visible {
-        outline: 3px solid #347e61;
-        outline-offset: 3px;
-    }
+:focus-visible {
+    outline: 3px solid #347e61;
+    outline-offset: 3px;
+}
 
-    [x-cloak] {
-        display: none !important;
-    }
+[x-cloak] {
+    display: none !important;
 }

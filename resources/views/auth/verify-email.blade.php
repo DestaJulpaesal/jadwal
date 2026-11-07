@@ -15,12 +15,12 @@
         @if (config('auth.email_verification'))
             <form method="POST" action="{{ route('verification.send') }}">
                 @csrf
-                <button type="submit" class="btn-primary" data-loading-text="Mengirim...">Kirim ulang tautan</button>
+                <x-button type="submit" data-loading-text="Mengirim..." variant="primary">Kirim ulang tautan</x-button>
             </form>
         @endif
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="btn-secondary">Keluar</button>
+            <x-button type="submit" variant="secondary">Keluar</x-button>
         </form>
     </div>
 </x-guest-layout>

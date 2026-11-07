@@ -33,7 +33,7 @@
     }
 
     .user-app .bobf {
-        animation: concept-bob 3.2s ease-in-out infinite;
+        animation: concept-bob 3var(--dur-base) var(--ease-standard)-in-out infinite;
     }
 
     @keyframes concept-blink {
@@ -525,7 +525,7 @@
     border-radius: 14px;
     background: #fff;
     padding: 10px 12px;
-    transition: background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
 }
 
 .settings-choice:hover,
@@ -559,17 +559,6 @@
 
 html[data-color-scheme="dark"] {
     color-scheme: dark;
-    --color-canvas: #182126;
-    --color-surface: #273139;
-    --color-ink: #f0eadf;
-    --color-muted: #c1c8c8;
-    --color-line: #4a565e;
-    --color-primary-50: #303b40;
-    --color-primary-100: #39464a;
-    --color-primary-600: #287654;
-    --color-primary-700: #226b50;
-    --color-primary-800: #174e3a;
-    --color-primary-900: #d7ecdf;
 }
 
 html[data-color-scheme="dark"] body:not(.user-app) {
@@ -612,9 +601,16 @@ html[data-color-scheme="dark"] .user-app {
     --color-primary-700: #f0d477;
     --color-primary-800: #f0d477;
     --color-primary-900: #f6e5a5;
+    --color-primary-foreground: #14251d;
+    --color-success-soft: #20392c;
     --color-success: #9cdbad;
+    --color-success-foreground: #14251d;
+    --color-warning-soft: #45371e;
     --color-warning: #f0c271;
+    --color-danger-soft: #472b2a;
     --color-danger: #f5a6a0;
+    --color-danger-foreground: #211111;
+    --color-info-soft: #223946;
     --color-info: #9dc9ed;
     --shadow-card: 4px 4px 0 #090e11;
     background-image: radial-gradient(#344047 1.2px, transparent 1.4px);
@@ -678,4 +674,8 @@ html[data-color-scheme="dark"] .user-app .text-gray-500 {
 
 html[data-color-scheme="dark"] .user-app .concept-icon {
     filter: drop-shadow(1.6px 0 0 #273139) drop-shadow(-1.6px 0 0 #273139) drop-shadow(0 1.6px 0 #273139) drop-shadow(0 -1.6px 0 #273139);
+}
+
+.user-app :is(input, select, textarea).form-control {
+    font-size: var(--text-base);
 }

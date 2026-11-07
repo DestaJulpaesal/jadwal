@@ -7,7 +7,7 @@
     <h2 class="text-lg font-semibold">{{ $title }}</h2>
     <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{{ $description }}</p>
     @if ($actionUrl && $actionLabel)
-        <a href="{{ $actionUrl }}" class="btn-primary mt-5">{{ $actionLabel }}</a>
+        <x-button href="{{ $actionUrl }}" variant="primary" class="mt-5">{{ $actionLabel }}</x-button>
     @endif
     {{ $slot }}
 </div>

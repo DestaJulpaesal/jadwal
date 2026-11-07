@@ -18,18 +18,18 @@
             <div>
                 <div class="concept-heading mb-0"><x-concept-icon name="cl" /><div><h2 id="user-calendar-heading" class="text-lg font-semibold">Kalender</h2><p class="mt-1 text-sm">Pilih tanggal untuk melihat agenda bulanan.</p></div></div>
             </div>
-            <a href="{{ route('user.tasks.create') }}" class="btn-secondary"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</a>
+            <x-button href="{{ route('user.tasks.create') }}" variant="secondary"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</x-button>
         </header>
 
         <section class="surface-card overflow-hidden">
             <div class="flex items-center justify-between gap-2 border-b border-line p-3 sm:p-4">
-                <a href="{{ route('user.calendar', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}" class="btn-secondary min-h-11 px-3" aria-label="Bulan sebelumnya">
+                <x-button href="{{ route('user.calendar', ['year' => $previousMonth->year, 'month' => $previousMonth->month]) }}" variant="secondary" size="sm" aria-label="Bulan sebelumnya" title="Bulan sebelumnya">
                     <span>Sebelumnya</span>
-                </a>
+                </x-button>
                 <h2 class="text-center text-base font-semibold sm:text-lg">{{ $month->translatedFormat('F Y') }}</h2>
-                <a href="{{ route('user.calendar', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}" class="btn-secondary min-h-11 px-3" aria-label="Bulan berikutnya">
+                <x-button href="{{ route('user.calendar', ['year' => $nextMonth->year, 'month' => $nextMonth->month]) }}" variant="secondary" size="sm" aria-label="Bulan berikutnya" title="Bulan berikutnya">
                     <span>Berikutnya</span>
-                </a>
+                </x-button>
             </div>
 
             <div class="grid grid-cols-7 border-b border-line bg-gray-50 text-center text-xs font-semibold text-muted sm:text-sm">
@@ -45,13 +45,13 @@
                             $dayKey = $day['date']->toDateString();
                         @endphp
                         <div class="min-h-12 border-b border-r border-line p-0.5 last:border-r-0 sm:min-h-32 sm:p-2 {{ $day['in_month'] ? 'bg-white' : 'bg-gray-50 text-gray-600' }}">
-                            <button
+                            <x-button
                                 type="button"
                                 class="mx-auto flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium hover:bg-primary-50 sm:mx-0 {{ $day['date']->isToday() ? 'bg-primary-700 text-white hover:bg-primary-800' : '' }}"
                                 @click="selectedDay = '{{ $dayKey }}'"
-                                :aria-pressed="selectedDay === '{{ $dayKey }}'"
+                                ::aria-pressed="selectedDay === '{{ $dayKey }}'"
                                 aria-label="{{ $day['date']->translatedFormat('l, j F Y') }}"
-                            >{{ $day['date']->day }}</button>
+                            >{{ $day['date']->day }}</x-button>
 
                             <div class="mt-1 hidden space-y-1 md:block">
                                 @foreach ($day['tasks']->take(3) as $task)
