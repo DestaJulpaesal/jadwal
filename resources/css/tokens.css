@@ -1,0 +1,29 @@
+/* Design tokens shared by every entrypoint. */
+:root {
+    color-scheme: light;
+    --ink: #1b1b1b;
+    --bg: #fff4d6;
+    --y: #ffd23f;
+    --g: #7ee8b4;
+    --p: #ff9ec4;
+    --b: #8fb1ff;
+    --o: #ffa95c;
+    --color-canvas: #f7f8f5;
+    --color-surface: #ffffff;
+    --color-ink: #1d2925;
+    --color-muted: #52615b;
+    --color-line: #dce4df;
+    --color-primary: #226b50;
+    --color-primary-dark: #174e3a;
+    --color-primary-50: #eff6f1;
+    --color-primary-100: #dcebe1;
+    --color-primary-600: #287654;
+    --color-primary-700: #226b50;
+    --color-primary-800: #174e3a;
+    --color-primary-900: #143d30;
+    --color-success: #216747;
+    --color-warning: #85520b;
+    --color-danger: #a3312c;
+    --color-info: #245d81;
+    --shadow-card: 0 2px 8px rgb(23 53 39 / 6%);
+}

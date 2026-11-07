@@ -78,6 +78,12 @@ PHPUnit memakai SQLite `:memory:` yang terpisah dari database aplikasi, sehingga
 
 Lihat [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) untuk token visual, komponen Blade, dan panduan membuat halaman baru. Halaman pratinjau komponen tersedia di `/styleguide` saat lingkungan aplikasi `local`.
 
+## Dokumentasi
+
+- [Kemajuan fase polish](docs/PROGRESS.md)
+- [Audit polish](docs/AUDIT_POLISH.md)
+- [Arsitektur](docs/ARSITEKTUR.md)
+
 ## Checklist sebelum online
 
 - Atur `APP_ENV=production` dan `APP_DEBUG=false`; buat `APP_KEY` sekali dan simpan dengan aman.
