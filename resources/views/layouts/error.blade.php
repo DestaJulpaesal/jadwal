@@ -13,6 +13,9 @@
         <h1 class="mt-3 text-2xl font-semibold sm:text-3xl">@yield('heading')</h1>
         <p class="mx-auto mt-3 max-w-md leading-7 text-muted">@yield('message')</p>
         <div class="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            @if (in_array((string) trim($__env->yieldContent('code')), ['429', '500', '503'], true))
+                <x-button href="{{ request()->fullUrl() }}" variant="secondary">Coba lagi</x-button>
+            @endif
             @auth
                 @if (auth()->user()->isAdmin())
                     <x-button href="{{ route('admin.dashboard') }}" variant="primary">Kembali ke panel admin</x-button>

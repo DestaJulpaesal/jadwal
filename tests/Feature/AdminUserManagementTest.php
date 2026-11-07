@@ -117,7 +117,7 @@ class AdminUserManagementTest extends TestCase
         $this->post(route('login'), [
             'email' => $user->email,
             'password' => 'password',
-        ])->assertSessionHasErrors('email');
+        ])->assertSessionHasErrors('credentials');
 
         $this->actingAs($user->fresh())
             ->get(route('user.dashboard'))

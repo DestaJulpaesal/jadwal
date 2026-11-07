@@ -29,10 +29,22 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'timezone.required' => 'Zona waktu wajib diisi.',
-            'timezone.timezone' => 'Masukkan nama zona waktu IANA yang valid.',
+            'timezone.timezone' => 'Pilih zona waktu yang tersedia.',
             'avatar.image' => 'Foto profil harus berupa gambar yang valid.',
             'avatar.mimes' => 'Foto profil harus berformat JPG, PNG, atau WebP.',
             'avatar.max' => 'Ukuran foto profil maksimal 5 MB.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'name' => 'nama',
+            'email' => 'email',
+            'timezone' => 'zona waktu',
+            'digest_enabled' => 'ringkasan email',
+            'avatar' => 'foto profil',
+            'remove_avatar' => 'hapus foto profil',
         ];
     }
 }

@@ -76,11 +76,27 @@ const initializeApplicationUi = () => {
         const showPassword = input.type === 'password';
         input.type = showPassword ? 'text' : 'password';
         toggle.querySelector('[data-password-label]').textContent = showPassword ? 'Sembunyikan' : 'Tampilkan';
-        toggle.setAttribute('aria-label', `${showPassword ? 'Sembunyikan' : 'Tampilkan'} password`);
+        toggle.setAttribute('aria-label', `${showPassword ? 'Sembunyikan' : 'Tampilkan'} kata sandi`);
         toggle.querySelector('[data-password-icon] use').setAttribute(
             'href',
             showPassword ? toggle.dataset.passwordHideIcon : toggle.dataset.passwordShowIcon,
         );
+    });
+
+    document.querySelectorAll('[data-caps-lock]').forEach((input) => {
+        const hint = document.querySelector('[data-caps-lock-hint]');
+        if (!hint) {
+            return;
+        }
+
+        const updateCapsLockHint = (event) => {
+            hint.hidden = !event.getModifierState?.('CapsLock');
+        };
+        input.addEventListener('keydown', updateCapsLockHint);
+        input.addEventListener('keyup', updateCapsLockHint);
+        input.addEventListener('blur', () => {
+            hint.hidden = true;
+        });
     });
 };
 

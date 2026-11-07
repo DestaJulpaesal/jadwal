@@ -86,7 +86,7 @@ class AuthenticationTest extends TestCase
             'password' => 'wrong-password',
         ]);
 
-        $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors('throttle');
         Event::assertDispatched(Lockout::class);
     }
 

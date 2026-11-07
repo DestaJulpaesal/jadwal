@@ -123,3 +123,37 @@ Status: selesai secara implementasi. Build, kompilasi Blade, format PHP, dan syn
 ### Langkah pertama fase berikutnya
 
 Buat branch Fase 3 dan baca `04_FASE3_PESAN_VALIDASI.md`; fokus pada penyelarasan pesan validasi tanpa mengubah validasi atau perilaku bisnis.
+
+## Fase 3 — Pesan, validasi, dan umpan balik (sedang dikerjakan)
+
+Status: belum selesai. Implementasi awal sudah dimulai di branch `polish/fase-3-pesan-validasi`; jangan lanjut ke Fase 4 sebelum checklist Fase 3 dipenuhi.
+
+### Selesai sejauh ini
+
+- Menambahkan katalog awal `lang/id/ui.php` dan melengkapi atribut validasi untuk field utama tugas, kebiasaan, target, profil, dan autentikasi.
+- Menambahkan `messages()` dan `attributes()` pada lima FormRequest yang ada; pesan kepemilikan kategori tidak lagi menyebut kepemilikan.
+- Memperjelas pesan login generik dan menampilkan pesan akun nonaktif hanya setelah kata sandi yang benar; kesalahan kata sandi yang salah tetap generik.
+- Menambahkan petunjuk Caps Lock, tautan atur ulang kata sandi pada pesan login, pesan berhasil masuk/keluar, jeda toast saat hover/fokus, dan redirect sesi kedaluwarsa ke halaman Masuk.
+- Halaman error 429/500/503 menyediakan aksi coba lagi.
+- Verifikasi sementara: `npm run build`, Pint, dan cache Blade lulus; login/logout tests lulus. Suite penuh: 126 lulus dan empat kegagalan baseline yang sama dari Fase 0.
+- Pemeriksaan browser halaman Masuk pada lebar 360, 390, 768, dan 1280 px tidak menemukan overflow horizontal.
+
+### Belum selesai — jangan tandai fase ini sebagai selesai
+
+- Helper flash terpadu belum diterapkan ke seluruh controller; `session('success')` manual masih tersebar.
+- Toast belum punya antrean maksimal tiga dan aksi urungkan; pemetaan seluruh jenis feedback ke toast/alert juga belum selesai.
+- Hitung mundur throttle hidup dan penonaktifan tombol Masuk belum ditambahkan.
+- Respons lupa kata sandi belum diseragamkan; syarat kata sandi bocor saat pendaftaran belum ditangani.
+- Offline banner/umpan balik kegagalan jaringan belum dibuat.
+- Katalog pesan dan attributes belum diaudit untuk setiap aturan validasi inline/controller; tes pesan per FormRequest dan tes akses lintas pengguna belum ditambahkan.
+- Istilah “kamu”/“kata sandi” belum diselaraskan di seluruh UI dan email; halaman error perlu ditinjau untuk bahasa serta aksi yang konsisten.
+
+### Risiko dan keputusan sementara
+
+- Akun nonaktif dibedakan hanya setelah verifikasi kata sandi cocok, sesuai kebutuhan UX tanpa mengungkap status saat kredensial salah.
+- Fase ini menyentuh autentikasi dan pesan global; validasi penuh wajib dijalankan lagi setelah flash terpusat dan perubahan alur reset kata sandi.
+- Empat kegagalan suite penuh saat ini tetap sama dengan baseline: dua `AdminUserManagementTest` dan dua `UserTaskTest`.
+
+### Langkah berikutnya
+
+Implementasikan helper flash tunggal dan migrasikan seluruh controller/layout ke payload feedback terstruktur; setelah itu tambahkan tes validasi FormRequest dan inline sebelum menyelesaikan toast, reset kata sandi, offline, dan sisa checklist Fase 3.

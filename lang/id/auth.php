@@ -1,7 +1,8 @@
 <?php
 
 return [
-    'failed' => 'Email atau password yang Anda masukkan tidak cocok.',
-    'password' => 'Password yang dimasukkan salah.',
+    'failed' => 'Email atau kata sandi belum cocok. Periksa lagi huruf besar dan kecilnya, atau atur ulang kata sandi.',
+    'password' => 'Kata sandi yang dimasukkan salah.',
     'throttle' => 'Terlalu banyak percobaan masuk. Coba lagi dalam :seconds detik.',
+    'disabled' => 'Akun ini sedang dinonaktifkan. Hubungi admin untuk mengaktifkannya kembali.',
 ];

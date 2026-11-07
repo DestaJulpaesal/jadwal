@@ -5,9 +5,11 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
@@ -32,6 +34,20 @@ class LoginRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Email belum diisi.',
+            'email.email' => 'Format email belum benar. Contoh: nama@email.com',
+            'password.required' => 'Kata sandi belum diisi.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return ['email' => 'email', 'password' => 'kata sandi'];
+    }
+
     /**
      * Attempt to authenticate the request's credentials.
      *
@@ -47,8 +63,15 @@ class LoginRequest extends FormRequest
         if (! Auth::attempt($credentials, $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
 
+            $user = User::where('email', $this->input('email'))->first();
+            if ($user && ! $user->is_active && Hash::check($this->input('password'), $user->password)) {
+                throw ValidationException::withMessages([
+                    'credentials' => trans('auth.disabled'),
+                ]);
+            }
+
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'credentials' => trans('auth.failed'),
             ]);
         }
 
@@ -71,7 +94,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'throttle' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),

@@ -31,7 +31,8 @@ class AuthenticatedSessionController extends Controller
             ? route('admin.dashboard')
             : route('user.dashboard');
 
-        return redirect()->intended($destination);
+        return redirect()->intended($destination)
+            ->with('success', __('ui.login.welcome', ['name' => $request->user()->name]));
     }
 
     /**
@@ -45,6 +46,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')->with('status', __('ui.login.logged_out'));
     }
 }

@@ -42,7 +42,7 @@ class SaveTaskRequest extends FormRequest
             'title.max' => 'Judul tugas maksimal 255 karakter.',
             'description.string' => 'Deskripsi harus berupa teks.',
             'category_id.integer' => 'Kategori yang dipilih tidak valid.',
-            'category_id.exists' => 'Kategori yang dipilih bukan milik akun Anda.',
+            'category_id.exists' => 'Kategori yang dipilih tidak tersedia.',
             'task_status_id.integer' => 'Status tugas tidak valid.',
             'task_status_id.exists' => 'Status tugas yang dipilih tidak tersedia.',
             'due_date.date' => 'Format jatuh tempo tidak valid.',
@@ -51,6 +51,19 @@ class SaveTaskRequest extends FormRequest
             'starts_at.required_with' => 'Isi waktu mulai jika waktu selesai diisi.',
             'ends_at.required_with' => 'Isi waktu selesai jika waktu mulai diisi.',
             'ends_at.after_or_equal' => 'Waktu selesai harus sama atau setelah waktu mulai.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'title' => 'judul tugas',
+            'description' => 'deskripsi',
+            'category_id' => 'kategori',
+            'task_status_id' => 'status',
+            'due_date' => 'tanggal jatuh tempo',
+            'starts_at' => 'waktu mulai',
+            'ends_at' => 'waktu selesai',
         ];
     }
 }

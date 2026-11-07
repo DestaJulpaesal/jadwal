@@ -41,6 +41,35 @@ class SaveGoalRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Nama target belum diisi.',
+            'type.required' => 'Jenis target belum dipilih.',
+            'target_value.required' => 'Nilai target belum diisi.',
+            'target_value.integer' => 'Nilai target harus berupa angka.',
+            'category_id.exists' => 'Kategori tidak tersedia.',
+            'habit_id.exists' => 'Kebiasaan tidak tersedia.',
+            'wallet_id.exists' => 'Dompet tidak tersedia.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'title' => 'nama target',
+            'description' => 'catatan',
+            'type' => 'jenis target',
+            'target_value' => 'nilai target',
+            'start_value' => 'nilai awal',
+            'unit' => 'satuan',
+            'due_on' => 'tanggal target',
+            'category_id' => 'kategori',
+            'habit_id' => 'kebiasaan',
+            'wallet_id' => 'dompet',
+        ];
+    }
+
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {

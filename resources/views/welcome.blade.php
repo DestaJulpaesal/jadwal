@@ -10,6 +10,9 @@
 </head>
 <body class="concept-home">
     <x-concept-b-sprite />
+    @if (session('status'))
+        <x-toast>{{ session('status') }}</x-toast>
+    @endif
     <header class="home-header">
         <a href="{{ route('home') }}" class="home-brand" aria-label="Jadwal Harian, beranda">
             <span class="home-brand-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#cl" /></svg></span>

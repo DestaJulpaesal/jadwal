@@ -45,6 +45,42 @@ class SaveHabitRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Nama kebiasaan belum diisi.',
+            'frequency.required' => 'Frekuensi belum dipilih.',
+            'weekdays.*.integer' => 'Hari yang dipilih tidak valid.',
+            'weekly_target.required' => 'Target mingguan belum diisi.',
+            'starts_on.required' => 'Tanggal mulai belum diisi.',
+            'ends_on.after_or_equal' => 'Tanggal berakhir tidak boleh sebelum tanggal mulai.',
+            'category_id.exists' => 'Kategori tidak tersedia.',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'title' => 'nama kebiasaan',
+            'description' => 'catatan',
+            'frequency' => 'frekuensi',
+            'weekdays' => 'hari',
+            'weekdays.*' => 'hari',
+            'weekly_target' => 'target mingguan',
+            'goal_value' => 'target nilai',
+            'goal_unit' => 'satuan target',
+            'goal_unit_other' => 'satuan target',
+            'preferred_time' => 'jam pilihan',
+            'schedule_times' => 'waktu pengingat',
+            'schedule_times.*' => 'waktu pengingat',
+            'starts_on' => 'tanggal mulai',
+            'ends_on' => 'tanggal berakhir',
+            'category_id' => 'kategori',
+            'category_name' => 'nama kategori',
+            'category_color' => 'warna kategori',
+        ];
+    }
+
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
