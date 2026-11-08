@@ -77,7 +77,25 @@
     --dur-instant: 80ms;
     --dur-fast: 140ms;
     --dur-base: 200ms;
+    --dur-interaction: 180ms;
+    --dur-medium: 220ms;
+    --dur-feedback: 320ms;
     --dur-slow: 320ms;
+    --dur-spin: 700ms;
+    --dur-reduced: 100ms;
+    --dur-sparkle-delay: -1600ms;
+    --dur-page-stagger: 60ms;
+    --dur-page-stagger-2: 120ms;
+    --dur-decoration: 1800ms;
+    --dur-decoration-slow: 2800ms;
+    --dur-decoration-long: 3000ms;
+    --dur-decoration-swing: 4000ms;
+    --dur-decoration-blink: 4600ms;
+    --dur-decoration-slower: 5000ms;
+    --dur-decoration-slowest: 6000ms;
+    --dur-autofill: 9999s;
+    --distance-page: 6px;
+    --distance-list: 8px;
     --ease-standard: cubic-bezier(.2, 0, 0, 1);
     --ease-enter: cubic-bezier(.05, .7, .1, 1);
     --ease-exit: cubic-bezier(.3, 0, .8, .15);
@@ -89,6 +107,39 @@
     --z-sheet: 50;
     --z-modal: 60;
     --z-toast: 70;
+}
+
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation-duration: var(--dur-fast);
+    animation-timing-function: var(--ease-standard);
+}
+
+::view-transition-old(root) {
+    animation-name: page-fade-out;
+}
+
+::view-transition-new(root) {
+    animation-name: page-fade-in;
+}
+
+@keyframes page-fade-out {
+    to { opacity: 0; }
+}
+
+@keyframes page-fade-in {
+    from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: var(--dur-reduced);
+    }
 }
 
 html[data-color-scheme="dark"] {

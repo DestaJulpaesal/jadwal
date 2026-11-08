@@ -21,6 +21,7 @@ return [
         'not_found' => 'Data tidak ditemukan.',
         'offline' => 'Kamu sedang offline. Hubungkan kembali ke internet, lalu kirim ulang perubahanmu.',
         'retry' => 'Koneksi terputus. Periksa jaringan, lalu coba lagi.',
+        'not_saved_retry' => 'Belum tersimpan. Periksa koneksi, lalu coba lagi.',
         'onboarding_dismissed' => 'Panduan awal ditutup. Kamu dapat memulainya lagi kapan saja.',
         'task_created' => 'Tugas berhasil ditambahkan.',
         'task_updated' => 'Tugas berhasil diperbarui.',

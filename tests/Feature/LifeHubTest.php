@@ -66,6 +66,47 @@ class LifeHubTest extends TestCase
         $this->assertDatabaseMissing('habit_logs', ['habit_id' => $habit->id, 'log_date' => '2026-11-01']);
     }
 
+    public function test_habit_check_in_supports_json_for_progressive_enhancement(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 03:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $habit = $user->habits()->create([
+            'title' => 'Jalan kaki',
+            'frequency' => HabitFrequency::Daily,
+            'starts_on' => '2026-11-01',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->withHeader('Accept', 'application/json')
+            ->post(route('user.habits.check-in', $habit), [
+                'status' => 'done',
+                'log_date' => '2026-11-01',
+            ]);
+
+        $response->assertOk()->assertJson([
+            'message' => 'Catatan kebiasaan berhasil disimpan.',
+            'status' => 'done',
+        ]);
+        $this->assertDatabaseHas('habit_logs', [
+            'habit_id' => $habit->id,
+            'log_date' => '2026-11-01',
+            'status' => HabitLogStatus::Done->value,
+        ]);
+
+        $this->actingAs($user)
+            ->withHeader('Accept', 'application/json')
+            ->delete(route('user.habits.check-in.cancel', $habit), ['log_date' => '2026-11-01'])
+            ->assertOk()
+            ->assertJson([
+                'message' => 'Tanda selesai dibatalkan.',
+                'status' => 'cancelled',
+            ]);
+        $this->assertDatabaseMissing('habit_logs', [
+            'habit_id' => $habit->id,
+            'log_date' => '2026-11-01',
+        ]);
+    }
+
     public function test_habit_check_ins_reject_future_dates_and_dates_more_than_seven_days_old(): void
     {
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 03:00:00', 'UTC'));

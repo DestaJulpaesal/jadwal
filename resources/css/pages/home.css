@@ -7,15 +7,15 @@
 }
 
 ::view-transition-old(home-page) {
-    animation: home-page-out var(--dur-fast) var(--ease-standard)-in both;
+    animation: home-page-out var(--dur-instant) var(--ease-exit) both;
 }
 
 ::view-transition-new(home-page) {
-    animation: home-page-in var(--dur-slow) var(--ease-enter) both;
+    animation: home-page-in var(--dur-fast) var(--ease-enter) both;
 }
 
 @keyframes home-page-in {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: .9; transform: translateY(var(--distance-page)); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -149,7 +149,7 @@
     font-size: 15px;
     font-weight: 800;
     text-decoration: none;
-    transition: transform .18s var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), filter var(--dur-fast) var(--ease-standard);
+    transition: transform var(--dur-interaction) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), filter var(--dur-fast) var(--ease-standard);
 }
 
 .home-button:hover {
@@ -185,7 +185,7 @@
     font-size: 25px;
     font-weight: 700;
     line-height: .8;
-    transition: transform .2s var(--ease-standard);
+    transition: transform var(--dur-base) var(--ease-standard);
 }
 
 .home-hero {
@@ -205,7 +205,7 @@
     border-radius: 30px;
     background: var(--home-cream) radial-gradient(#e9d9a6 1.2px, transparent 1.4px) 0 0/16px 16px;
     box-shadow: 6px 6px 0 var(--home-ink);
-    animation: home-card-enter var(--dur-slow) var(--ease-enter) both;
+    animation: home-card-enter var(--dur-fast) var(--ease-enter) both;
 }
 
 .home-spark {
@@ -216,7 +216,7 @@
     height: 27px;
     filter: drop-shadow(1px 2px 0 rgb(27 27 27 / 22%));
     transform-origin: center;
-    animation: home-sparkle 2.8s ease-in-out infinite;
+    animation: home-sparkle var(--dur-decoration-slow) ease-in-out infinite;
 }
 
 .home-kicker {
@@ -286,7 +286,7 @@
     height: 92px;
     filter: drop-shadow(2px 3px 0 rgb(27 27 27 / 20%));
     transform-origin: center bottom;
-    animation: home-mascot-bob 3s ease-in-out infinite;
+    animation: home-mascot-bob var(--dur-decoration-long) ease-in-out infinite;
 }
 
 .agenda-card {
@@ -296,7 +296,7 @@
     border-radius: 25px;
     background: #fff;
     box-shadow: 5px 5px 0 var(--home-ink);
-    animation: home-card-enter var(--dur-slow) .1s var(--ease-enter) both;
+    animation: home-card-enter var(--dur-fast) var(--dur-page-stagger) var(--ease-enter) both;
 }
 
 .agenda-card:hover {
@@ -382,7 +382,7 @@
     width: 38px;
     height: 38px;
     border-radius: 12px;
-    transition: transform .2s var(--ease-standard);
+    transition: transform var(--dur-base) var(--ease-standard);
 }
 
 .agenda-list li:hover .agenda-icon {
@@ -428,7 +428,7 @@
     background: var(--home-pink);
     box-shadow: 3px 3px 0 var(--home-ink);
     rotate: 8deg;
-    animation: home-sticker-bob 3s ease-in-out infinite;
+    animation: home-sticker-bob var(--dur-decoration-long) ease-in-out infinite;
 }
 
 .agenda-sticker svg {
@@ -451,16 +451,16 @@
     background-image: radial-gradient(rgb(27 27 27 / 9%) 1px, transparent 1.2px);
     background-size: 13px 13px;
     box-shadow: 4px 4px 0 var(--home-ink);
-    transition: transform .2s var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
-    animation: home-card-enter var(--dur-slow) var(--ease-enter) both;
+    transition: transform var(--dur-base) var(--ease-standard), box-shadow var(--dur-base) var(--ease-standard);
+    animation: home-card-enter var(--dur-fast) var(--ease-enter) both;
 }
 
 .feature-card:nth-child(2) {
-    animation-delay: .1s;
+    animation-delay: var(--dur-fast);
 }
 
 .feature-card:nth-child(3) {
-    animation-delay: .2s;
+    animation-delay: var(--dur-base);
 }
 
 .feature-card:hover {
@@ -472,7 +472,7 @@
     width: 54px;
     height: 54px;
     border-radius: 16px;
-    transition: transform .22s var(--ease-standard);
+    transition: transform var(--dur-medium) var(--ease-standard);
 }
 
 .feature-card:hover .feature-icon {
@@ -781,7 +781,7 @@
     font-weight: 800;
     font-size: 12px;
     text-decoration: none;
-    transition: background .15s, border-color .15s, box-shadow .15s, transform .15s;
+    transition: background var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), transform var(--dur-fast) var(--ease-standard);
 }
 
 .footer-links a:hover {
@@ -818,7 +818,7 @@
 }
 
 @keyframes home-card-enter {
-    from { opacity: 0; }
+    from { opacity: .9; transform: translateY(var(--distance-list)); }
     to { opacity: 1; }
 }
 
@@ -1103,8 +1103,22 @@
     .concept-home *::before,
     .concept-home *::after {
         scroll-behavior: auto !important;
-        animation-duration: .01ms !important;
+        animation-duration: var(--dur-reduced) !important;
         animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
+        transition-duration: var(--dur-reduced) !important;
+    }
+
+    .home-spark,
+    .home-mascot,
+    .agenda-sticker {
+        animation: none !important;
+    }
+}
+
+@media (update: slow) {
+    .home-spark,
+    .home-mascot,
+    .agenda-sticker {
+        animation: none;
     }
 }

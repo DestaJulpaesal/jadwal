@@ -1,3 +1,8 @@
+import { handleOptimisticAction } from './optimistic-actions';
+import { handleNavigationClick } from './nav';
+import { handlePasswordToggle } from './password';
+import { showErrorToast } from './toast';
+
 const formSnapshot = (form) => JSON.stringify(Array.from(new FormData(form))
     .filter(([name, value]) => !/password/i.test(name) && (typeof value === 'string' || value instanceof File))
     .map(([name, value]) => [
@@ -388,6 +393,7 @@ const initializeForms = () => {
 
     document.addEventListener('click', (event) => {
         const target = event.target instanceof Element ? event.target : null;
+        handlePasswordToggle(target);
         const cancel = target?.closest('[data-cancel-form]');
         const guardedForm = cancel?.closest('form[data-dirty-guard]');
 
@@ -462,12 +468,32 @@ const initializeForms = () => {
             field?.focus();
             field?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
+
+        handleNavigationClick(event);
     });
 
     document.addEventListener('submit', (event) => {
         const form = event.target;
 
         if (!(form instanceof HTMLFormElement)) {
+            return;
+        }
+
+        if (form.dataset.optimisticAction) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            void handleOptimisticAction(event, showErrorToast);
+
+            return;
+        }
+
+        if (!navigator.onLine) {
+            event.preventDefault();
+            const networkBanner = document.querySelector('[data-network-banner]');
+            if (networkBanner) {
+                networkBanner.hidden = false;
+            }
+
             return;
         }
 

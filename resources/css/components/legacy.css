@@ -88,7 +88,7 @@
         border: 2px solid currentColor;
         border-right-color: transparent;
         border-radius: var(--radius-full);
-        animation: button-spin 700ms linear infinite;
+        animation: button-spin var(--dur-spin) linear infinite;
         content: "";
     }
 
@@ -184,7 +184,7 @@
     }
 
     .user-app .user-brand {
-        transition: transform .2s var(--ease-standard);
+        transition: transform var(--dur-base) var(--ease-standard);
     }
 
     .user-app .user-brand:hover {
@@ -358,7 +358,44 @@
     }
 
     .user-app .user-main {
-        animation: user-page-in var(--dur-slow) var(--ease-enter) both;
+        animation: user-page-in var(--dur-fast) var(--ease-enter) backwards;
+    }
+
+    .user-app .user-header {
+        view-transition-name: application-header;
+    }
+
+    .user-app .mobile-nav {
+        view-transition-name: application-navigation;
+    }
+
+    html::before {
+        position: fixed;
+        z-index: var(--z-toast);
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--color-primary);
+        content: "";
+        pointer-events: none;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform var(--dur-base) var(--ease-standard);
+    }
+
+    html[data-navigation-pending]::before {
+        transform: scaleX(.8);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .user-app .user-main {
+            animation: none;
+        }
+
+        html::before {
+            transition: none;
+        }
     }
 
     .user-app a,
@@ -367,7 +404,7 @@
     .user-app input,
     .user-app select,
     .user-app textarea {
-        transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), transform .18s var(--ease-standard), opacity var(--dur-fast) var(--ease-standard);
+        transition: color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), transform var(--dur-interaction) var(--ease-standard), opacity var(--dur-fast) var(--ease-standard);
     }
 
     .user-app button:not(:disabled):active,
@@ -440,7 +477,7 @@
         border: 2px solid currentColor;
         border-right-color: transparent;
         border-radius: 50%;
-        animation: user-spin .7s linear infinite;
+        animation: user-spin var(--dur-spin) linear infinite;
         content: "";
     }
 
@@ -462,7 +499,7 @@
 
     .user-app [role="alert"],
     .user-app [role="status"] {
-        animation: user-feedback-in .32s var(--ease-standard) both;
+        animation: user-feedback-in var(--dur-feedback) var(--ease-standard) both;
     }
 
     .user-app .surface-card,
@@ -808,15 +845,15 @@
     }
 
     .user-app .global-search-section {
-        animation: user-feedback-in .36s var(--ease-standard) both;
+        animation: user-feedback-in var(--dur-feedback) var(--ease-standard) both;
     }
 
     .user-app .global-search-section:nth-of-type(2) {
-        animation-delay: .06s;
+        animation-delay: var(--dur-page-stagger);
     }
 
     .user-app .global-search-section:nth-of-type(3) {
-        animation-delay: .12s;
+        animation-delay: var(--dur-page-stagger-2);
     }
 
     .user-app .sidebar-inner {
@@ -982,7 +1019,7 @@
         align-items: center;
         justify-content: center;
         transform: translateX(-50%);
-        transition: top 180ms ease, width 180ms ease, height 180ms ease;
+        transition: top var(--dur-interaction) var(--ease-standard), width var(--dur-interaction) var(--ease-standard), height var(--dur-interaction) var(--ease-standard);
     }
 
     .user-app .mobile-nav-icon .concept-icon {
@@ -1019,7 +1056,7 @@
         border-radius: 50%;
         background: var(--y);
         box-shadow: 2px 3px 0 var(--ink);
-        animation: nav-pop 320ms var(--ease-spring) both;
+        animation: nav-pop var(--dur-slow) var(--ease-spring) both;
     }
 
     .user-app .mobile-nav-link:nth-child(1).mobile-nav-link-active .mobile-nav-icon {
@@ -1244,7 +1281,7 @@
         font-family: var(--font-sans), sans-serif;
         font-size: 12px;
         font-weight: 800;
-        transition: transform .18s var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+        transition: transform var(--dur-interaction) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
     }
 
     .user-app .concept-quick-link:nth-child(1) {

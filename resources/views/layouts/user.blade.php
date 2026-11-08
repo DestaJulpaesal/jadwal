@@ -12,7 +12,7 @@
     </div>
     <header class="user-header fixed inset-x-0 top-0 z-30">
         <div class="user-header-inner flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
-            <a href="{{ route('user.dashboard') }}" class="user-brand flex min-h-11 min-w-0 items-center gap-3" aria-label="Jadwal Harian, Beranda">
+            <a href="{{ route('user.dashboard') }}" data-prefetch class="user-brand flex min-h-11 min-w-0 items-center gap-3" aria-label="Jadwal Harian, Beranda">
                 <span class="brand-mark flex h-10 w-10 shrink-0 items-center justify-center" aria-hidden="true">
                     <x-concept-icon name="home" class="h-8 w-8" />
                 </span>
@@ -47,16 +47,16 @@
                     <section>
                         <p class="sidebar-section-label mb-2 px-3">Ringkasan</p>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.dashboard') }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') ? 'nav-link-active' : '' }}"><x-concept-icon name="home" class="h-5 w-5" />Beranda</a>
-                            <a href="{{ route('user.calendar') }}" class="nav-link w-full {{ request()->routeIs('user.calendar') ? 'nav-link-active' : '' }}"><x-concept-icon name="cl" class="h-5 w-5" />Kalender</a>
+                            <a href="{{ route('user.dashboard') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.dashboard') ? 'nav-link-active' : '' }}"><x-concept-icon name="home" class="h-5 w-5" />Beranda</a>
+                            <a href="{{ route('user.calendar') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.calendar') ? 'nav-link-active' : '' }}"><x-concept-icon name="cl" class="h-5 w-5" />Kalender</a>
                         </div>
                     </section>
                     <section>
                         <p class="sidebar-section-label mb-2 px-3">Aktivitas</p>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.tasks.index') }}" class="nav-link w-full {{ request()->routeIs('user.tasks.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</a>
-                            <a href="{{ route('user.habits.index') }}" class="nav-link w-full {{ request()->routeIs('user.habits.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</a>
-                            <a href="{{ route('user.goals.index') }}" class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}"><x-icon name="target" class="h-5 w-5" />Target</a>
+                            <a href="{{ route('user.tasks.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.tasks.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</a>
+                            <a href="{{ route('user.habits.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.habits.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</a>
+                            <a href="{{ route('user.goals.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}"><x-icon name="target" class="h-5 w-5" />Target</a>
                         </div>
                     </section>
                     <section>
@@ -65,8 +65,8 @@
                             <a href="{{ route('user.money.index', ['section' => 'overview']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section', 'overview') === 'overview' ? 'nav-link-active' : '' }}"><x-concept-icon name="wl" class="h-5 w-5" />Ringkasan</a>
                             <a href="{{ route('user.money.index', ['section' => 'transactions']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'transactions' ? 'nav-link-active' : '' }}"><x-icon name="keuangan" class="h-5 w-5" />Transaksi</a>
                             <a href="{{ route('user.money.index', ['section' => 'wallets']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'wallets' ? 'nav-link-active' : '' }}"><x-icon name="keuangan" class="h-5 w-5" />Dompet</a>
-                            <a href="{{ route('user.obligations.index') }}" class="nav-link w-full {{ request()->routeIs('user.obligations.*') ? 'nav-link-active' : '' }}"><x-icon name="tagihan" class="h-5 w-5" />Tagihan & cicilan</a>
-                            <a href="{{ route('user.loans.index') }}" class="nav-link w-full {{ request()->routeIs('user.loans.*') ? 'nav-link-active' : '' }}"><x-icon name="utang" class="h-5 w-5" />Utang-piutang</a>
+                            <a href="{{ route('user.obligations.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.obligations.*') ? 'nav-link-active' : '' }}"><x-icon name="tagihan" class="h-5 w-5" />Tagihan & cicilan</a>
+                            <a href="{{ route('user.loans.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.loans.*') ? 'nav-link-active' : '' }}"><x-icon name="utang" class="h-5 w-5" />Utang-piutang</a>
                             <a href="{{ route('user.reports.index') }}" class="nav-link w-full {{ request()->routeIs('user.reports.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="rc" class="h-5 w-5" />Laporan</a>
                         </div>
                     </section>
@@ -110,13 +110,13 @@
     <nav id="mobileNavigationMenu" class="mobile-nav fixed bottom-0 z-40 lg:hidden" aria-label="Navigasi utama">
         <span class="mobile-nav-shape" aria-hidden="true"></span>
         <div class="mobile-nav-grid grid grid-cols-5 items-stretch">
-            <a href="{{ route('user.dashboard') }}" class="mobile-nav-link {{ request()->routeIs('user.dashboard') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard')) aria-current="page" @endif>
+            <a href="{{ route('user.dashboard') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.dashboard') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="home" /></span><span>Beranda</span>
             </a>
-            <a href="{{ route('user.tasks.index') }}" class="mobile-nav-link {{ request()->routeIs('user.tasks.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>
+            <a href="{{ route('user.tasks.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.tasks.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="tk" /></span><span>Tugas</span>
             </a>
-            <a href="{{ route('user.habits.index') }}" class="mobile-nav-link {{ request()->routeIs('user.habits.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*')) aria-current="page" @endif>
+            <a href="{{ route('user.habits.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.habits.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="fl" /></span><span>Kebiasaan</span>
             </a>
             <a href="{{ route('user.money.index') }}" class="mobile-nav-link {{ request()->routeIs('user.money.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.money.*')) aria-current="page" @endif>

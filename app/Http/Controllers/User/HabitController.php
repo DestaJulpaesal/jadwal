@@ -128,6 +128,13 @@ class HabitController extends Controller
             ]
         );
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => __('ui.feedback.habit_logged'),
+                'status' => $data['status'],
+            ]);
+        }
+
         return Feedback::success(back(), __('ui.feedback.habit_logged'));
     }
 
@@ -144,6 +151,13 @@ class HabitController extends Controller
         abort_if($date > $today, 422, __('ui.feedback.habit_date_future'));
         abort_if($date < $habit->starts_on->toDateString(), 422, __('ui.feedback.habit_date_before_start'));
         $request->user()->habitLogs()->where('habit_id', $habit->id)->where('log_date', $date)->delete();
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => __('ui.feedback.habit_log_cancelled'),
+                'status' => 'cancelled',
+            ]);
+        }
 
         return Feedback::success(back(), __('ui.feedback.habit_log_cancelled'));
     }

@@ -6,7 +6,7 @@
 
 <div class="flex items-center gap-2">
     @if (! $isComplete)
-        <form method="POST" action="{{ route('user.tasks.complete', $task) }}">
+        <form method="POST" action="{{ route('user.tasks.complete', $task) }}" data-optimistic-action="complete-task">
             @csrf
             @method('PATCH')
             <x-button type="submit" variant="primary" class="min-h-11 min-w-11 px-3 sm:min-w-0" aria-label="Tandai {{ $task->title }} selesai">

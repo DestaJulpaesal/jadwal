@@ -87,14 +87,14 @@
                 <div class="concept-item flex-wrap">
                     <div class="min-w-0 flex-1"><p class="break-words font-medium">{{ $habit->title }}</p>@if($habit->goal_value)<p class="text-sm">Target {{ $habit->goal_value }} {{ $habit->goal_unit }}</p>@endif</div>
                     @if ($habit->today_log?->status === \App\Enums\HabitLogStatus::Done)
-                        <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}">
+                        <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}" data-optimistic-action="cancel-habit-checkin">
                             @csrf
                             @method('DELETE')
                             <input type="hidden" name="log_date" value="{{ $today }}">
                             <x-button class="dashboard-action dashboard-action-secondary">Batalkan catatan</x-button>
                         </form>
                     @else
-                        <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" class="flex shrink-0 gap-2">
+                        <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" class="flex shrink-0 gap-2" data-optimistic-action="habit-checkin">
                             @csrf
                             <input type="hidden" name="log_date" value="{{ $today }}">
                             <input type="hidden" name="status" value="done">

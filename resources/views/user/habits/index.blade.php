@@ -44,11 +44,11 @@
                                 <h2 class="text-lg font-semibold">{{ $habit->title }}</h2>
                             </div>
                             @if ($habit->today_log?->status->value === 'done')
-                                <span class="habit-status habit-status-done"><x-concept-icon name="spark" class="h-4 w-4" />Selesai hari ini</span>
+                                <span data-habit-status class="habit-status habit-status-done"><x-concept-icon name="spark" class="h-4 w-4" />Selesai hari ini</span>
                             @elseif ($habit->today_log?->status->value === 'skipped')
-                                <span class="habit-status habit-status-skipped">Libur hari ini</span>
+                                <span data-habit-status class="habit-status habit-status-skipped">Libur hari ini</span>
                             @else
-                                <span class="habit-status habit-status-pending">Belum dicatat</span>
+                                <span data-habit-status class="habit-status habit-status-pending">Belum dicatat</span>
                             @endif
                         </div>
                         @if ($habit->today_log?->status->value === 'done' && ($habit->today_log->duration_minutes || $habit->today_log->performed_at || $habit->today_log->value))
@@ -81,14 +81,14 @@
                         </div>
                         <x-button href="{{ route('user.habits.edit', $habit) }}" variant="secondary" class="habit-edit-button">Edit kebiasaan</x-button>
                         @if ($habit->today_log?->status->value === 'done')
-                            <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}">
+                            <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}" data-optimistic-action="cancel-habit-checkin">
                                 @csrf
                                 @method('DELETE')
                                 <input type="hidden" name="log_date" value="{{ $today }}">
                                 <x-button variant="secondary" class="habit-main-action">Batalkan catatan hari ini</x-button>
                             </form>
                         @else
-                            <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" class="flex flex-wrap items-center gap-2">
+                            <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" class="flex flex-wrap items-center gap-2" data-optimistic-action="habit-checkin">
                                 @csrf
                                 <input type="hidden" name="log_date" value="{{ $today }}">
                                 <input type="hidden" name="status" value="done">
@@ -133,14 +133,14 @@
                                             @if ($log->duration_minutes || $log->performed_at)
                                                 <p class="mt-1 text-xs text-muted">@if ($log->duration_minutes){{ $log->duration_minutes }} menit @endif @if ($log->performed_at)· {{ $log->performed_at }}@endif</p>
                                             @endif
-                                            <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}">
+                                            <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}" data-optimistic-action="cancel-habit-checkin">
                                                 @csrf
                                                 @method('DELETE')
                                                 <input type="hidden" name="log_date" value="{{ $logDate }}">
                                                 <x-button class="mt-1 min-h-11 font-medium text-primary-800 underline">Batalkan</x-button>
                                             </form>
                                         @else
-                                            <form method="POST" action="{{ route('user.habits.check-in', $habit) }}">
+                                            <form method="POST" action="{{ route('user.habits.check-in', $habit) }}" data-optimistic-action="habit-checkin">
                                                 @csrf
                                                 <input type="hidden" name="log_date" value="{{ $logDate }}">
                                                 <input type="hidden" name="status" value="done">

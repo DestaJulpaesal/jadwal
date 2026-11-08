@@ -21,15 +21,15 @@ body.concept-login-body {
 }
 
 ::view-transition-old(home-page) {
-    animation: home-page-out var(--dur-fast) var(--ease-standard)-in both;
+    animation: home-page-out var(--dur-instant) var(--ease-exit) both;
 }
 
 ::view-transition-new(home-page) {
-    animation: home-page-in var(--dur-slow) var(--ease-enter) both;
+    animation: home-page-in var(--dur-fast) var(--ease-enter) both;
 }
 
 @keyframes home-page-in {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: .9; transform: translateY(var(--distance-page)); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -257,7 +257,7 @@ h2 {
     width: 46px;
     height: 46px;
     rotate: 8deg;
-    animation-delay: -1.6s;
+    animation-delay: var(--dur-sparkle-delay);
 }
 
 .hero-chip {
@@ -408,7 +408,7 @@ h2 {
     -webkit-text-fill-color: var(--ink);
     caret-color: var(--ink);
     box-shadow: 0 0 0 1000px #fff inset;
-    transition: background-color 9999s ease-out;
+    transition: background-color var(--dur-autofill) var(--ease-standard);
 }
 
 .fld .password-toggle {
@@ -566,7 +566,7 @@ h2 {
     .eye {
         transform-box: fill-box;
         transform-origin: center;
-        animation: blink 4.6s infinite;
+        animation: blink var(--dur-decoration-blink) infinite;
     }
 
     @keyframes blink {
@@ -577,7 +577,7 @@ h2 {
     .swing {
         transform-box: view-box;
         transform-origin: 24px 5px;
-        animation: swing 5s infinite;
+        animation: swing var(--dur-decoration-slower) infinite;
     }
 
     @keyframes swing {
@@ -591,7 +591,7 @@ h2 {
     .wig {
         transform-box: view-box;
         transform-origin: 24px 44px;
-        animation: wig 6s infinite;
+        animation: wig var(--dur-decoration-slowest) infinite;
     }
 
     @keyframes wig {
@@ -605,14 +605,14 @@ h2 {
     .flick {
         transform-box: view-box;
         transform-origin: 24px 43px;
-        animation: flick 1.8s ease-in-out infinite;
+        animation: flick var(--dur-decoration) ease-in-out infinite;
     }
 
     @keyframes flick {
         50% { transform: scale(1.04, 1.07); }
     }
 
-    .hop { animation: hop 4s infinite; }
+    .hop { animation: hop var(--dur-decoration-swing) infinite; }
 
     @keyframes hop {
         0%, 88%, 100% { transform: translateY(0); }
@@ -620,7 +620,7 @@ h2 {
         96% { transform: translateY(0); }
     }
 
-    .bobf { animation: bobf 3var(--dur-base) var(--ease-standard)-in-out infinite; }
+    .bobf { animation: bobf var(--dur-decoration-long) var(--ease-standard) infinite; }
 
     @keyframes bobf {
         50% { transform: translateY(-5px); }
@@ -744,14 +744,84 @@ h2 {
         width: 88px;
         height: 80px;
     }
+
+    .in.login-page {
+        gap: 6px;
+        padding: 6px 12px 8px;
+    }
+
+    .in.login-page .auth-home-link {
+        min-height: 32px;
+        padding: 3px 8px;
+    }
+
+    .in.login-page .hero-card {
+        min-height: 0;
+        padding: 10px 86px 10px 12px;
+    }
+
+    .in.login-page .hero-card h1 {
+        font-size: 23px;
+    }
+
+    .in.login-page .hero-card .hero-chip,
+    .in.login-page .hero-card .hero-spark,
+    .in.login-page .hero-card .hero-calendar,
+    .in.login-page .hero-card .hero-wallet,
+    .in.login-page > section[aria-label="Fitur Jadwal Harian"] {
+        display: none;
+    }
+
+    .in.login-page .hero-mascot {
+        top: 8px;
+        right: 4px;
+        width: 72px;
+        height: 68px;
+    }
+
+    .in.login-page .login-form {
+        padding: 10px;
+    }
+
+    .in.login-page .login-form .field-help {
+        display: none;
+    }
+
+    .in.login-page .login-form .fld {
+        margin-bottom: 5px;
+    }
+
+    .in.login-page .login-form .password-heading {
+        margin-bottom: 2px;
+    }
+
+    .in.login-page .login-form .remember {
+        min-height: 36px;
+    }
+
+    .in.login-page .login-form .lnk {
+        margin-top: 5px;
+        font-size: 12px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
-        animation-duration: .01ms !important;
+        animation-duration: var(--dur-reduced) !important;
         animation-iteration-count: 1 !important;
-        transition-duration: .01ms !important;
+        transition-duration: var(--dur-reduced) !important;
+    }
+}
+
+@media (update: slow) {
+    .eye,
+    .swing,
+    .wig,
+    .flick,
+    .hop,
+    .bobf {
+        animation: none;
     }
 }

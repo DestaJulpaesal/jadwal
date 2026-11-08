@@ -126,21 +126,36 @@ class TaskController extends Controller
         );
     }
 
-    public function complete(Task $task)
+    public function complete(Request $request, Task $task)
     {
         $this->authorize('update', $task);
 
         $completedStatus = TaskStatus::where('is_completed', true)->first();
 
         if (! $completedStatus) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => __('ui.feedback.task_status_missing')], 422);
+            }
+
             return Feedback::error(back(), __('ui.feedback.task_status_missing'));
         }
 
         if ($task->task_status_id === $completedStatus->id) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => __('ui.feedback.task_already_completed')]);
+            }
+
             return Feedback::info(back(), __('ui.feedback.task_already_completed'));
         }
 
         $task->update(['task_status_id' => $completedStatus->id]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => __('ui.feedback.task_completed'),
+                'status' => $completedStatus->name,
+            ]);
+        }
 
         return Feedback::success(back(), __('ui.feedback.task_completed'));
     }

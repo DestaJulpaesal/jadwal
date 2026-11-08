@@ -34,7 +34,7 @@
             <p class="desktop-note">{{ request()->routeIs('register') ? 'Mulai dari hari ini. Besok, kamu akan berterima kasih.' : 'Mulai dari satu hal kecil. Sisanya bisa menyusul.' }}</p>
         </section>
         <main class="ph">
-            <div class="in">
+            <div class="in {{ request()->routeIs('login') ? 'login-page' : '' }}">
                 <x-feedback-host />
                 <a class="auth-home-link" href="{{ route('home') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3.5 10 8.5-7 8.5 7M5.5 9v11h13V9M9.5 20v-6h5v6" /></svg>

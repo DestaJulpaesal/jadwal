@@ -7,33 +7,33 @@
     .user-app .eye {
         transform-box: fill-box;
         transform-origin: center;
-        animation: concept-blink 4.6s infinite;
+        animation: concept-blink var(--dur-decoration-blink) infinite;
     }
 
     .user-app .swing {
         transform-box: view-box;
         transform-origin: 24px 5px;
-        animation: concept-swing 5s infinite;
+        animation: concept-swing var(--dur-decoration-slower) infinite;
     }
 
     .user-app .wig {
         transform-box: view-box;
         transform-origin: 24px 44px;
-        animation: concept-wig 6s infinite;
+        animation: concept-wig var(--dur-decoration-slowest) infinite;
     }
 
     .user-app .flick {
         transform-box: view-box;
         transform-origin: 24px 43px;
-        animation: concept-flick 1.8s ease-in-out infinite;
+        animation: concept-flick var(--dur-decoration) ease-in-out infinite;
     }
 
     .user-app .hop {
-        animation: concept-hop 4s infinite;
+        animation: concept-hop var(--dur-decoration-swing) infinite;
     }
 
     .user-app .bobf {
-        animation: concept-bob 3var(--dur-base) var(--ease-standard)-in-out infinite;
+        animation: concept-bob var(--dur-decoration-long) var(--ease-standard) infinite;
     }
 
     @keyframes concept-blink {
@@ -69,6 +69,26 @@
         0%, 88%, 100% { transform: translateY(0); }
         92% { transform: translateY(-3px); }
         96% { transform: translateY(0); }
+    }
+
+    @media (update: slow), (prefers-reduced-motion: reduce) {
+        .user-app .eye,
+        .user-app .swing,
+        .user-app .wig,
+        .user-app .flick,
+        .user-app .hop,
+        .user-app .bobf {
+            animation: none;
+        }
+    }
+
+    html.motion-paused .user-app .eye,
+    html.motion-paused .user-app .swing,
+    html.motion-paused .user-app .wig,
+    html.motion-paused .user-app .flick,
+    html.motion-paused .user-app .hop,
+    html.motion-paused .user-app .bobf {
+        animation-play-state: paused;
     }
 
     @media (max-width: 380px) {
@@ -509,9 +529,9 @@
     *::before,
     *::after {
         scroll-behavior: auto !important;
-        animation-duration: 0.01ms !important;
+        animation-duration: var(--dur-reduced) !important;
         animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+        transition-duration: var(--dur-reduced) !important;
     }
 }
 

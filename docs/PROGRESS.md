@@ -179,6 +179,7 @@ Audit pesan yang terlihat dan seluruh jalur validasi inline, lengkapi tes lintas
 - Menyeragamkan header daftar tugas, target, tagihan, utang-piutang, laporan, dan halaman Lainnya; menambahkan tombol Kembali berikon pada halaman buat/ubah.
 - Menambahkan ikon, penjelasan, dan CTA pada empty state target, tagihan, utang-piutang, transaksi, pencarian, serta daftar tugas.
 - Memastikan formulir login muat tanpa scroll pada 360×640; tidak ada overflow horizontal pada 360, 390, 768, dan 1280 px.
+- Memverifikasi ulang di browser: formulir login seluruhnya terlihat tanpa scroll pada 360×640 dan 390×844; tidak ada overflow horizontal pada 360, 390, 768, dan 1280 px.
 - Mengubah notifikasi menjadi sheet Perlu perhatian; di Beranda sheet menampilkan tugas terlambat dan pengingat, sedangkan halaman lain memberi pintasan ke ringkasan Beranda.
 - Menampilkan onboarding 3 langkah dengan status selesai berdasarkan tugas, kebiasaan, dan transaksi yang sudah ada.
 - Menambahkan ikon, manfaat, dan aksi langsung pada empty state dompet/kategori uang, serta CTA dari ringkasan tanpa data; menyamakan header Keuangan, Pencarian, Pengaturan, dan Profil dengan `x-page-header`.
@@ -194,3 +195,34 @@ Audit pesan yang terlihat dan seluruh jalur validasi inline, lengkapi tes lintas
 ### Langkah berikutnya
 
 Panel/sheet Perlu perhatian kini menampilkan item dashboard dan onboarding memiliki tiga langkah dengan status penyelesaian berbasis data; tes baru mencakup keduanya. Build Vite dan tes navigasi/keuangan lulus. Launcher Composer `vendor/bin/pint` rusak karena `__DIR__` terpotong, tetapi formatter berhasil dijalankan langsung dari binary paket. Fase 3 masih memiliki butir wajib terbuka. Selesaikan audit dan closeout Fase 3 sebelum menandai Fase 4 selesai; setelah itu tuntaskan audit header, empty state, aksi daftar, dan pengukuran browser pada layar terautentikasi.
+
+## Fase 5 — Animasi, transisi, dan performa (sedang dikerjakan; belum selesai)
+
+### Sudah diterapkan pada checkpoint ini
+
+- Memusatkan durasi/easing motion pada token, membetulkan deklarasi animasi maskot, dan menambahkan transisi lintas-halaman, indikator navigasi lambat, prefetch terbatas pada tautan bertanda, serta jeda animasi saat tab tersembunyi.
+- Memperbaiki easing transisi halaman yang sebelumnya tidak valid, membatasi animasi masuk halaman/kartu hingga 140 ms, dan menghentikan animasi dekoratif pada `prefers-reduced-motion` serta perangkat `update: slow`.
+- Memecah perilaku UI ke modul `nav.js`, `motion.js`, `network.js`, `toast.js`, `optimistic-actions.js`, `password.js`, dan `privacy.js`; delegasi click dan submit kini terpusat di `forms.js`.
+- Menambahkan dukungan respons JSON pada centang tugas, check-in kebiasaan, dan pembatalan check-in sambil mempertahankan POST/redirect untuk formulir tanpa JavaScript.
+- Menambahkan submit fetch dengan status optimistic, pemulihan tampilan ketika gagal, pesan kesalahan server, dan rollback DOM untuk status kebiasaan.
+- Menguji centang tugas, check-in, dan pembatalan check-in JSON secara terarah: 3 tes lulus (10 assertion). Syntax check seluruh modul, build Vite, kompilasi Blade, format PHP, dan `git diff --check` lulus; ukuran gzip saat ini: JS 44,55 KB, CSS bersama 19,04 KB, CSS halaman masuk 3,05 KB, CSS beranda 3,79 KB.
+- Pengujian browser login: tanpa overflow horizontal pada 360×640, 390×844, 768×1024, dan 1280×800; form seluruhnya terlihat pada tiap viewport. Tombol tampil/sembunyikan kata sandi berfungsi dan animasi maskot `none` saat reduced motion.
+
+### Belum selesai / belum dibuktikan
+
+- Fase 3 dan Fase 4 masih punya checklist terbuka; prasyarat Fase 5 belum terpenuhi.
+- Pengujian browser submit sukses/gagal dan navigasi terautentikasi belum dilakukan; pengujian reduced-motion serta ukuran layar hanya mencakup halaman login.
+- Ukuran build sebelum perubahan dan Lighthouse belum tersedia; jangan mengklaim perbandingan atau target Lighthouse.
+- Audit animasi daftar/progres, responsif performa, N+1, cache aset, dan konfigurasi produksi Fase 5 belum dilakukan.
+- Tes `UserTaskTest` + `LifeHubTest`: 48 lulus, 2 gagal pada dua kasus baseline `UserTaskTest` yang telah tercatat sebelum perubahan; kedua tes JSON baru lulus.
+- Suite penuh terakhir: 147 lulus, 4 gagal pada empat tes baseline yang tercatat (dua `AdminUserManagementTest`, dua `UserTaskTest`); tidak ada kegagalan baru dari perubahan Fase 5.
+
+### Langkah berikutnya
+
+Tuntaskan audit wajib Fase 3 dan Fase 4, lalu lanjutkan modularisasi dan verifikasi browser Fase 5. Jangan memulai Fase 6/7 atau menyatakan fase selesai sebelum dependensi fase sebelumnya terpenuhi.
+
+### Verifikasi Fase 3 pada checkpoint ini
+
+- Tes `FeedbackTest.php` dan seluruh tes pada `tests/Feature/Auth`: 35 lulus (143 assertion).
+- Format PHP yang berubah, kompilasi Blade, dan `git diff --check` lulus.
+- Audit semua teks/kunci Inggris, validasi inline, dan tes lintas-pengguna belum lengkap; Fase 3 tetap terbuka.

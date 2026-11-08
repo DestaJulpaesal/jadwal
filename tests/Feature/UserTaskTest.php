@@ -164,6 +164,23 @@ class UserTaskTest extends TestCase
         ]);
     }
 
+    public function test_task_completion_supports_json_for_progressive_enhancement(): void
+    {
+        $user = User::factory()->create();
+        $task = $user->tasks()->create(['title' => 'Tugas cepat']);
+        $completedStatus = TaskStatus::create(['name' => 'Selesai']);
+
+        $response = $this->actingAs($user)
+            ->withHeader('Accept', 'application/json')
+            ->patch(route('user.tasks.complete', $task));
+
+        $response->assertOk()->assertJson([
+            'message' => 'Tugas berhasil ditandai selesai.',
+            'status' => 'Selesai',
+        ]);
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'task_status_id' => $completedStatus->id]);
+    }
+
     public function test_quick_completion_reports_when_the_completed_status_is_missing(): void
     {
         $user = User::factory()->create();
