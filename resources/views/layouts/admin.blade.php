@@ -6,9 +6,9 @@
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         {{ __('ui.feedback.offline') }}
     </div>
-    <div x-data="{ sidebarOpen: false }" class="min-h-screen md:flex">
-        <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-ink/40 md:hidden" @click="sidebarOpen = false"></div>
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-white transition-transform duration-200 md:translate-x-0">
+    <div x-data="adminSidebar" class="min-h-screen md:flex">
+        <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-ink/40 md:hidden" x-on:click="closeSidebar"></div>
+        <aside x-bind:class="sidebarClass" class="fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-white transition-transform duration-200 md:translate-x-0">
             <a href="{{ route('admin.dashboard') }}" class="flex h-16 items-center gap-3 border-b border-line px-5 font-semibold">
                 <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-100 text-primary-800" aria-hidden="true">
                     <x-icon name="kalender" class="h-5 w-5" />
@@ -49,7 +49,7 @@
         </aside>
         <div class="min-w-0 flex-1 md:ml-64">
             <header class="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-line bg-white px-4 sm:px-6">
-                <x-button type="button" @click="sidebarOpen = !sidebarOpen" ::aria-expanded="sidebarOpen.toString()" aria-label="Buka navigasi admin" title="Buka navigasi admin" variant="ghost" class="md:hidden">
+                <x-button type="button" x-on:click="toggleSidebar" x-bind:aria-expanded="sidebarOpen" aria-label="Buka navigasi admin" title="Buka navigasi admin" variant="ghost" class="md:hidden">
                     <x-icon name="menu" class="h-5 w-5" />
                 </x-button>
                 <span class="font-semibold">@yield('heading', 'Ringkasan akun')</span>

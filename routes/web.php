@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\User\GoalController;
@@ -28,6 +29,16 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+$cspReportUri = config('security.csp_report_uri', '/csp-report');
+if (! is_string($cspReportUri) || ! preg_match('#\A/(?!/)[A-Za-z0-9/_-]+\z#', $cspReportUri)) {
+    throw new \InvalidArgumentException('CSP_REPORT_URI must be a same-origin path.');
+}
+
+Route::post(ltrim($cspReportUri, '/'), CspReportController::class)
+    ->middleware('throttle:30,1')
+    ->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class)
+    ->name('csp.report');
 
 if (app()->environment('local')) {
     Route::view('/styleguide', 'styleguide')->name('styleguide');

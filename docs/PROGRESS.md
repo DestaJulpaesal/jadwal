@@ -241,3 +241,32 @@ Tuntaskan audit wajib Fase 3 dan Fase 4 serta verifikasi browser Fase 5. Fase 6 
 
 - Sesi/cookie dan `auth.session`, kebijakan kata sandi, limiter IP, audit IDOR untuk semua resource, validasi/mass assignment, operasi sensitif, hardening upload, guard/audit log admin, konfigurasi produksi, serta dokumentasi keamanan lengkap masih perlu dikerjakan.
 - Fase 6 tidak boleh dinyatakan selesai sebelum seluruh checklist wajib dan suite tes diverifikasi.
+
+## Fase 7 — Content Security Policy (belum boleh dianggap rollout produksi selesai)
+
+### Selesai pada checkpoint ini
+
+- Mengimplementasikan `CSP_MODE=off|report|enforce` dengan default aman `off`; mode report memakai `Content-Security-Policy-Report-Only`, enforce memakai header aktif, dan konfigurasi invalid ditolak.
+- Membuat nonce per request melalui `Vite::useCspNonce()`, membagikannya ke view, menerapkannya pada tag Vite, dan menambahkan nonce pada skrip tema.
+- Memasang policy tanpa `unsafe-eval`/`unsafe-inline` untuk script; atribut style tetap diizinkan melalui `style-src-attr 'unsafe-inline'`. Origin HMR localhost dan 127.0.0.1 hanya diizinkan pada environment local.
+- Mengganti dependency Alpine dengan `@alpinejs/csp`; modal, dropdown, navigasi admin, dan input Rupiah kini memakai komponen terdaftar. Kalender dan logika form kebiasaan dipindah ke modul eksternal.
+- Menambahkan endpoint CSP report same-origin yang tidak memerlukan auth/CSRF, dibatasi 30 request/menit dan 16 KiB, menerima format laporan lama dan Reporting API, serta hanya mencatat directive/disposition/origin tersanitasi ke channel harian 14 hari.
+- Menambahkan `docs/CSP.md` tentang mode, rollback, kompromi style, inventaris kode, serta rollout yang belum selesai.
+- Uji browser lokal pada styleguide: modal dapat dibuka/ditutup di mode report maupun enforce; input Rupiah memformat nominal dan pratinjau tetap diperbarui pada enforce. Browser sweep seluruh halaman dan interaksi belum dilakukan.
+
+### Verifikasi
+
+- Tes CSP/header terarah: 10 lulus (50 assertion) setelah menambahkan laporan CSP batch dan policy local HMR.
+- Suite lengkap terakhir: 155 lulus, 4 gagal pada empat tes baseline yang sudah tercatat (`AdminUserManagementTest` dan `UserTaskTest`); tidak ada kegagalan baru.
+- `npm run build`, `php artisan view:cache`, Pint `--test`, pemeriksaan sintaks JavaScript, dan `git diff --check` lulus. Ukuran gzip build saat ini: JS 53,49 KB, CSS bersama 19,01 KB, CSS masuk 3,05 KB, CSS beranda 3,79 KB.
+- Report mode tetap default `off`; tidak ada klaim bahwa laporan semua halaman bersih atau CSP siap enforce di produksi.
+
+### Ditunda / risiko
+
+- Mode `report` perlu dipantau di semua halaman user, admin, auth, error, dan styleguide serta setiap komponen interaktif; pelanggaran yang belum ditelusuri dapat merusak halaman bila enforce diaktifkan.
+- Pengujian keyboard modal, dropdown di halaman terautentikasi, variasi form Rupiah, dan kalender lintas ukuran layar belum lengkap.
+- Fase 3–6 masih berstatus parsial sesuai catatan di atas; keamanan inti di luar header CSP tetap terbuka.
+
+### Langkah pertama fase berikutnya
+
+Mulai Fase 8 dari audit aksesibilitas dan baseline tes yang sudah ada; lengkapi verifikasi lintas-halaman, fokus/keyboard, zoom/320px, reduced-motion/tema gelap, dan tabel hasil per halaman. Pertahankan keterbatasan baseline test dan jangan mengklaim Lighthouse tanpa pengukuran.

@@ -13,7 +13,7 @@
             $weekdays = array_merge([array_pop($weekdays)], $weekdays);
         }
 @endphp
-    <section id="user-calendar" class="concept-card concept-card-blue dashboard-wide" x-data="{ selectedDay: '{{ $selectedDate }}' }" aria-labelledby="user-calendar-heading">
+    <section id="user-calendar" class="concept-card concept-card-blue dashboard-wide" data-selected-day="{{ $selectedDate }}" aria-labelledby="user-calendar-heading">
         <header class="concept-card-header">
             <div>
                 <div class="concept-heading mb-0"><x-concept-icon name="cl" /><div><h2 id="user-calendar-heading" class="text-lg font-semibold">Kalender</h2><p class="mt-1 text-sm">Pilih tanggal untuk melihat agenda bulanan.</p></div></div>
@@ -48,8 +48,8 @@
                             <x-button
                                 type="button"
                                 class="mx-auto flex h-11 w-11 items-center justify-center rounded-full text-sm font-medium hover:bg-primary-50 sm:mx-0 {{ $day['date']->isToday() ? 'bg-primary-700 text-white hover:bg-primary-800' : '' }}"
-                                @click="selectedDay = '{{ $dayKey }}'"
-                                ::aria-pressed="selectedDay === '{{ $dayKey }}'"
+                                data-calendar-day="{{ $dayKey }}"
+                                aria-pressed="{{ $dayKey === $selectedDate ? 'true' : 'false' }}"
                                 aria-label="{{ $day['date']->translatedFormat('l, j F Y') }}"
                             >{{ $day['date']->day }}</x-button>
 
@@ -100,7 +100,7 @@
                     @php
                         $dayKey = $day['date']->toDateString();
                     @endphp
-                    <div x-cloak x-show="selectedDay === '{{ $dayKey }}'">
+                    <div data-calendar-panel="{{ $dayKey }}" @if ($dayKey !== $selectedDate) hidden @endif>
                         <h2 class="text-lg font-semibold">{{ $day['date']->translatedFormat('l, j F Y') }}</h2>
                         @forelse ($day['tasks'] as $task)
                             @php
