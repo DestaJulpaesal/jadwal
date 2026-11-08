@@ -219,10 +219,25 @@ Panel/sheet Perlu perhatian kini menampilkan item dashboard dan onboarding memil
 
 ### Langkah berikutnya
 
-Tuntaskan audit wajib Fase 3 dan Fase 4, lalu lanjutkan modularisasi dan verifikasi browser Fase 5. Jangan memulai Fase 6/7 atau menyatakan fase selesai sebelum dependensi fase sebelumnya terpenuhi.
+Tuntaskan audit wajib Fase 3 dan Fase 4 serta verifikasi browser Fase 5. Fase 6 boleh dikerjakan paralel; jangan mulai Fase 7 sebelum Fase 5 dan Fase 6 terpenuhi.
 
 ### Verifikasi Fase 3 pada checkpoint ini
 
 - Tes `FeedbackTest.php` dan seluruh tes pada `tests/Feature/Auth`: 35 lulus (143 assertion).
 - Format PHP yang berubah, kompilasi Blade, dan `git diff --check` lulus.
 - Audit semua teks/kunci Inggris, validasi inline, dan tes lintas-pengguna belum lengkap; Fase 3 tetap terbuka.
+
+## Fase 6 — Keamanan inti (sedang dikerjakan; belum selesai)
+
+### Sudah diterapkan pada checkpoint ini
+
+- Middleware global menambahkan header `nosniff`, `DENY`, Referrer/Permissions Policy, COOP dan CORP.
+- Respons terautentikasi diberi `Cache-Control: private, no-cache`; HSTS hanya aktif pada environment production dan request HTTPS.
+- Konfigurasi `csp_mode`/`csp_report_uri` disiapkan untuk rollout pada Fase 7.
+- Tes security headers: 3 lulus (18 assertion); format PHP dan `git diff --check` lulus.
+- Suite penuh setelah penambahan middleware: 150 lulus, 4 gagal pada empat tes baseline yang sama; tidak ada kegagalan baru.
+
+### Belum selesai
+
+- Sesi/cookie dan `auth.session`, kebijakan kata sandi, limiter IP, audit IDOR untuk semua resource, validasi/mass assignment, operasi sensitif, hardening upload, guard/audit log admin, konfigurasi produksi, serta dokumentasi keamanan lengkap masih perlu dikerjakan.
+- Fase 6 tidak boleh dinyatakan selesai sebelum seluruh checklist wajib dan suite tes diverifikasi.
