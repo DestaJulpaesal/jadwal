@@ -156,6 +156,7 @@
                 </article>
             @empty
                 <section class="concept-card concept-card-yellow px-5 py-12 text-center">
+                    <span class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white"><x-concept-icon name="fl" class="h-7 w-7" /></span>
                     <h2 class="text-lg font-semibold">Belum ada kebiasaan</h2>
                     <p class="mt-2 text-sm text-muted">Mulai dengan satu kebiasaan kecil yang ingin dijaga.</p>
                     <x-button href="{{ route('user.habits.create', ['preset' => 0]) }}" variant="primary" icon="tambah" class="mt-5">Mulai kebiasaan 30 menit</x-button>

@@ -24,11 +24,11 @@
                         <x-concept-icon name="home" class="h-6 w-6" />
                     </x-button>
                 @else
-                    <a href="{{ route('user.dashboard') }}#attention-heading" class="notification-button" aria-label="Buka notifikasi" title="Notifikasi">
+                    <button type="button" x-data x-on:click="$dispatch('open-modal', 'attention-panel')" class="notification-button" aria-label="Buka notifikasi" aria-haspopup="dialog" title="Notifikasi">
                         <span class="notification-icon-wrap">
                             <x-icon name="notifikasi" class="h-8 w-8" />
                         </span>
-                    </a>
+                    </button>
                 @endif
                 <a href="{{ route('profile.edit') }}" class="profile-header-link" aria-label="Buka profil" title="Profil">
                     <span class="profile-header-frame">
@@ -154,5 +154,36 @@
                 <x-icon name="utang" class="h-5 w-5 shrink-0" /><span class="text-left"><strong class="block">Utang / piutang</strong><span class="text-xs text-muted">Catat kesepakatan dan pelunasannya.</span></span>
             </x-button>
         </div>
+    </x-bottom-sheet>
+
+    <x-bottom-sheet name="attention-panel" title="Perlu perhatian">
+        @if (isset($overdueTasks, $attentionItems))
+            @if ($overdueTasks->isEmpty() && $attentionItems->isEmpty())
+                <p class="text-sm text-muted">Tidak ada yang perlu dikejar sekarang. Hari ini bisa dimulai dengan tenang.</p>
+            @else
+                <ul class="divide-y divide-line">
+                    @foreach ($overdueTasks as $task)
+                        <li class="py-3">
+                            <a href="{{ route('user.tasks.edit', $task) }}" class="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-700">
+                                <span class="font-semibold">{{ $task->title }}</span>
+                                <span class="block text-sm text-muted">Tugas terlambat · Atur tugas</span>
+                            </a>
+                        </li>
+                    @endforeach
+                    @foreach ($attentionItems as $item)
+                        <li class="py-3">
+                            <a href="{{ $item['url'] }}" class="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-700">
+                                <span class="font-semibold">{{ $item['title'] }}</span>
+                                <span class="block text-sm text-muted">{{ $item['status'] }} · Lihat detail</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+            <x-button href="{{ route('user.dashboard') }}" variant="secondary" class="mt-4">Buka beranda</x-button>
+        @else
+            <p class="text-sm text-muted">Ringkasan ini menampilkan tugas terlambat dan pengingat yang perlu ditindaklanjuti.</p>
+            <x-button href="{{ route('user.dashboard') }}#attention-heading" variant="secondary" class="mt-4">Lihat ringkasan di Beranda</x-button>
+        @endif
     </x-bottom-sheet>
 @endsection

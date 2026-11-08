@@ -23,11 +23,7 @@
     @endphp
 
     <div class="mx-auto max-w-3xl space-y-5">
-        <header class="mb-6">
-            <p class="text-sm font-semibold text-primary-800">Sesuaikan aplikasi</p>
-            <h1 class="mt-1 text-2xl font-semibold tracking-tight">Pengaturan</h1>
-            <p class="mt-2 text-muted">Atur tampilan, pengingat, dan informasi yang muncul di dashboard.</p>
-        </header>
+        <x-page-header eyebrow="Sesuaikan aplikasi" title="Pengaturan" description="Atur tampilan, pengingat, dan informasi yang muncul di dashboard." />
 
         <x-error-summary :errors="$errors->messages()" title="Pengaturan belum disimpan. Periksa isian berikut:" />
 

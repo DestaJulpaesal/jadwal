@@ -4,13 +4,11 @@
 
 @section('content')
     <div class="mx-auto max-w-6xl space-y-5">
-        <header>
-            <p class="text-sm font-semibold text-primary-800">Pencarian pribadi</p>
-            <h1 class="mt-1 text-2xl font-semibold">Hasil pencarian</h1>
-            @if ($query !== '')
-                <p class="mt-2 text-sm text-muted">Hasil untuk “{{ $query }}”.</p>
-            @endif
-        </header>
+        <x-page-header
+            eyebrow="Pencarian pribadi"
+            title="Hasil pencarian"
+            :description="$query !== '' ? 'Hasil untuk “'.$query.'”.' : 'Temukan tugas, kebiasaan, dan catatan uangmu.'"
+        />
 
         @if ($searchErrors->has('q'))
             <x-alert type="danger">{{ $searchErrors->first('q') }}</x-alert>

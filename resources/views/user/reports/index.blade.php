@@ -40,6 +40,7 @@
                 </div>
             @empty
                 <p class="mt-3 text-sm text-muted">Belum ada pengeluaran berkategori pada bulan ini.</p>
+                <x-button href="{{ route('user.money.index', ['section' => 'transactions', 'month' => $month, 'create' => 'transaction']) }}" variant="secondary" icon="tambah" class="mt-4">Catat pengeluaran pertama</x-button>
             @endforelse
         </section>
     </div>

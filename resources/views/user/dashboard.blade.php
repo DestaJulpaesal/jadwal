@@ -42,14 +42,6 @@
             </x-alert>
         @endif
 
-        <nav class="concept-quick dashboard-wide" aria-label="Akses cepat">
-            <a href="{{ route('user.tasks.index') }}" class="concept-quick-link"><x-concept-icon name="tk" /><strong>Tugas</strong><small>Atur pekerjaan hari ini</small></a>
-            <a href="{{ route('user.money.index') }}" class="concept-quick-link"><x-concept-icon name="wl" /><strong>Catat uang</strong><small>Pantau pemasukan dan pengeluaran</small></a>
-            <a href="{{ route('user.calendar') }}" class="concept-quick-link"><x-concept-icon name="cl" /><strong>Kalender</strong><small>Lihat jadwal mendatang</small></a>
-            <a href="{{ route('user.habits.index') }}" class="concept-quick-link"><x-concept-icon name="fl" /><strong>Kebiasaan</strong><small>Jaga ritme setiap hari</small></a>
-            <a href="{{ route('user.search') }}" class="concept-quick-link"><x-concept-icon name="sc" /><strong>Cari</strong><small>Temukan data dengan cepat</small></a>
-        </nav>
-
         @if (in_array('attention', $dashboardSections, true))
         <section class="concept-card concept-card-pink dashboard-panel" aria-labelledby="attention-heading">
             <div class="concept-card-header">
@@ -76,6 +68,14 @@
             @endif
         </section>
         @endif
+
+        <nav class="concept-quick dashboard-wide" aria-label="Akses cepat">
+            <a href="{{ route('user.tasks.index') }}" class="concept-quick-link"><x-concept-icon name="tk" /><strong>Tugas</strong><small>Atur pekerjaan hari ini</small></a>
+            <a href="{{ route('user.money.index') }}" class="concept-quick-link"><x-concept-icon name="wl" /><strong>Catat uang</strong><small>Pantau pemasukan dan pengeluaran</small></a>
+            <a href="{{ route('user.calendar') }}" class="concept-quick-link"><x-concept-icon name="cl" /><strong>Kalender</strong><small>Lihat jadwal mendatang</small></a>
+            <a href="{{ route('user.habits.index') }}" class="concept-quick-link"><x-concept-icon name="fl" /><strong>Kebiasaan</strong><small>Jaga ritme setiap hari</small></a>
+            <a href="{{ route('user.search') }}" class="concept-quick-link"><x-concept-icon name="sc" /><strong>Cari</strong><small>Temukan data dengan cepat</small></a>
+        </nav>
 
         @if (in_array('habits', $dashboardSections, true))
         <section class="concept-card concept-card-green dashboard-panel" aria-labelledby="habits-heading">
@@ -251,13 +251,25 @@
         @if ($showOnboarding)
             <section class="surface-card mt-6 border-primary-200 p-5 sm:p-6">
                 <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div><h2 class="text-lg font-semibold">Mulai dari mana?</h2><p class="mt-1 text-sm text-muted">Pilih satu langkah kecil. Anda bisa melanjutkan kapan saja.</p></div>
+                    <div><h2 class="text-lg font-semibold">Mulai dari mana?</h2><p class="mt-1 text-sm text-muted">Selesaikan tiga langkah ini untuk menyiapkan ruang harianmu.</p></div>
                     <form method="POST" action="{{ route('user.onboarding.dismiss') }}">@csrf<x-button class="dashboard-action dashboard-action-quiet">Tutup panduan</x-button></form>
                 </div>
                 <ol class="mt-4 grid gap-3 sm:grid-cols-3">
-                    <li><a href="{{ route('user.tasks.create') }}" class="block min-h-14 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">1. Tambah tugas pertama</a></li>
-                    <li><a href="{{ route('user.habits.index') }}" class="block min-h-14 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">2. Pilih kebiasaan contoh</a></li>
-                    <li><a href="{{ route('user.money.index') }}" class="block min-h-14 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">3. Catat uang pertama</a></li>
+                    @foreach ($onboardingSteps as $index => $step)
+                        <li>
+                            <a href="{{ $step['url'] }}" class="flex min-h-14 items-center gap-3 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">
+                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ $step['completed'] ? 'bg-success text-white' : 'bg-gray-100 text-muted' }}" role="img" aria-label="{{ $step['completed'] ? 'Selesai' : 'Belum selesai' }}">
+                                    @if ($step['completed'])
+                                        <x-icon name="selesai" class="h-4 w-4" />
+                                    @else
+                                        {{ $index + 1 }}
+                                    @endif
+                                </span>
+                                <span>{{ $step['label'] }}</span>
+                                <span class="sr-only">{{ $step['completed'] ? 'Selesai' : 'Belum selesai' }}</span>
+                            </a>
+                        </li>
+                    @endforeach
                 </ol>
             </section>
         @endif

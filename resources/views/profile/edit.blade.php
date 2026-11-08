@@ -4,16 +4,11 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl space-y-5">
-        <header class="mb-6 flex items-start justify-between gap-4">
-            <div>
-                <p class="text-sm font-semibold text-primary-800">Pengaturan akun</p>
-                <h1 class="mt-1 text-2xl font-semibold tracking-tight">Profil Anda</h1>
-                <p class="mt-2 text-muted">Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.</p>
-            </div>
+        <x-page-header eyebrow="Pengaturan akun" title="Profil Anda" description="Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.">
             <x-button href="{{ route('settings.edit') }}" aria-label="Buka pengaturan" title="Pengaturan" variant="ghost" class="shrink-0">
                 <x-icon name="zona-waktu" class="h-6 w-6" />
             </x-button>
-        </header>
+        </x-page-header>
 
         <section class="surface-card p-5 sm:p-7">
             @include('profile.partials.update-profile-information-form')

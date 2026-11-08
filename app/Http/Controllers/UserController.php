@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Habit;
 use App\Models\Goal;
+use App\Models\Habit;
 use App\Models\User;
 use App\Services\AgendaService;
 use App\Services\GoalProgress;
 use App\Services\MonthlySummary;
 use App\Services\WalletBalance;
-use App\Support\UserClock;
 use App\Support\Feedback;
+use App\Support\UserClock;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\View\View;
 
 class UserController extends Controller
 {
@@ -25,8 +25,7 @@ class UserController extends Controller
         MonthlySummary $summary,
         WalletBalance $balances,
         GoalProgress $goalProgress
-    )
-    {
+    ) {
         $validated = $request->validate([
             'year' => ['nullable', 'integer', 'between:2000,2100'],
             'month' => ['nullable', 'integer', 'between:1,12'],
@@ -107,12 +106,28 @@ class UserController extends Controller
             $goal->setAttribute('current_value', $current);
             $goal->setAttribute('progress_percent', $goalProgress->percent($goal, $current));
         });
+        $onboardingSteps = [
+            [
+                'label' => 'Tambah tugas pertama',
+                'url' => route('user.tasks.create'),
+                'completed' => $totalTasks > 0,
+            ],
+            [
+                'label' => 'Pilih kebiasaan',
+                'url' => route('user.habits.index'),
+                'completed' => $user->habits()->exists(),
+            ],
+            [
+                'label' => 'Catat uang pertama',
+                'url' => route('user.money.index', ['section' => 'transactions', 'create' => 'transaction']),
+                'completed' => $user->transactions()->exists(),
+            ],
+        ];
         $showOnboarding = ! $user->onboarding_dismissed_at
-            && $totalTasks === 0
-            && $user->habits()->exists() === false
-            && $user->transactions()->exists() === false;
+            && collect($onboardingSteps)->contains(fn (array $step) => ! $step['completed']);
 
         $dashboardSections = $user->dashboard_sections ?? ['attention', 'habits', 'today_tasks', 'upcoming', 'finance'];
+
         return view('user.dashboard', compact(
             'todayTasks',
             'upcomingTasks',
@@ -128,6 +143,7 @@ class UserController extends Controller
             'totalBalance',
             'activeGoals',
             'showOnboarding',
+            'onboardingSteps',
             'dashboardSections'
         ));
     }

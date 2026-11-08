@@ -4,14 +4,9 @@
 
 @section('content')
     <div class="mx-auto max-w-6xl space-y-5">
-        <header class="concept-card concept-card-orange page-heading mb-0">
-            <div>
-                <p class="k">Catatan pribadi</p>
-                <h1 class="mt-1 text-3xl">Keuangan</h1>
-                <p class="mt-2 text-sm">Pantau saldo dompet dan arus uang bulanan.</p>
-            </div>
+        <x-page-header eyebrow="Catatan pribadi" title="Keuangan" description="Pantau saldo dompet dan arus uang bulanan.">
             <p class="concept-chip">{{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $month)->translatedFormat('F Y') }}</p>
-        </header>
+        </x-page-header>
         <x-tabs :tabs="[
             ['key' => 'overview', 'label' => 'Ringkasan', 'url' => route('user.money.index', ['section' => 'overview', 'month' => $month])],
             ['key' => 'transactions', 'label' => 'Transaksi', 'url' => route('user.money.index', ['section' => 'transactions', 'month' => $month])],
@@ -43,7 +38,7 @@
                         <strong class="shrink-0" data-private>{{ rupiah($obligation->amount) }}</strong>
                     </li>
                 @empty
-                    <li class="py-4 text-sm text-muted">Tidak ada tagihan atau cicilan yang belum dibayar pada bulan ini.</li>
+                    <li class="py-4 text-sm text-muted">Tidak ada tagihan atau cicilan yang belum dibayar pada bulan ini. <a class="font-semibold underline" href="{{ route('user.obligations.index', ['create' => 'obligation']) }}">Tambah pengingat</a></li>
                 @endforelse
             </ul>
         </section>
@@ -67,7 +62,7 @@
                         </strong>
                     </li>
                 @empty
-                    <li class="py-4 text-sm text-muted">Tidak ada utang atau piutang jatuh tempo pada bulan ini.</li>
+                    <li class="py-4 text-sm text-muted">Tidak ada utang atau piutang jatuh tempo pada bulan ini. <a class="font-semibold underline" href="{{ route('user.loans.index', ['create' => 'loan']) }}">Tambah catatan</a></li>
                 @endforelse
             </ul>
         </section>
@@ -100,6 +95,7 @@
                         </div>
                     @empty
                         <p class="mt-3 text-sm text-muted">Belum ada pengeluaran berkategori pada bulan ini.</p>
+                        <x-button href="{{ route('user.money.index', ['section' => 'transactions', 'month' => $month, 'create' => 'transaction']) }}" variant="secondary" icon="tambah" class="mt-3">Catat pengeluaran pertama</x-button>
                     @endforelse
                 </div>
             </div>
@@ -150,10 +146,17 @@
                         </x-modal>
                     </li>
                 @empty
-                    <li class="py-4 text-sm text-muted">Belum ada dompet.</li>
+                    <li class="list-none">
+                        <x-empty-state title="Belum ada dompet." description="Tambahkan dompet supaya saldo dan catatan uang bisa dikelompokkan.">
+                            <x-slot:icon><x-icon name="keuangan" class="h-6 w-6" /></x-slot:icon>
+                            <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'wallet-create')">Tambah dompet pertama</x-button>
+                        </x-empty-state>
+                    </li>
                 @endforelse
             </ul>
-            <x-button type="button" class="mt-4" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'wallet-create')">Tambah dompet</x-button>
+            @if ($wallets->isNotEmpty())
+                <x-button type="button" class="mt-4" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'wallet-create')">Tambah dompet</x-button>
+            @endif
         </section>
         <section class="concept-card concept-card-white">
             <div class="concept-card-header">
@@ -185,7 +188,12 @@
                         </x-bottom-sheet>
                     </li>
                 @empty
-                    <li class="py-4 text-sm text-muted">Belum ada kategori khusus.</li>
+                    <li class="list-none">
+                        <x-empty-state title="Belum ada kategori khusus." description="Kategori membantu membaca pola pemasukan dan pengeluaranmu.">
+                            <x-slot:icon><x-icon name="filter" class="h-6 w-6" /></x-slot:icon>
+                            <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'money-category-create')">Tambah kategori pertama</x-button>
+                        </x-empty-state>
+                    </li>
                 @endforelse
             </ul>
         </section>

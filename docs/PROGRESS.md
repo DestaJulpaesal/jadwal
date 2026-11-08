@@ -168,15 +168,18 @@ Selesaikan audit bahasa dan validasi inline sebelum menyatakan Fase 3 selesai.
 - Menyeragamkan header daftar tugas, target, tagihan, utang-piutang, laporan, dan halaman Lainnya; menambahkan tombol Kembali berikon pada halaman buat/ubah.
 - Menambahkan ikon, penjelasan, dan CTA pada empty state target, tagihan, utang-piutang, transaksi, pencarian, serta daftar tugas.
 - Memastikan formulir login muat tanpa scroll pada 360×640; tidak ada overflow horizontal pada 360, 390, 768, dan 1280 px.
-- Tes terarah: 14 lulus; suite penuh: 133 lulus dan 4 gagal pada kegagalan baseline yang sudah tercatat. Cache Blade, build Vite, Pint, dan `git diff --check` lulus.
+- Mengubah notifikasi menjadi sheet Perlu perhatian; di Beranda sheet menampilkan tugas terlambat dan pengingat, sedangkan halaman lain memberi pintasan ke ringkasan Beranda.
+- Menampilkan onboarding 3 langkah dengan status selesai berdasarkan tugas, kebiasaan, dan transaksi yang sudah ada.
+- Menambahkan ikon, manfaat, dan aksi langsung pada empty state dompet/kategori uang, serta CTA dari ringkasan tanpa data; menyamakan header Keuangan, Pencarian, Pengaturan, dan Profil dengan `x-page-header`.
+- Membuat lekukan indikator bottom-nav berpindah dengan transisi token `--dur-base` dan menghormati `prefers-reduced-motion`.
+- Validasi lanjutan: tes `UserNavigationTest` dan `LifeHubTest` lulus (31 tes, 178 assertions); suite lengkap 138 lulus dan 4 gagal, sama dengan kegagalan baseline di `AdminUserManagementTest` dan `UserTaskTest`. Cache Blade, build Vite, Pint dari binary paket, dan `git diff --check` lulus.
 
 ### Belum selesai
 
 - Header halaman belum diseragamkan di semua halaman; navigasi kembali/breadcrumb belum diaudit.
-- Empty state dan CTA setiap daftar, serta onboarding 3 langkah dengan status ceklis, belum diaudit menyeluruh.
-- Notifikasi masih menavigasi ke bagian Perlu perhatian di beranda, belum menjadi panel/sheet terpisah.
+- Empty state dan CTA setiap daftar belum diaudit menyeluruh; termasuk daftar admin dan semua halaman detail/form.
 - Audit penuh aksi daftar pada layar HP/desktop dan pengukuran browser untuk halaman terautentikasi masih perlu dilakukan.
 
 ### Langkah berikutnya
 
-Fase 3 masih memiliki butir wajib terbuka. Selesaikan audit dan closeout Fase 3 sebelum menandai Fase 4 selesai; setelah itu tuntaskan audit header, empty state/onboarding, dan panel Perlu perhatian.
+Panel/sheet Perlu perhatian kini menampilkan item dashboard dan onboarding memiliki tiga langkah dengan status penyelesaian berbasis data; tes baru mencakup keduanya. Build Vite dan tes navigasi/keuangan lulus. Launcher Composer `vendor/bin/pint` rusak karena `__DIR__` terpotong, tetapi formatter berhasil dijalankan langsung dari binary paket. Fase 3 masih memiliki butir wajib terbuka. Selesaikan audit dan closeout Fase 3 sebelum menandai Fase 4 selesai; setelah itu tuntaskan audit header, empty state, aksi daftar, dan pengukuran browser pada layar terautentikasi.
