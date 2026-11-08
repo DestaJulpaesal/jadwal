@@ -10,7 +10,7 @@
 @section('body')
 @if (request()->routeIs('login', 'register'))
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
-        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+        {{ __('ui.feedback.offline') }}
     </div>
     <x-concept-b-sprite />
     <div class="concept-login-shell">
@@ -46,7 +46,7 @@
     </div>
 @else
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
-        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+        {{ __('ui.feedback.offline') }}
     </div>
     <main class="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:gap-16 lg:py-12">
         <section class="hidden flex-1 lg:block">

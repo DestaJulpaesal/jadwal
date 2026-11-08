@@ -5,7 +5,7 @@
     @if (! $lockedByRepayments)
         <x-segmented name="direction" label="Arah" :options="['lent' => 'Saya meminjamkan', 'borrowed' => 'Saya berutang']"
             :value="old('direction', $loan?->direction?->value ?? 'lent')"
-            help="Meminjamkan berarti orang lain berutang kepada Anda; berutang berarti Anda wajib membayar." required />
+            help="Meminjamkan berarti orang lain berutang kepadamu; berutang berarti kamu wajib membayar." required />
         <x-field id="loan_counterparty" label="Nama pihak" help="Nama orang atau pihak yang terkait dengan utang/piutang ini."
             :error="$errors->first('counterparty')" required>
             <input id="loan_counterparty" name="counterparty" value="{{ old('counterparty', $loan?->counterparty) }}" maxlength="80"

@@ -10,9 +10,9 @@ use App\Models\Obligation;
 use App\Models\ObligationPayment;
 use App\Models\Transaction;
 use App\Services\ObligationScheduler;
+use App\Support\Feedback;
 use App\Support\Rupiah;
 use App\Support\UserClock;
-use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -123,7 +123,7 @@ class ObligationController extends Controller
         }
         $request->user()->obligations()->create($data);
 
-        return Feedback::success(back(), 'Tagihan berhasil ditambahkan.');
+        return Feedback::success(back(), __('ui.feedback.obligation_created'));
     }
 
     public function update(Request $request, Obligation $obligation)
@@ -159,7 +159,7 @@ class ObligationController extends Controller
         }
         $obligation->update($data);
 
-        return Feedback::success(redirect()->route('user.obligations.index'), 'Pengingat berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.obligations.index'), __('ui.feedback.obligation_updated'));
     }
 
     public function pay(Request $request, Obligation $obligation, UserClock $clock, ObligationScheduler $scheduler)
@@ -178,14 +178,14 @@ class ObligationController extends Controller
             (int) substr($data['due_on'], 0, 4),
             (int) substr($data['due_on'], 5, 2)
         )->toDateString();
-        abort_unless($expectedDate === $data['due_on'], 422, 'Periode tagihan tidak cocok dengan tanggal jatuh tempo.');
-        abort_if($data['due_on'] < $obligation->starts_on->toDateString(), 422, 'Periode ini sebelum tagihan dimulai.');
-        abort_if($data['due_on'] > $clock->date($request->user()), 422, 'Pembayaran hanya dapat dicatat pada periode yang sudah jatuh tempo.');
+        abort_unless($expectedDate === $data['due_on'], 422, __('ui.feedback.obligation_period_mismatch'));
+        abort_if($data['due_on'] < $obligation->starts_on->toDateString(), 422, __('ui.feedback.obligation_period_before_start'));
+        abort_if($data['due_on'] > $clock->date($request->user()), 422, __('ui.feedback.obligation_not_due'));
 
         DB::transaction(function () use ($data, $obligation, $request, $scheduler, $clock) {
             $lockedObligation = $request->user()->obligations()->lockForUpdate()->findOrFail($obligation->id);
             $duplicate = $lockedObligation->payments()->where('due_on', $data['due_on'])->lockForUpdate()->exists();
-            abort_if($duplicate, 422, 'Periode ini sudah ditandai lunas.');
+            abort_if($duplicate, 422, __('ui.feedback.obligation_already_paid'));
             $today = $clock->date($request->user());
             $periodLimit = \Illuminate\Support\Carbon::parse($lockedObligation->starts_on->toDateString())
                 ->startOfMonth()->diffInMonths(\Illuminate\Support\Carbon::parse($today)->startOfMonth()) + 1;
@@ -233,7 +233,7 @@ class ObligationController extends Controller
             }
         });
 
-        return Feedback::success(back(), 'Pembayaran berhasil dicatat.');
+        return Feedback::success(back(), __('ui.feedback.payment_recorded'));
     }
 
     public function cancelPayment(Request $request, Obligation $obligation, ObligationPayment $payment)
@@ -249,6 +249,6 @@ class ObligationController extends Controller
             $payment->delete();
         });
 
-        return Feedback::success(back(), 'Pembayaran dibatalkan dan catatan uangnya dipulihkan.');
+        return Feedback::success(back(), __('ui.feedback.obligation_payment_cancelled'));
     }
 }

@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'reset' => 'Password Anda berhasil diatur ulang.',
-    'sent' => 'Tautan untuk mengatur ulang password sudah dikirim ke email Anda.',
-    'throttled' => 'Silakan tunggu sebelum mencoba lagi.',
-    'token' => 'Tautan pengaturan ulang password tidak valid.',
-    'user' => 'Kami tidak menemukan akun dengan alamat email tersebut.',
+    'reset' => 'Kata sandi berhasil diubah. Silakan masuk dengan kata sandi baru.',
+    'sent' => 'Jika email terdaftar, tautan pengaturan ulang sudah dikirim. Cek kotak masuk dan folder spam.',
+    'throttled' => 'Tunggu sebentar sebelum meminta tautan pengaturan ulang lagi.',
+    'token' => 'Tautan pengaturan ulang sudah tidak berlaku. Minta tautan baru untuk melanjutkan.',
+    'user' => 'Jika email terdaftar, tautan pengaturan ulang akan dikirim.',
 ];

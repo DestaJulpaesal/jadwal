@@ -47,15 +47,7 @@ class SaveHabitRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
-            'title.required' => 'Nama kebiasaan belum diisi.',
-            'frequency.required' => 'Frekuensi belum dipilih.',
-            'weekdays.*.integer' => 'Hari yang dipilih tidak valid.',
-            'weekly_target.required' => 'Target mingguan belum diisi.',
-            'starts_on.required' => 'Tanggal mulai belum diisi.',
-            'ends_on.after_or_equal' => 'Tanggal berakhir tidak boleh sebelum tanggal mulai.',
-            'category_id.exists' => 'Kategori tidak tersedia.',
-        ];
+        return __('validation.catalog.habit');
     }
 
     public function attributes(): array
@@ -85,11 +77,11 @@ class SaveHabitRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             if ($this->input('frequency') === HabitFrequency::Weekdays->value && empty($this->input('weekdays'))) {
-                $validator->errors()->add('weekdays', 'Pilih setidaknya satu hari.');
+                $validator->errors()->add('weekdays', __('validation.catalog.habit.weekdays_empty'));
             }
 
             if ($this->input('frequency') === HabitFrequency::WeeklyCount->value && ! $this->filled('weekly_target')) {
-                $validator->errors()->add('weekly_target', 'Target mingguan wajib diisi.');
+                $validator->errors()->add('weekly_target', __('validation.catalog.habit.weekly_target_empty'));
             }
         });
     }

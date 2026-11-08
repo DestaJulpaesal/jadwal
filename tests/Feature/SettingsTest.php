@@ -61,7 +61,7 @@ class SettingsTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->from(route('settings.edit'))->patch(route('settings.update'), [
+        $response = $this->actingAs($user)->from(route('settings.edit'))->patch(route('settings.update'), [
             'timezone' => 'Not/A_Timezone',
             'week_starts_on' => 'friday',
             'theme' => 'neon',
@@ -78,6 +78,17 @@ class SettingsTest extends TestCase
                 'digest_time',
                 'digest_days',
             ]);
+
+        $errors = $response->getSession()->get('errors');
+        $messages = __('validation.catalog.settings');
+        $this->assertSame(
+            $messages['timezone.timezone'],
+            $errors->first('timezone')
+        );
+        $this->assertSame(
+            $messages['digest_days.min'],
+            $errors->first('digest_days')
+        );
 
         $this->assertSame('Asia/Jakarta', $user->fresh()->timezone);
         $this->assertSame('monday', $user->fresh()->week_starts_on);

@@ -91,7 +91,7 @@ class TaskController extends Controller
 
         return Feedback::success(
             redirect()->route('user.tasks.index')->with('schedule_conflicts', $this->scheduleConflicts($task)),
-            'Tugas berhasil ditambahkan.'
+            __('ui.feedback.task_created')
         );
     }
 
@@ -122,7 +122,7 @@ class TaskController extends Controller
 
         return Feedback::success(
             redirect()->route('user.tasks.index')->with('schedule_conflicts', $this->scheduleConflicts($task->refresh())),
-            'Tugas berhasil diperbarui.'
+            __('ui.feedback.task_updated')
         );
     }
 
@@ -133,16 +133,16 @@ class TaskController extends Controller
         $completedStatus = TaskStatus::where('is_completed', true)->first();
 
         if (! $completedStatus) {
-            return Feedback::error(back(), 'Status “Selesai” belum tersedia. Hubungi admin.');
+            return Feedback::error(back(), __('ui.feedback.task_status_missing'));
         }
 
         if ($task->task_status_id === $completedStatus->id) {
-            return Feedback::info(back(), 'Tugas ini sudah ditandai selesai.');
+            return Feedback::info(back(), __('ui.feedback.task_already_completed'));
         }
 
         $task->update(['task_status_id' => $completedStatus->id]);
 
-        return Feedback::success(back(), 'Tugas berhasil ditandai selesai.');
+        return Feedback::success(back(), __('ui.feedback.task_completed'));
     }
 
     public function destroy(Task $task)
@@ -150,7 +150,7 @@ class TaskController extends Controller
         $this->authorize('delete', $task);
         $task->delete();
 
-        return Feedback::success(redirect()->route('user.tasks.index'), 'Tugas berhasil dihapus.');
+        return Feedback::success(redirect()->route('user.tasks.index'), __('ui.feedback.task_deleted'));
     }
 
     private function formData(): array

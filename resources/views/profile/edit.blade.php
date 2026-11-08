@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="mx-auto max-w-3xl space-y-5">
-        <x-page-header eyebrow="Pengaturan akun" title="Profil Anda" description="Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.">
+        <x-page-header eyebrow="Pengaturan akun" title="Profil" description="Perbarui informasi dan keamanan akun. Zona waktu serta preferensi aplikasi tersedia di Pengaturan.">
             <x-button href="{{ route('settings.edit') }}" aria-label="Buka pengaturan" title="Pengaturan" variant="ghost" class="shrink-0">
                 <x-icon name="zona-waktu" class="h-6 w-6" />
             </x-button>

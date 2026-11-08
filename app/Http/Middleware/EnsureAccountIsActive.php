@@ -17,7 +17,7 @@ class EnsureAccountIsActive
             $request->session()->regenerateToken();
 
             return redirect()->route('login')->withErrors([
-                'email' => 'Akun Anda telah dinonaktifkan.',
+                'email' => __('ui.login.disabled'),
             ]);
         }
 

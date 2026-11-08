@@ -152,7 +152,7 @@ class UserController extends Controller
     {
         $request->user()->forceFill(['onboarding_dismissed_at' => now()])->save();
 
-        return Feedback::success(back(), 'Panduan awal ditutup. Kamu dapat memulainya lagi kapan saja.');
+        return Feedback::success(back(), __('ui.feedback.onboarding_dismissed'));
     }
 
     private function tasksInRange(User $user, Carbon $startUtc, Carbon $endUtc, bool $excludeCompleted = false): Collection

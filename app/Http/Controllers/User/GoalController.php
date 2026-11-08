@@ -6,9 +6,9 @@ use App\Enums\GoalStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveGoalRequest;
 use App\Models\Goal;
+use App\Support\Feedback;
 use App\Support\Rupiah;
 use App\Support\UserClock;
-use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -55,7 +55,7 @@ class GoalController extends Controller
         }
         $request->user()->goals()->create($data);
 
-        return Feedback::success(back(), 'Target berhasil ditambahkan.');
+        return Feedback::success(back(), __('ui.feedback.goal_created'));
     }
 
     public function edit(Request $request, Goal $goal)
@@ -80,14 +80,14 @@ class GoalController extends Controller
         }
         $goal->update($data);
 
-        return Feedback::success(redirect()->route('user.goals.index'), 'Target berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.goals.index'), __('ui.feedback.goal_updated'));
     }
 
     public function updateProgress(Request $request, Goal $goal, UserClock $clock)
     {
         $this->authorize('update', $goal);
         abort_if($goal->user_id !== $request->user()->id || $goal->status !== GoalStatus::Active, 404);
-        abort_unless($goal->type === \App\Enums\GoalType::Number, 422, 'Progres target ini berasal dari kebiasaan atau saldo dompet.');
+        abort_unless($goal->type === \App\Enums\GoalType::Number, 422, __('ui.feedback.goal_progress_type'));
         $request->merge(['amount' => Rupiah::normalize($request->input('amount'))]);
         $data = $request->validate([
             'amount' => ['required', 'integer', 'between:1,'.Rupiah::MAX_AMOUNT],
@@ -102,7 +102,7 @@ class GoalController extends Controller
         DB::transaction(function () use ($goal, $request, $data) {
             $locked = $request->user()->goals()->lockForUpdate()->findOrFail($goal->id);
             $current = $locked->start_value + (int) $locked->updates()->sum('amount');
-            abort_if($data['amount'] > $locked->target_value - $current, 422, 'Nilai progres melebihi sisa target.');
+            abort_if($data['amount'] > $locked->target_value - $current, 422, __('ui.feedback.goal_progress_exceeds_remaining'));
             $request->user()->goalUpdates()->create([
                 'goal_id' => $locked->id,
                 'amount' => $data['amount'],
@@ -111,16 +111,16 @@ class GoalController extends Controller
             ]);
         });
 
-        return Feedback::success(back(), 'Progres target berhasil diperbarui.');
+        return Feedback::success(back(), __('ui.feedback.goal_progress_updated'));
     }
 
     public function markAchieved(Goal $goal, \App\Services\GoalProgress $progress)
     {
         $this->authorize('update', $goal);
-        abort_unless($progress->percent($goal) >= 100, 422, 'Target belum mencapai nilai yang ditentukan.');
+        abort_unless($progress->percent($goal) >= 100, 422, __('ui.feedback.goal_not_reached'));
         $goal->update(['status' => GoalStatus::Achieved]);
 
-        return Feedback::success(back(), 'Target ditandai tercapai.');
+        return Feedback::success(back(), __('ui.feedback.goal_achieved'));
     }
 
     public function archive(Goal $goal)
@@ -128,6 +128,6 @@ class GoalController extends Controller
         $this->authorize('update', $goal);
         $goal->update(['status' => GoalStatus::Archived]);
 
-        return Feedback::success(back(), 'Target diarsipkan.');
+        return Feedback::success(back(), __('ui.feedback.goal_archived'));
     }
 }

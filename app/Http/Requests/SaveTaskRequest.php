@@ -36,22 +36,7 @@ class SaveTaskRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
-            'title.required' => 'Judul tugas wajib diisi.',
-            'title.string' => 'Judul tugas harus berupa teks.',
-            'title.max' => 'Judul tugas maksimal 255 karakter.',
-            'description.string' => 'Deskripsi harus berupa teks.',
-            'category_id.integer' => 'Kategori yang dipilih tidak valid.',
-            'category_id.exists' => 'Kategori yang dipilih tidak tersedia.',
-            'task_status_id.integer' => 'Status tugas tidak valid.',
-            'task_status_id.exists' => 'Status tugas yang dipilih tidak tersedia.',
-            'due_date.date' => 'Format jatuh tempo tidak valid.',
-            'starts_at.date' => 'Format waktu mulai tidak valid.',
-            'ends_at.date' => 'Format waktu selesai tidak valid.',
-            'starts_at.required_with' => 'Isi waktu mulai jika waktu selesai diisi.',
-            'ends_at.required_with' => 'Isi waktu selesai jika waktu mulai diisi.',
-            'ends_at.after_or_equal' => 'Waktu selesai harus sama atau setelah waktu mulai.',
-        ];
+        return __('validation.catalog.task');
     }
 
     public function attributes(): array

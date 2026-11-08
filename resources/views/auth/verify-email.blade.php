@@ -1,12 +1,12 @@
 <x-guest-layout>
     <div class="mb-6">
         <p class="text-sm font-semibold text-primary-800">Satu langkah lagi</p>
-        <h1 class="mt-1 text-2xl font-semibold">Periksa email Anda</h1>
+        <h1 class="mt-1 text-2xl font-semibold">Periksa emailmu</h1>
     </div>
     @if (config('auth.email_verification'))
-        <p class="text-sm leading-6 text-muted">Klik tautan verifikasi yang kami kirim ke email Anda. Jika belum menerima email, Anda dapat meminta tautan baru.</p>
+        <p class="text-sm leading-6 text-muted">Klik tautan verifikasi yang kami kirim ke emailmu. Jika belum menerimanya, kamu bisa meminta tautan baru.</p>
     @else
-        <p class="text-sm leading-6 text-muted">Verifikasi email tidak diaktifkan. Anda dapat melanjutkan menggunakan akun.</p>
+        <p class="text-sm leading-6 text-muted">Verifikasi email tidak diaktifkan. Kamu bisa melanjutkan menggunakan akun.</p>
     @endif
     <div class="mt-6 flex flex-col gap-3 sm:flex-row">
         @if (config('auth.email_verification'))

@@ -46,20 +46,20 @@ class AdminController extends Controller
     public function toggleStatus(User $user)
     {
         if ($user->is(auth()->user())) {
-            return back()->withErrors(['account' => 'Admin tidak dapat menonaktifkan akunnya sendiri.']);
+            return back()->withErrors(['account' => __('ui.feedback.admin_cannot_disable_self')]);
         }
 
         if ($user->is_active && $user->isAdmin()) {
             $activeAdmins = User::where('role', 'admin')->where('is_active', true)->count();
             if ($activeAdmins <= 1) {
-                return back()->withErrors(['account' => 'Admin aktif terakhir tidak dapat dinonaktifkan.']);
+                return back()->withErrors(['account' => __('ui.feedback.last_active_admin_disable')]);
             }
         }
 
         $user->is_active = ! $user->is_active;
         $user->save();
 
-        $message = $user->is_active ? 'Akun berhasil diaktifkan.' : 'Akun berhasil dinonaktifkan.';
+        $message = $user->is_active ? __('ui.feedback.account_enabled') : __('ui.feedback.account_disabled');
 
         return Feedback::success(redirect()->route('admin.dashboard'), $message);
     }
@@ -67,23 +67,22 @@ class AdminController extends Controller
     public function updateRole(User $user)
     {
         if ($user->is(auth()->user())) {
-            return back()->withErrors(['account' => 'Admin tidak dapat mengubah perannya sendiri.']);
+            return back()->withErrors(['account' => __('ui.feedback.admin_cannot_change_own_role')]);
         }
 
         if ($user->isAdmin() && $user->is_active) {
             $activeAdmins = User::where('role', 'admin')->where('is_active', true)->count();
             if ($activeAdmins <= 1) {
-                return back()->withErrors(['account' => 'Admin aktif terakhir tidak dapat diubah menjadi pengguna.']);
+                return back()->withErrors(['account' => __('ui.feedback.last_active_admin_role')]);
             }
         }
 
         $user->role = $user->isAdmin() ? 'user' : 'admin';
         $user->save();
 
-        return redirect()->route('admin.users.show', $user)->with(
-            'success',
-            $user->isAdmin() ? 'Peran akun berhasil diubah menjadi admin.' : 'Peran akun berhasil diubah menjadi pengguna.'
-        );
+        $message = $user->isAdmin() ? __('ui.feedback.role_admin') : __('ui.feedback.role_user');
+
+        return Feedback::success(redirect()->route('admin.users.show', $user), $message);
     }
 
     public function sendPasswordResetLink(User $user)
@@ -91,7 +90,7 @@ class AdminController extends Controller
         $status = Password::sendResetLink(['email' => $user->email]);
 
         if ($status === Password::RESET_LINK_SENT) {
-            return Feedback::success(back(), 'Tautan atur ulang kata sandi berhasil dikirim ke email pengguna.');
+            return Feedback::success(back(), __('ui.feedback.password_reset_sent_admin'));
         }
 
         return back()->withErrors(['account' => __($status)]);
@@ -100,18 +99,18 @@ class AdminController extends Controller
     public function destroy(User $user)
     {
         if ($user->is(auth()->user())) {
-            return back()->withErrors(['account' => 'Admin tidak dapat menghapus akunnya sendiri.']);
+            return back()->withErrors(['account' => __('ui.feedback.admin_cannot_delete_self')]);
         }
 
         if ($user->is_active && $user->isAdmin()) {
             $activeAdmins = User::where('role', 'admin')->where('is_active', true)->count();
             if ($activeAdmins <= 1) {
-                return back()->withErrors(['account' => 'Admin aktif terakhir tidak dapat dihapus.']);
+                return back()->withErrors(['account' => __('ui.feedback.last_active_admin_delete')]);
             }
         }
 
         $user->delete();
 
-        return Feedback::success(redirect()->route('admin.dashboard'), 'Akun dan data jadwalnya berhasil dihapus.');
+        return Feedback::success(redirect()->route('admin.dashboard'), __('ui.feedback.account_deleted'));
     }
 }

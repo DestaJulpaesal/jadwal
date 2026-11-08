@@ -87,6 +87,11 @@ class AuthenticationTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('throttle');
+        $message = $response->getSession()->get('errors')->getBag('default')->first('throttle');
+        $this->assertMatchesRegularExpression(
+            '/^Terlalu banyak percobaan masuk\\. Coba lagi dalam \\d+:\\d{2}\\.$/',
+            $message
+        );
         Event::assertDispatched(Lockout::class);
     }
 
@@ -97,6 +102,7 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        $response->assertRedirect('/')
+            ->assertSessionHas('feedback.message', __('ui.login.logged_out'));
     }
 }

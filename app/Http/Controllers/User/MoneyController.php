@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Enums\MoneyCategoryType;
 use App\Enums\LoanDirection;
+use App\Enums\MoneyCategoryType;
 use App\Enums\TransactionType;
 use App\Enums\WalletType;
 use App\Http\Controllers\Controller;
@@ -11,15 +11,15 @@ use App\Models\MoneyCategory;
 use App\Models\Obligation;
 use App\Models\Transaction;
 use App\Models\Wallet;
-use App\Services\ObligationScheduler;
-use App\Services\MonthlySummary;
 use App\Services\LoanBalance;
+use App\Services\MonthlySummary;
+use App\Services\ObligationScheduler;
 use App\Services\WalletBalance;
+use App\Support\Feedback;
 use App\Support\Rupiah;
 use App\Support\UserClock;
-use App\Support\Feedback;
-use Illuminate\Support\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -32,8 +32,7 @@ class MoneyController extends Controller
         ObligationScheduler $scheduler,
         LoanBalance $loanBalances,
         UserClock $clock
-    )
-    {
+    ) {
         $this->authorize('viewAny', Transaction::class);
         $user = $request->user();
         foreach (config('presets.money_categories') as $type => $names) {
@@ -167,7 +166,7 @@ class MoneyController extends Controller
         ]);
         $request->user()->wallets()->create($data);
 
-        return Feedback::success(back(), 'Dompet berhasil ditambahkan.');
+        return Feedback::success(back(), __('ui.feedback.wallet_created'));
     }
 
     public function archiveWallet(Request $request, Wallet $wallet)
@@ -176,7 +175,7 @@ class MoneyController extends Controller
         abort_if($wallet->user_id !== $request->user()->id, 404);
         $wallet->update(['archived_at' => now()]);
 
-        return Feedback::success(back(), 'Dompet diarsipkan.');
+        return Feedback::success(back(), __('ui.feedback.wallet_archived'));
     }
 
     public function updateWallet(Request $request, Wallet $wallet)
@@ -188,7 +187,7 @@ class MoneyController extends Controller
         ]);
         $wallet->update($data);
 
-        return Feedback::success(back(), 'Nama dompet berhasil diperbarui.');
+        return Feedback::success(back(), __('ui.feedback.wallet_updated'));
     }
 
     public function storeCategory(Request $request)
@@ -200,7 +199,7 @@ class MoneyController extends Controller
         ]);
         $request->user()->moneyCategories()->firstOrCreate($data);
 
-        return Feedback::success(back(), 'Kategori berhasil disimpan.');
+        return Feedback::success(back(), __('ui.feedback.money_category_created'));
     }
 
     public function updateCategory(Request $request, MoneyCategory $moneyCategory)
@@ -221,7 +220,7 @@ class MoneyController extends Controller
         ]);
         $moneyCategory->update($data);
 
-        return Feedback::success(back(), 'Nama kategori berhasil diperbarui.');
+        return Feedback::success(back(), __('ui.feedback.money_category_updated'));
     }
 
     public function storeTransaction(Request $request)
@@ -231,7 +230,7 @@ class MoneyController extends Controller
 
         DB::transaction(fn () => $request->user()->transactions()->create($data));
 
-        return Feedback::success(back(), 'Transaksi berhasil dicatat.');
+        return Feedback::success(back(), __('ui.feedback.transaction_created'));
     }
 
     public function editTransaction(Request $request, Transaction $transaction)
@@ -267,7 +266,7 @@ class MoneyController extends Controller
         return Feedback::success(redirect()->route('user.money.index', [
             'section' => 'transactions',
             'month' => substr($data['occurred_on'], 0, 7),
-        ]), 'Transaksi berhasil diperbarui.');
+        ]), __('ui.feedback.transaction_updated'));
     }
 
     private function validatedTransactionData(Request $request): array
@@ -290,7 +289,7 @@ class MoneyController extends Controller
         }
         if (! empty($data['money_category_id'])) {
             $category = $request->user()->moneyCategories()->findOrFail($data['money_category_id']);
-            abort_unless($category->type->value === $data['type'], 422, 'Jenis kategori tidak sesuai dengan transaksi.');
+            abort_unless($category->type->value === $data['type'], 422, __('ui.feedback.money_category_type_mismatch'));
         }
 
         return $data;

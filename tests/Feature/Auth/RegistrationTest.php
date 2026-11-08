@@ -33,8 +33,8 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
             'role' => 'admin',
         ]);
 
@@ -51,8 +51,8 @@ class RegistrationTest extends TestCase
         $credentials = [
             'name' => 'Persistent User',
             'email' => 'persistent@example.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
         ];
 
         $this->post('/register', $credentials)->assertRedirect(RouteServiceProvider::HOME);
@@ -76,5 +76,23 @@ class RegistrationTest extends TestCase
         $response = $this->post('/register', []);
 
         $response->assertStatus(429);
+    }
+
+    public function test_registration_requires_a_mixed_case_password_with_a_number(): void
+    {
+        $response = $this->from('/register')->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'lowercaseonly',
+            'password_confirmation' => 'lowercaseonly',
+        ]);
+
+        $response->assertRedirect('/register')->assertSessionHasErrors('password');
+
+        $passwordError = $response->getSession()->get('errors')->first('password');
+        $this->assertStringContainsString(
+            __('validation.password.mixed', ['attribute' => 'kata sandi']),
+            $passwordError
+        );
     }
 }

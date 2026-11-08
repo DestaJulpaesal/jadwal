@@ -16,7 +16,7 @@
                 <span class="ic" style="background: var(--p)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#us" /></svg></span>
                 <input id="name" name="name" type="text" autocomplete="name" autocapitalize="words" enterkeyhint="next" value="{{ old('name') }}" placeholder="Nama yang ingin kami panggil" aria-label="Nama lengkap" aria-invalid="{{ $errors->has('name') ? 'true' : 'false' }}" aria-describedby="name-help name-error" maxlength="255" required>
             </div>
-            <p id="name-help" class="field-help">Nama ini akan ditampilkan pada akun Anda.</p>
+            <p id="name-help" class="field-help">Nama ini akan ditampilkan di akunmu.</p>
             <x-input-error id="name-error" :messages="$errors->get('name')" />
         </div>
         <div>
@@ -38,12 +38,12 @@
                     <span class="sr-only" data-password-label>Tampilkan</span>
                 </x-button>
             </div>
-            <p id="password-help" class="register-help">Gunakan setidaknya 8 karakter dan jangan gunakan password dari akun lain.</p>
-            <div class="mt-2" data-password-strength-for="password" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" aria-label="Kekuatan password" aria-live="polite">
+            <p id="password-help" class="register-help">Gunakan setidaknya 8 karakter dan jangan gunakan kata sandi dari akun lain.</p>
+            <div class="mt-2" data-password-strength-for="password" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" aria-label="Kekuatan kata sandi" aria-live="polite">
                 <div class="h-2 overflow-hidden rounded-full bg-canvas" aria-hidden="true">
                     <div class="h-full w-0 rounded-full bg-danger transition-all" data-password-strength-bar></div>
                 </div>
-                <p class="mt-1 text-xs text-muted" data-password-strength-label>Password belum diisi.</p>
+                <p class="mt-1 text-xs text-muted" data-password-strength-label>Kata sandi belum diisi.</p>
             </div>
             <ul class="mt-2 space-y-1 text-xs text-muted" data-password-checklist aria-label="Syarat kata sandi">
                 <li data-password-rule="length">○ Minimal 8 karakter</li>

@@ -4,7 +4,7 @@
 @section('body-class', 'min-h-screen bg-canvas text-ink antialiased')
 @section('body')
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
-        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+        {{ __('ui.feedback.offline') }}
     </div>
     <div x-data="{ sidebarOpen: false }" class="min-h-screen md:flex">
         <div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-40 bg-ink/40 md:hidden" @click="sidebarOpen = false"></div>

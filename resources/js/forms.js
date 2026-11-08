@@ -52,7 +52,7 @@ const submitFeedback = (form, button) => {
     }
 
     feedback.replaceChildren();
-    feedback.append(document.createTextNode('Koneksi lambat. Coba lagi? '));
+    feedback.append(document.createTextNode('Koneksi belum merespons. Kirim ulang perubahan? '));
 
     const retry = document.createElement('button');
     retry.type = 'button';

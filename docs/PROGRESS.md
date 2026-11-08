@@ -124,27 +124,29 @@ Status: selesai secara implementasi. Build, kompilasi Blade, format PHP, dan syn
 
 Buat branch Fase 3 dan baca `04_FASE3_PESAN_VALIDASI.md`; fokus pada penyelarasan pesan validasi tanpa mengubah validasi atau perilaku bisnis.
 
-## Fase 3 — Pesan, validasi, dan umpan balik (sebagian)
+## Fase 3 — Pesan, validasi, dan umpan balik (sedang dikerjakan)
 
-Status: sebagian. Implementasi berlanjut di branch `polish/fase-3-pesan-validasi`; fondasi feedback/auth sudah dibuat, tetapi checklist belum seluruhnya terpenuhi.
+Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`; fondasi feedback/auth dan katalog sudah diperluas, tetapi checklist belum seluruhnya terpenuhi.
 
 ### Sudah diterapkan
 
-- Menambahkan katalog awal `lang/id/ui.php` dan melengkapi atribut validasi untuk field utama tugas, kebiasaan, target, profil, dan autentikasi.
+- Memusatkan pesan feedback domain dan validasi FormRequest di katalog `lang/id/ui.php` dan `lang/id/validation.php`; menambahkan pesan spesifik untuk tugas, kebiasaan, target, profil, login, pendaftaran, dan pengaturan.
 - Menambahkan `messages()` dan `attributes()` pada lima FormRequest yang ada; pesan kepemilikan kategori tidak lagi menyebut kepemilikan.
 - Menambahkan `App\Support\Feedback` dan memindahkan flash sukses/error controller ke payload terpadu; tidak ditemukan lagi `session('success')` atau `session('error')` manual.
 - Memperjelas pesan login generik dan menampilkan pesan akun nonaktif hanya setelah kata sandi yang benar; kesalahan kata sandi yang salah tetap generik.
-- Menambahkan petunjuk Caps Lock dan syarat kata sandi dasar yang hidup, hitung mundur throttle, pesan berhasil masuk/keluar, anti-enumerasi reset kata sandi, jeda toast saat hover/fokus/sentuhan, dan redirect sesi kedaluwarsa ke halaman Masuk.
+- Menyamakan syarat kata sandi live dengan validasi server (minimal 8 karakter, huruf besar-kecil, dan angka) untuk pendaftaran, reset, dan ganti kata sandi.
+- Menambahkan petunjuk Caps Lock, hitung mundur throttle, pesan berhasil masuk/keluar, anti-enumerasi reset kata sandi, jeda toast saat hover/fokus/sentuhan, dan redirect sesi kedaluwarsa ke halaman Masuk.
 - Menambahkan banner offline yang mencegah submit saat terputus, aksi coba lagi untuk kegagalan koneksi, halaman error 403/404/419/429/500/503, serta hitung mundur 429 bila header tersedia.
 - Respons lupa kata sandi sama untuk email terdaftar/tidak terdaftar; tes anti-enumerasi sudah ada.
-- Tes helper/login/reset dan akses lintas pengguna tersedia, tetapi belum mencakup setiap jalur validasi inline.
+- Menambahkan tes untuk payload feedback/toast, FormRequest, pesan login, throttle, akun nonaktif, anti-enumerasi reset, dan kekuatan kata sandi pendaftaran.
+- Menyelaraskan istilah yang ditemukan pada halaman detail admin, email ringkasan, dan pesan akun nonaktif.
 
 ### Belum selesai — jangan tandai fase ini sebagai selesai
 
-- Katalog UI belum mencakup semua pesan controller/validasi inline; audit bahasa untuk seluruh UI dan email belum selesai.
-- Belum ada antrean toast yang menunggu giliran atau aksi urungkan yang benar-benar membatalkan perubahan.
+- Audit pesan Inggris/key mentah dan istilah di seluruh UI/email/lang belum selesai; sebagian jalur validasi inline controller juga belum memiliki tes pesan.
+- Toast belum memiliki antrean yang menunggu giliran; aksi urungkan belum membatalkan perubahan secara nyata.
 - Pemeriksaan kata sandi bocor tidak ditambahkan: layanan eksternal dapat menerima sidik jari kata sandi tanpa persetujuan eksplisit.
-- Audit lintas-pengguna serta tes tiap jalur validasi inline masih perlu dilengkapi.
+- Audit lintas-pengguna dan validasi setiap jalur inline masih perlu dilengkapi; jangan menganggap tes FormRequest mencakup jalur-jalur tersebut.
 
 ### Risiko dan keputusan sementara
 
@@ -153,9 +155,15 @@ Status: sebagian. Implementasi berlanjut di branch `polish/fase-3-pesan-validasi
 - Fase ini menyentuh autentikasi dan pesan global; validasi penuh wajib dijalankan lagi setelah audit bahasa dan pengujian validasi inline.
 - Empat kegagalan baseline suite penuh tetap ada: dua `AdminUserManagementTest` dan dua `UserTaskTest`.
 
+### Verifikasi checkpoint
+
+- Tes terarah feedback, pengaturan, dan autentikasi: 30 lulus (156 assertion).
+- `npm run build`, `php artisan view:cache`, Pint pada PHP yang berubah, dan `git diff --check` lulus.
+- Suite penuh terakhir: 142 lulus, 4 gagal pada empat tes baseline yang tercatat di atas; nama kegagalannya tetap sama.
+
 ### Langkah berikutnya
 
-Selesaikan audit bahasa dan validasi inline sebelum menyatakan Fase 3 selesai.
+Audit istilah/pesan secara terukur, tambah tes validasi inline, lalu putuskan secara eksplisit cakupan antrean toast dan aksi urungkan; jangan menandai Fase 3 selesai sebelum semua butir wajib ditutup.
 
 ## Fase 4 — Navigasi dan struktur halaman (sedang dikerjakan; belum boleh ditandai selesai)
 

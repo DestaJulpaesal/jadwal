@@ -23,7 +23,7 @@ class DailyDigestMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'Ringkasan harian Anda');
+        return new Envelope(subject: 'Ringkasan harianmu');
     }
 
     public function content(): Content

@@ -8,7 +8,7 @@
 @section('body')
     <x-concept-b-sprite />
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
-        Kamu sedang offline. Perubahan akan dikirim setelah tersambung.
+        {{ __('ui.feedback.offline') }}
     </div>
     <header class="user-header fixed inset-x-0 top-0 z-30">
         <div class="user-header-inner flex h-16 items-center justify-between gap-4 px-4 sm:px-6">

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use App\Models\User;
 
 class LoginRequest extends FormRequest
 {
@@ -36,11 +36,7 @@ class LoginRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
-            'email.required' => 'Email belum diisi.',
-            'email.email' => 'Format email belum benar. Contoh: nama@email.com',
-            'password.required' => 'Kata sandi belum diisi.',
-        ];
+        return __('validation.catalog.login');
     }
 
     public function attributes(): array

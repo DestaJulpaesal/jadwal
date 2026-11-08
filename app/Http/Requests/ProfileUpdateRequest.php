@@ -27,13 +27,7 @@ class ProfileUpdateRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
-            'timezone.required' => 'Zona waktu wajib diisi.',
-            'timezone.timezone' => 'Pilih zona waktu yang tersedia.',
-            'avatar.image' => 'Foto profil harus berupa gambar yang valid.',
-            'avatar.mimes' => 'Foto profil harus berformat JPG, PNG, atau WebP.',
-            'avatar.max' => 'Ukuran foto profil maksimal 5 MB.',
-        ];
+        return __('validation.catalog.profile');
     }
 
     public function attributes(): array

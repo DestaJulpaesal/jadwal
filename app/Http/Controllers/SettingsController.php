@@ -42,12 +42,7 @@ class SettingsController extends Controller
             'hide_financial_amounts' => ['required', 'boolean'],
             'dashboard_sections' => ['required', 'array:attention,habits,today_tasks,upcoming,finance'],
             'dashboard_sections.*' => ['required', 'boolean'],
-        ], [
-            'timezone.required' => 'Zona waktu wajib dipilih.',
-            'timezone.timezone' => 'Pilih zona waktu yang valid.',
-            'digest_days.required' => 'Pilih setidaknya satu hari untuk ringkasan email.',
-            'digest_days.min' => 'Pilih setidaknya satu hari untuk ringkasan email.',
-        ]);
+        ], __('validation.catalog.settings'));
 
         $dashboardSections = array_keys(array_filter($validated['dashboard_sections']));
 
@@ -62,6 +57,6 @@ class SettingsController extends Controller
             'dashboard_sections' => $dashboardSections,
         ]);
 
-        return Feedback::success(redirect()->route('settings.edit'), 'Pengaturan berhasil disimpan.');
+        return Feedback::success(redirect()->route('settings.edit'), __('ui.feedback.settings_saved'));
     }
 }

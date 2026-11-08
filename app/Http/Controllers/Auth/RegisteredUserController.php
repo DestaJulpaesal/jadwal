@@ -34,15 +34,8 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ], [
-            'name.required' => 'Nama belum diisi.',
-            'email.required' => 'Email belum diisi.',
-            'email.email' => 'Format email belum benar. Contoh: nama@email.com',
-            'email.unique' => 'Email ini sudah dipakai. Coba masuk, atau atur ulang kata sandi.',
-            'password.required' => 'Kata sandi belum diisi.',
-            'password.confirmed' => 'Belum sama dengan kata sandi di atas.',
-        ], [
+            'password' => ['required', 'confirmed', Rules\Password::min(8)->mixedCase()->numbers()],
+        ], __('validation.catalog.registration'), [
             'name' => 'nama',
             'email' => 'email',
             'password' => 'kata sandi',

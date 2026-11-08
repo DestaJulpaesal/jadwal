@@ -43,15 +43,7 @@ class SaveGoalRequest extends FormRequest
 
     public function messages(): array
     {
-        return [
-            'title.required' => 'Nama target belum diisi.',
-            'type.required' => 'Jenis target belum dipilih.',
-            'target_value.required' => 'Nilai target belum diisi.',
-            'target_value.integer' => 'Nilai target harus berupa angka.',
-            'category_id.exists' => 'Kategori tidak tersedia.',
-            'habit_id.exists' => 'Kebiasaan tidak tersedia.',
-            'wallet_id.exists' => 'Dompet tidak tersedia.',
-        ];
+        return __('validation.catalog.goal');
     }
 
     public function attributes(): array
@@ -75,10 +67,10 @@ class SaveGoalRequest extends FormRequest
         $validator->after(function ($validator) {
             $type = $this->input('type');
             if ($type === GoalType::Savings->value && ! $this->filled('wallet_id')) {
-                $validator->errors()->add('wallet_id', 'Pilih dompet yang menjadi target tabungan.');
+                $validator->errors()->add('wallet_id', __('validation.catalog.goal.wallet_id.required'));
             }
             if ($type === GoalType::Habit->value && ! $this->filled('habit_id')) {
-                $validator->errors()->add('habit_id', 'Pilih kebiasaan yang terhubung ke target ini.');
+                $validator->errors()->add('habit_id', __('validation.catalog.goal.habit_id.required'));
             }
         });
     }

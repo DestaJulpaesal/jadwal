@@ -85,8 +85,8 @@
                 <h2 class="text-lg font-semibold">Pesan dan status</h2>
                 <x-alert type="success">Tugas berhasil disimpan.</x-alert>
                 <x-alert type="warning">Waktu tugas ini berdekatan dengan jadwal lain.</x-alert>
-                <x-alert type="danger">Periksa kembali alamat email Anda.</x-alert>
-                <x-alert type="info">Anda dapat mengubah zona waktu dari profil.</x-alert>
+                <x-alert type="danger">Periksa kembali alamat emailmu.</x-alert>
+                <x-alert type="info">Kamu dapat mengubah zona waktu dari profil.</x-alert>
                 <x-toast>Perubahan contoh berhasil disimpan.</x-toast>
             </section>
 
@@ -105,7 +105,7 @@
 
             <section class="surface-card p-5">
                 <h2 class="mb-4 text-lg font-semibold">Keadaan kosong dan memuat</h2>
-                <x-empty-state title="Belum ada agenda" description="Tambahkan tugas untuk mulai menyusun hari Anda." action-url="{{ route('register') }}" action-label="Daftar gratis" />
+                <x-empty-state title="Belum ada agenda" description="Tambahkan tugas untuk mulai menyusun harimu." action-url="{{ route('register') }}" action-label="Daftar gratis" />
                 <div class="mt-5 space-y-3" aria-label="Contoh pemuatan">
                     <x-skeleton height="h-5" width="w-1/2" />
                     <x-skeleton />
@@ -130,7 +130,7 @@
                 </x-modal>
                 <x-bottom-sheet name="styleguide-sheet" title="Contoh tambah cepat">
                     <p class="mb-4 text-sm text-muted">Panel ini berubah menjadi dialog pada layar yang lebih lebar.</p>
-                    <x-field id="guide-sheet-title" label="Judul tugas" help="Nama ini membantu Anda mengenali tugas.">
+                    <x-field id="guide-sheet-title" label="Judul tugas" help="Nama ini membantumu mengenali tugas.">
                         <input id="guide-sheet-title" class="form-control" value="Menyiapkan rapat">
                     </x-field>
                     <div class="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

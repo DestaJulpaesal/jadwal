@@ -1,7 +1,7 @@
 <section>
     <header>
         <h2 class="text-lg font-semibold">Informasi profil</h2>
-        <p class="mt-1 text-sm text-muted">Nama dan email yang digunakan untuk akun Anda. Atur zona waktu dan preferensi aplikasi di Pengaturan.</p>
+        <p class="mt-1 text-sm text-muted">Nama dan email yang digunakan untuk akunmu. Atur zona waktu dan preferensi aplikasi di Pengaturan.</p>
     </header>
 
     @if (config('auth.email_verification'))
@@ -38,7 +38,7 @@
         </x-field>
         @if (config('auth.email_verification') && $user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
             <div class="rounded-lg bg-canvas p-3">
-                <p class="text-sm text-warning">Alamat email Anda belum diverifikasi.</p>
+                <p class="text-sm text-warning">Alamat emailmu belum diverifikasi.</p>
                 <x-button form="send-verification" class="mt-2 min-h-11 text-sm font-semibold text-primary-800 underline underline-offset-4">Kirim ulang tautan verifikasi</x-button>
             </div>
         @endif

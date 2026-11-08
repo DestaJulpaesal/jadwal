@@ -54,7 +54,7 @@
                 <div class="px-5 py-12 text-center sm:px-8">
                     <span class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary-50 text-primary-800"><x-concept-icon name="tk" class="h-7 w-7" /></span>
                     <h2 class="text-lg font-semibold">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Tidak ada tugas yang cocok.' : 'Belum ada tugas.' }}</h2>
-                    <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Coba ubah kata pencarian atau filter, atau tampilkan semua tugas.' : 'Tambahkan tugas pertama Anda agar rencana mudah diingat dan diatur.' }}</p>
+                    <p class="mx-auto mt-2 max-w-md text-sm leading-6 text-muted">{{ request()->hasAny(['search', 'status_id', 'due']) ? 'Coba ubah kata pencarian atau filter, atau tampilkan semua tugas.' : 'Tambahkan tugas pertamamu agar rencana mudah diingat dan diatur.' }}</p>
                     <div class="mt-5 flex flex-col justify-center gap-2 sm:flex-row">
                         @if (request()->hasAny(['search', 'status_id', 'due']))
                             <x-button href="{{ route('user.tasks.index') }}" variant="secondary">Tampilkan semua tugas</x-button>

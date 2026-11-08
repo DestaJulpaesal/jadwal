@@ -1,10 +1,10 @@
 <x-guest-layout>
     <div class="mb-6">
         <p class="text-sm font-semibold text-primary-800">Keamanan akun</p>
-        <h1 class="mt-1 text-2xl font-semibold">Buat password baru</h1>
-        <p class="mt-2 text-sm text-muted">Gunakan password yang kuat dan tidak dipakai di akun lain.</p>
+        <h1 class="mt-1 text-2xl font-semibold">Buat kata sandi baru</h1>
+        <p class="mt-2 text-sm text-muted">Gunakan kata sandi yang kuat dan tidak dipakai di akun lain.</p>
     </div>
-    <x-error-summary :errors="$errors->messages()" title="Password belum diperbarui. Periksa isian berikut:" />
+    <x-error-summary :errors="$errors->messages()" title="Kata sandi belum diperbarui. Periksa isian berikut:" />
     <form method="POST" action="{{ route('password.store') }}" class="space-y-5">
         @csrf
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
@@ -15,29 +15,29 @@
             <x-input-error id="email-error" :messages="$errors->get('email')" />
         </div>
         <div>
-            <x-input-label for="password" value="Password baru (wajib)" />
+            <x-input-label for="password" value="Kata sandi baru (wajib)" />
             <div class="mt-1 flex gap-2">
                 <x-text-input id="password" name="password" type="password" class="min-w-0 flex-1" required autocomplete="new-password" enterkeyhint="next" data-password-field aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" aria-describedby="password-help password-error" />
-                <x-button type="button" data-password-toggle data-password-show-icon="{{ asset('icons/sprite.svg#icon-lihat-password') }}" data-password-hide-icon="{{ asset('icons/sprite.svg#icon-sembunyikan-password') }}" aria-label="Tampilkan password" variant="secondary" class="px-3">
+                <x-button type="button" data-password-toggle data-password-show-icon="{{ asset('icons/sprite.svg#icon-lihat-password') }}" data-password-hide-icon="{{ asset('icons/sprite.svg#icon-sembunyikan-password') }}" aria-label="Tampilkan kata sandi" variant="secondary" class="px-3">
                     <x-icon name="lihat-password" class="h-5 w-5" data-password-icon />
                     <span data-password-label>Tampilkan</span>
                 </x-button>
             </div>
-            <p id="password-help" class="field-help">Gunakan setidaknya 8 karakter dan hindari password dari akun lain.</p>
-            <div class="mt-2" data-password-strength-for="password" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" aria-label="Kekuatan password baru" aria-live="polite">
+            <p id="password-help" class="field-help">Gunakan setidaknya 8 karakter dan hindari kata sandi dari akun lain.</p>
+            <div class="mt-2" data-password-strength-for="password" role="progressbar" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0" aria-label="Kekuatan kata sandi baru" aria-live="polite">
                 <div class="h-2 overflow-hidden rounded-full bg-canvas" aria-hidden="true">
                     <div class="h-full w-0 rounded-full bg-danger transition-all" data-password-strength-bar></div>
                 </div>
-                <p class="mt-1 text-xs text-muted" data-password-strength-label>Password belum diisi.</p>
+                <p class="mt-1 text-xs text-muted" data-password-strength-label>Kata sandi belum diisi.</p>
             </div>
             <x-input-error id="password-error" :messages="$errors->get('password')" />
         </div>
         <div>
-            <x-input-label for="password_confirmation" value="Ulangi password baru (wajib)" />
+            <x-input-label for="password_confirmation" value="Ulangi kata sandi baru (wajib)" />
             <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1" required autocomplete="new-password" enterkeyhint="done" aria-invalid="{{ $errors->has('password_confirmation') ? 'true' : 'false' }}" aria-describedby="password-confirmation-help password-confirmation-error" />
-            <p id="password-confirmation-help" class="field-help">Masukkan password yang sama untuk memastikan tidak ada salah ketik.</p>
+            <p id="password-confirmation-help" class="field-help">Masukkan kata sandi yang sama untuk memastikan tidak ada salah ketik.</p>
             <x-input-error id="password-confirmation-error" :messages="$errors->get('password_confirmation')" />
         </div>
-        <x-button type="submit" data-loading-text="Menyimpan..." variant="primary" class="w-full">Simpan password baru</x-button>
+        <x-button type="submit" data-loading-text="Menyimpan..." variant="primary" class="w-full">Simpan kata sandi baru</x-button>
     </form>
 </x-guest-layout>

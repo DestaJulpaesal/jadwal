@@ -6,7 +6,7 @@
         <section style="background:#fff;border:1px solid #dce4df;border-radius:12px;padding:24px">
             <p style="color:#226b50;font-weight:bold;margin:0">Jadwal Harian</p>
             <h1 style="font-size:24px;margin:8px 0">Halo, {{ $name }}</h1>
-            <p style="color:#52615b;margin:0 0 24px">{{ $date }}. Berikut hal-hal yang mungkin perlu Anda lihat.</p>
+            <p style="color:#52615b;margin:0 0 24px">{{ $date }}. Berikut hal-hal yang mungkin perlu kamu lihat.</p>
             <h2 style="font-size:18px">Tugas hari ini</h2>
             @forelse ($tasks as $task)
                 <p style="border-top:1px solid #dce4df;padding-top:10px">{{ $task['time'] ? $task['time'].' · ' : '' }}{{ $task['title'] }} — {{ $task['status'] }}</p>
@@ -26,7 +26,7 @@
                 <p style="color:#52615b">Tidak ada tagihan atau pembayaran yang perlu diperhatikan dalam tiga hari ini.</p>
             @endforelse
         </section>
-        <p style="color:#52615b;font-size:13px;text-align:center;margin-top:16px">Anda dapat mengubah atau mematikan ringkasan ini dari Profil.</p>
+        <p style="color:#52615b;font-size:13px;text-align:center;margin-top:16px">Kamu dapat mengubah atau mematikan ringkasan ini dari Profil.</p>
     </main>
 </body>
 </html>

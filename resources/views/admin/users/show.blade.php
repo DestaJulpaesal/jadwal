@@ -59,16 +59,16 @@
 
     <section class="surface-card mt-6 p-5 sm:p-6">
         <h2 class="font-semibold">Tindakan admin</h2>
-        <p class="mt-1 text-sm text-muted">Perubahan role dan status berdampak pada akses pengguna. Reset password dikirim melalui tautan email.</p>
+        <p class="mt-1 text-sm text-muted">Perubahan peran dan status berdampak pada akses pengguna. Tautan pengaturan ulang kata sandi dikirim melalui email.</p>
 
         @if ($user->id === auth()->id())
-            <p class="mt-4 rounded-lg bg-gray-50 p-4 text-sm text-muted">Untuk keamanan, admin tidak dapat mengubah role, status, atau menghapus akun yang sedang digunakan.</p>
+            <p class="mt-4 rounded-lg bg-gray-50 p-4 text-sm text-muted">Untuk keamanan, admin tidak dapat mengubah peran, status, atau menghapus akun yang sedang digunakan.</p>
         @else
             <div class="mt-5 flex flex-wrap gap-3">
                 <x-confirm-action
                     :action="route('admin.users.role', $user)"
                     method="PATCH"
-                    :title="$user->isAdmin() ? 'Ubah role menjadi pengguna?' : 'Jadikan akun admin?'"
+                    :title="$user->isAdmin() ? 'Ubah peran menjadi pengguna?' : 'Jadikan akun admin?'"
                     :message="$user->isAdmin() ? 'Pengguna ini akan kehilangan akses ke panel admin.' : 'Pengguna ini akan mendapat akses penuh ke panel admin dan pengelolaan akun.'"
                     :label="$user->isAdmin() ? 'Jadikan pengguna' : 'Jadikan admin'"
                     tone="secondary"
@@ -77,9 +77,9 @@
                 <x-confirm-action
                     :action="route('admin.users.password-reset', $user)"
                     method="POST"
-                    title="Kirim tautan reset password?"
-                    message="Tautan reset akan dikirim ke alamat email akun ini. Password pengguna tidak akan ditampilkan kepada admin."
-                    label="Kirim reset password"
+                    title="Kirim tautan pengaturan ulang kata sandi?"
+                    message="Tautan pengaturan ulang akan dikirim ke alamat email akun ini. Kata sandi pengguna tidak akan ditampilkan kepada admin."
+                    label="Kirim tautan pengaturan ulang"
                     tone="secondary"
                     icon="kelola-akun"
                 />

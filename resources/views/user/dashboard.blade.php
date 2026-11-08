@@ -150,7 +150,7 @@
             @else
                 <div class="concept-item flex-col items-start py-4">
                     <p class="font-medium">Belum ada jadwal untuk hari ini.</p>
-                    <p class="mt-1 text-sm text-muted">Tambahkan tugas agar rencana Anda mudah diingat.</p>
+                    <p class="mt-1 text-sm text-muted">Tambahkan tugas agar rencanamu mudah diingat.</p>
                     <a href="{{ route('user.tasks.create') }}" class="dashboard-action-link mt-3"><x-concept-icon name="spark" class="h-5 w-5" />Buat tugas pertama</a>
                 </div>
             @endif
@@ -160,7 +160,7 @@
         @if (in_array('attention', $dashboardSections, true))
             <section class="concept-card concept-card-pink dashboard-panel">
                 <h2 class="text-lg font-semibold">Tugas yang terlewat</h2>
-                <p class="mt-1 text-sm text-muted">Anda masih bisa mengatur ulang waktunya atau menandainya selesai.</p>
+                <p class="mt-1 text-sm text-muted">Kamu masih bisa mengatur ulang waktunya atau menandainya selesai.</p>
                 @forelse ($overdueTasks as $task)
                     <article class="concept-item flex-col items-start sm:flex-row sm:items-center">
                         <div class="min-w-0"><h3 class="break-words font-medium">{{ $task->title }}</h3><p class="mt-1 inline-flex items-center gap-1.5 text-sm text-warning">Terlambat · {{ ($task->due_date ?? $task->ends_at)?->timezone(auth()->user()->timezone)->translatedFormat('j M Y, H:i') }}</p></div>
@@ -197,7 +197,7 @@
                         <x-task-actions :task="$task" />
                     </article>
                 @empty
-                    <div class="mt-4 border-t border-line py-4"><p class="font-medium">Belum ada tugas dalam 7 hari mendatang.</p><p class="mt-1 text-sm text-muted">Tugas baru akan muncul di sini setelah Anda menambahkannya.</p><a href="{{ route('user.tasks.create') }}" class="dashboard-action-link mt-3">Buat tugas baru</a></div>
+                    <div class="mt-4 border-t border-line py-4"><p class="font-medium">Belum ada tugas dalam 7 hari mendatang.</p><p class="mt-1 text-sm text-muted">Tugas baru akan muncul di sini setelah kamu menambahkannya.</p><a href="{{ route('user.tasks.create') }}" class="dashboard-action-link mt-3">Buat tugas baru</a></div>
                 @endforelse
                 @foreach ($agendaByDay as $date => $items)
                     @if ($date > $today)
@@ -236,7 +236,7 @@
         @if (in_array('finance', $dashboardSections, true))
         <section class="concept-card concept-card-orange dashboard-panel" aria-labelledby="money-summary-heading">
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <div><h2 id="money-summary-heading" class="text-lg font-semibold">Ringkasan uang bulan ini</h2><p class="mt-1 text-sm text-muted">Saldo dihitung dari dompet dan catatan uang Anda.</p></div>
+                <div><h2 id="money-summary-heading" class="text-lg font-semibold">Ringkasan uang bulan ini</h2><p class="mt-1 text-sm text-muted">Saldo dihitung dari dompet dan catatan uangmu.</p></div>
                 <a href="{{ route('user.money.index') }}" class="dashboard-action-link">Buka ringkasan</a>
             </div>
             <div class="money-summary-grid dashboard-money-summary mt-4">

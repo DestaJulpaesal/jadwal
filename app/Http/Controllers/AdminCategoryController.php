@@ -21,21 +21,21 @@ class AdminCategoryController extends Controller
         $data = $this->validated($request);
         Category::create(['user_id' => null, ...$data]);
 
-        return Feedback::success(back(), 'Kategori berhasil ditambahkan.');
+        return Feedback::success(back(), __('ui.feedback.category_created'));
     }
 
     public function update(Request $request, Category $category)
     {
         $category->update($this->validated($request));
 
-        return Feedback::success(back(), 'Kategori berhasil diperbarui.');
+        return Feedback::success(back(), __('ui.feedback.category_updated'));
     }
 
     public function destroy(Category $category)
     {
         $category->delete();
 
-        return Feedback::success(back(), 'Kategori berhasil dihapus.');
+        return Feedback::success(back(), __('ui.feedback.category_deleted'));
     }
 
     private function validated(Request $request): array

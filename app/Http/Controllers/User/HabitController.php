@@ -6,10 +6,10 @@ use App\Enums\HabitFrequency;
 use App\Enums\HabitLogStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveHabitRequest;
-use App\Models\Habit;
 use App\Models\Category;
-use App\Support\UserClock;
+use App\Models\Habit;
 use App\Support\Feedback;
+use App\Support\UserClock;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -73,7 +73,7 @@ class HabitController extends Controller
         $data = $this->normalizeFrequencyData($request->validated());
         $request->user()->habits()->create($data);
 
-        return Feedback::success(redirect()->route('user.habits.index'), 'Kebiasaan berhasil ditambahkan.');
+        return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.habit_created'));
     }
 
     public function edit(Request $request, Habit $habit, UserClock $clock)
@@ -93,7 +93,7 @@ class HabitController extends Controller
         $data = $this->normalizeFrequencyData($request->validated());
         $habit->update($data);
 
-        return Feedback::success(redirect()->route('user.habits.index'), 'Kebiasaan berhasil diperbarui.');
+        return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.habit_updated'));
     }
 
     public function checkIn(Request $request, Habit $habit, UserClock $clock)
@@ -109,12 +109,12 @@ class HabitController extends Controller
         ]);
         $today = $clock->date($request->user());
         $date = $data['log_date'] ?? $today;
-        abort_if($date > $today, 422, 'Tanggal pencatatan tidak boleh di masa depan.');
-        abort_if($date < \Illuminate\Support\Carbon::parse($today)->subDays(7)->toDateString(), 422, 'Catatan hanya dapat diubah sampai 7 hari ke belakang.');
-        abort_if($date < $habit->starts_on->toDateString(), 422, 'Tanggal pencatatan sebelum kebiasaan dimulai.');
-        abort_if($habit->ends_on && $date > $habit->ends_on->toDateString(), 422, 'Kebiasaan ini sudah berakhir pada tanggal tersebut.');
+        abort_if($date > $today, 422, __('ui.feedback.habit_date_future'));
+        abort_if($date < \Illuminate\Support\Carbon::parse($today)->subDays(7)->toDateString(), 422, __('ui.feedback.habit_date_too_old'));
+        abort_if($date < $habit->starts_on->toDateString(), 422, __('ui.feedback.habit_date_before_start'));
+        abort_if($habit->ends_on && $date > $habit->ends_on->toDateString(), 422, __('ui.feedback.habit_already_ended'));
         if ($habit->frequency === HabitFrequency::Weekdays) {
-            abort_unless(in_array(\Illuminate\Support\Carbon::parse($date)->dayOfWeekIso, array_map('intval', $habit->weekdays ?? []), true), 422, 'Kebiasaan ini tidak dijadwalkan pada hari tersebut.');
+            abort_unless(in_array(\Illuminate\Support\Carbon::parse($date)->dayOfWeekIso, array_map('intval', $habit->weekdays ?? []), true), 422, __('ui.feedback.habit_not_scheduled'));
         }
 
         $request->user()->habitLogs()->updateOrCreate(
@@ -128,7 +128,7 @@ class HabitController extends Controller
             ]
         );
 
-        return Feedback::success(back(), 'Catatan kebiasaan berhasil disimpan.');
+        return Feedback::success(back(), __('ui.feedback.habit_logged'));
     }
 
     public function cancelCheckIn(Request $request, Habit $habit, UserClock $clock)
@@ -139,13 +139,13 @@ class HabitController extends Controller
         abort_if(
             $date < \Illuminate\Support\Carbon::parse($today)->subDays(7)->toDateString(),
             422,
-            'Catatan hanya dapat diubah sampai 7 hari ke belakang.'
+            __('ui.feedback.habit_date_too_old')
         );
-        abort_if($date > $today, 422, 'Tanggal pencatatan tidak boleh di masa depan.');
-        abort_if($date < $habit->starts_on->toDateString(), 422, 'Tanggal pencatatan sebelum kebiasaan dimulai.');
+        abort_if($date > $today, 422, __('ui.feedback.habit_date_future'));
+        abort_if($date < $habit->starts_on->toDateString(), 422, __('ui.feedback.habit_date_before_start'));
         $request->user()->habitLogs()->where('habit_id', $habit->id)->where('log_date', $date)->delete();
 
-        return Feedback::success(back(), 'Tanda selesai dibatalkan.');
+        return Feedback::success(back(), __('ui.feedback.habit_log_cancelled'));
     }
 
     public function archive(Habit $habit)
@@ -153,7 +153,7 @@ class HabitController extends Controller
         $this->authorize('update', $habit);
         $habit->update(['archived_at' => now()]);
 
-        return Feedback::success(redirect()->route('user.habits.index'), 'Kebiasaan diarsipkan.');
+        return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.habit_archived'));
     }
 
     private function normalizeFrequencyData(array $data): array
@@ -171,5 +171,4 @@ class HabitController extends Controller
 
         return $data;
     }
-
 }

@@ -9,7 +9,7 @@
             <header class="mb-6">
                 <p class="text-sm font-semibold text-primary-800">Rencana baru</p>
                 <h1 class="mt-1 text-2xl font-semibold">Tambah tugas</h1>
-                <p class="mt-2 text-sm text-muted">Tambahkan detail yang membantu Anda mengingat rencana ini.</p>
+                <p class="mt-2 text-sm text-muted">Tambahkan detail yang membantumu mengingat rencana ini.</p>
             </header>
             <x-error-summary :errors="$errors->messages()" title="Tugas belum tersimpan. Periksa isian berikut:" />
             <form method="POST" action="{{ route('user.tasks.store') }}" class="space-y-5" data-dirty-guard>
