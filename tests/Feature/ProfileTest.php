@@ -20,15 +20,15 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
-        $response        ->assertOk()
-        ->assertSee($user->name)
-        ->assertSee($user->email)
-        ->assertSee(route('settings.edit'))
-        ->assertSee(route('profile.edit'))
-        ->assertSee('Buka pengaturan')
-        ->assertSee('Buka profil')
-        ->assertSee('Sesi akun')
-        ->assertSee('Foto profil');
+        $response->assertOk()
+            ->assertSee($user->name)
+            ->assertSee($user->email)
+            ->assertSee(route('settings.edit'))
+            ->assertSee(route('profile.edit'))
+            ->assertSee('Buka pengaturan')
+            ->assertSee('Buka profil')
+            ->assertSee('Sesi akun')
+            ->assertSee('Foto profil');
     }
 
     public function test_user_can_upload_and_replace_their_profile_photo(): void
@@ -212,14 +212,21 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->from('/profile')
             ->delete('/profile', [
                 'confirmation' => 'HAPU',
                 'password' => 'password',
-            ])
+            ]);
+
+        $response
             ->assertRedirect('/profile')
             ->assertSessionHasErrorsIn('userDeletion', 'confirmation');
+        $messages = __('validation.catalog.profile_deletion');
+        $this->assertSame(
+            $messages['confirmation.in'],
+            $response->getSession()->get('errors')->getBag('userDeletion')->first('confirmation')
+        );
 
         $this->assertNotNull($user->fresh());
     }

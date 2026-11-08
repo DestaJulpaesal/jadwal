@@ -140,11 +140,13 @@ Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`
 - Respons lupa kata sandi sama untuk email terdaftar/tidak terdaftar; tes anti-enumerasi sudah ada.
 - Menambahkan tes untuk payload feedback/toast, FormRequest, pesan login, throttle, akun nonaktif, anti-enumerasi reset, dan kekuatan kata sandi pendaftaran.
 - Menyelaraskan istilah yang ditemukan pada halaman detail admin, email ringkasan, dan pesan akun nonaktif.
+- Toast kini menggunakan antrean: maksimal tiga tampil bersamaan, sisanya menunggu; waktu tampil dijeda saat pointer/fokus berada di toast, dan menutup toast memajukan antrean.
+- Memusatkan pesan validasi inline untuk tautan reset kata sandi, konfirmasi hapus akun, pengaturan, dan pesan khusus hapus admin terakhir; menambah tes pesan untuk jalur tersebut dan filter tugas.
 
 ### Belum selesai — jangan tandai fase ini sebagai selesai
 
 - Audit pesan Inggris/key mentah dan istilah di seluruh UI/email/lang belum selesai; sebagian jalur validasi inline controller juga belum memiliki tes pesan.
-- Toast belum memiliki antrean yang menunggu giliran; aksi urungkan belum membatalkan perubahan secara nyata.
+- Aksi urungkan belum membatalkan perubahan secara nyata. Belum ada operasi yang aman untuk dibalik tanpa mengubah lifecycle data; jangan tampilkan aksi tersebut sebagai undo sungguhan.
 - Pemeriksaan kata sandi bocor tidak ditambahkan: layanan eksternal dapat menerima sidik jari kata sandi tanpa persetujuan eksplisit.
 - Audit lintas-pengguna dan validasi setiap jalur inline masih perlu dilengkapi; jangan menganggap tes FormRequest mencakup jalur-jalur tersebut.
 
@@ -157,13 +159,14 @@ Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`
 
 ### Verifikasi checkpoint
 
-- Tes terarah feedback, pengaturan, dan autentikasi: 30 lulus (156 assertion).
+- Tes terarah feedback, pengaturan, reset kata sandi, profil, dan validasi filter tugas: 32 lulus (171 assertion).
+- Uji browser antrean: dari lima toast, tiga tampil dan dua menunggu; setelah satu ditutup, toast berikutnya tampil.
 - `npm run build`, `php artisan view:cache`, Pint pada PHP yang berubah, dan `git diff --check` lulus.
-- Suite penuh terakhir: 142 lulus, 4 gagal pada empat tes baseline yang tercatat di atas; nama kegagalannya tetap sama.
+- Suite penuh terakhir: 145 lulus, 4 gagal pada empat tes baseline yang tercatat di atas; nama kegagalannya tetap sama.
 
 ### Langkah berikutnya
 
-Audit istilah/pesan secara terukur, tambah tes validasi inline, lalu putuskan secara eksplisit cakupan antrean toast dan aksi urungkan; jangan menandai Fase 3 selesai sebelum semua butir wajib ditutup.
+Audit pesan yang terlihat dan seluruh jalur validasi inline, lengkapi tes lintas-pengguna, lalu putuskan rancangan undo yang aman; jangan menandai Fase 3 selesai sebelum semua butir wajib ditutup.
 
 ## Fase 4 — Navigasi dan struktur halaman (sedang dikerjakan; belum boleh ditandai selesai)
 

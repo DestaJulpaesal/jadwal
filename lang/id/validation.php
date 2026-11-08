@@ -293,5 +293,13 @@ return [
             'digest_days.required' => 'Pilih setidaknya satu hari untuk ringkasan email.',
             'digest_days.min' => 'Pilih setidaknya satu hari untuk ringkasan email.',
         ],
+        'password_reset_link' => [
+            'email.required' => 'Email belum diisi.',
+            'email.email' => 'Format email belum benar. Contoh: nama@email.com',
+        ],
+        'profile_deletion' => [
+            'confirmation.required' => 'Ketik HAPUS untuk mengonfirmasi penghapusan akun.',
+            'confirmation.in' => 'Ketik HAPUS dengan benar untuk mengonfirmasi penghapusan akun.',
+        ],
     ],
 ];

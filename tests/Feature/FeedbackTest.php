@@ -34,12 +34,22 @@ class FeedbackTest extends TestCase
 
     public function test_toast_has_the_correct_alert_semantics_icon_and_dismiss_action(): void
     {
-        $html = Blade::render('<x-toast type="error">Perubahan belum tersimpan.</x-toast>');
+        $html = Blade::render('<x-toast type="error" :action="[\'label\' => \'Urungkan\', \'url\' => \'/undo\']">Perubahan belum tersimpan.</x-toast>');
 
         $this->assertStringContainsString('role="alert"', $html);
         $this->assertStringContainsString('aria-live="assertive"', $html);
         $this->assertStringContainsString('#icon-galat', $html);
         $this->assertStringContainsString('aria-label="Tutup pemberitahuan"', $html);
+        $this->assertStringContainsString('data-toast-duration="8000"', $html);
+        $this->assertStringContainsString('data-toast-dismiss', $html);
+        $this->assertStringContainsString('href="/undo"', $html);
+    }
+
+    public function test_feedback_host_provides_a_region_for_queued_toasts(): void
+    {
+        $html = Blade::render('<x-feedback-host />');
+
+        $this->assertStringContainsString('data-toast-region', $html);
     }
 
     public function test_each_form_request_defines_indonesian_messages_and_attributes(): void

@@ -32,6 +32,18 @@ class PasswordResetTest extends TestCase
         Notification::assertSentTo($user, ResetPassword::class);
     }
 
+    public function test_reset_link_requires_an_indonesian_email_message(): void
+    {
+        $messages = __('validation.catalog.password_reset_link');
+
+        $this->from('/forgot-password')
+            ->post('/forgot-password', ['email' => 'not-an-email'])
+            ->assertRedirect('/forgot-password')
+            ->assertSessionHasErrors([
+                'email' => $messages['email.email'],
+            ]);
+    }
+
     public function test_reset_link_response_is_identical_for_registered_and_unknown_email(): void
     {
         Notification::fake();

@@ -28,7 +28,7 @@ class PasswordResetLinkController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
-        ]);
+        ], __('validation.catalog.password_reset_link'));
 
         Password::sendResetLink($request->only('email'));
 

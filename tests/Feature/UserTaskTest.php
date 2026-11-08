@@ -102,6 +102,17 @@ class UserTaskTest extends TestCase
             ->assertSee('Simpan perubahan');
     }
 
+    public function test_invalid_task_filter_has_an_indonesian_message(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+
+        $this->actingAs($user)
+            ->get(route('user.tasks.index', ['due' => 'someday']))
+            ->assertSessionHasErrors([
+                'due' => 'Pilihan jatuh tempo tidak valid.',
+            ]);
+    }
+
     public function test_user_can_create_a_task_without_a_category(): void
     {
         $user = User::factory()->create(['email_verified_at' => now()]);

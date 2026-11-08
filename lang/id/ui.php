@@ -68,6 +68,7 @@ return [
         'last_active_admin_role' => 'Admin aktif terakhir tidak dapat diubah menjadi pengguna.',
         'admin_cannot_delete_self' => 'Admin tidak dapat menghapus akunnya sendiri.',
         'last_active_admin_delete' => 'Admin aktif terakhir tidak dapat dihapus.',
+        'last_active_admin_deletion' => 'Admin aktif terakhir tidak dapat menghapus akunnya. Tambahkan admin lain terlebih dahulu.',
         'habit_date_future' => 'Tanggal pencatatan tidak boleh di masa depan.',
         'habit_date_too_old' => 'Catatan hanya dapat diubah sampai 7 hari ke belakang.',
         'habit_date_before_start' => 'Tanggal pencatatan sebelum kebiasaan dimulai.',

@@ -91,15 +91,12 @@ class ProfileController extends Controller
         $request->validateWithBag('userDeletion', [
             'confirmation' => ['required', 'in:HAPUS'],
             'password' => ['required', 'current_password'],
-        ], [
-            'confirmation.required' => 'Ketik HAPUS untuk mengonfirmasi penghapusan akun.',
-            'confirmation.in' => 'Ketik HAPUS dengan benar untuk mengonfirmasi penghapusan akun.',
-        ]);
+        ], __('validation.catalog.profile_deletion'));
 
         $user = $request->user();
         if ($user->isAdmin() && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
             return Redirect::back()->withErrors([
-                'account' => 'Akun admin aktif terakhir tidak dapat dihapus. Tambahkan admin lain terlebih dahulu.',
+                'account' => __('ui.feedback.last_active_admin_deletion'),
             ], 'userDeletion');
         }
 
