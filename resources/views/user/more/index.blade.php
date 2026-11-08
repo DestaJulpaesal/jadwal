@@ -22,6 +22,13 @@
             <p class="mt-2 text-sm text-muted">Pilih menu untuk membuka bagian yang dibutuhkan. Perubahan data tersimpan setelah kamu menekan tombol Simpan.</p>
         </section>
 
+        <section class="surface-card mt-6 p-5" aria-labelledby="install-heading">
+            <h2 id="install-heading" class="text-lg font-semibold">Gunakan sebagai aplikasi</h2>
+            <p class="mt-2 text-sm text-muted">Pasang Jadwal di layar utama agar lebih mudah dibuka. Halaman dan data akun tidak disimpan saat offline.</p>
+            <button type="button" class="mt-4 rounded-lg bg-primary-700 px-4 py-3 font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" data-pwa-install hidden>Pasang aplikasi</button>
+            <p class="mt-4 text-sm text-muted" data-pwa-ios-help hidden>Di Safari, pilih Bagikan → Tambah ke Layar Utama.</p>
+        </section>
+
         <form method="POST" action="{{ route('logout') }}" class="mt-5">
             @csrf
             <x-button type="submit" variant="secondary" icon="keluar">Keluar</x-button>

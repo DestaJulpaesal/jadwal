@@ -15,6 +15,8 @@ use App\Http\Controllers\User\SearchController;
 use App\Http\Controllers\User\TaskController as UserTaskController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +31,26 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+Route::get('/offline', function () {
+    return response()->file(public_path('offline.html'), [
+        'Cache-Control' => 'no-store',
+    ]);
+})->name('offline');
+
+Route::get('/up', function () {
+    try {
+        DB::connection()->select('select 1');
+    } catch (\Throwable $exception) {
+        Log::warning('Application health check could not reach the database.', [
+            'exception' => $exception,
+        ]);
+
+        return response()->json(['status' => 'unavailable'], 503);
+    }
+
+    return response()->json(['status' => 'ok']);
+})->name('health');
 
 $cspReportUri = config('security.csp_report_uri', '/csp-report');
 if (! is_string($cspReportUri) || ! preg_match('#\A/(?!/)[A-Za-z0-9/_-]+\z#', $cspReportUri)) {

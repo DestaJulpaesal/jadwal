@@ -1,6 +1,6 @@
 @extends('layouts.base')
 
-@section('body-class', 'user-app min-h-screen bg-canvas pt-16 text-ink antialiased')
+@section('body-class', 'user-app min-h-screen bg-canvas pt-[calc(4rem+env(safe-area-inset-top))] text-ink antialiased')
 @section('body-attributes')
     data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}"
 @endsection
@@ -11,7 +11,7 @@
         {{ __('ui.feedback.offline') }}
     </div>
     <header class="user-header fixed inset-x-0 top-0 z-30">
-        <div class="user-header-inner flex h-16 items-center justify-between gap-4 px-4 sm:px-6">
+        <div class="user-header-inner flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between gap-4 px-4 sm:px-6">
             <a href="{{ route('user.dashboard') }}" data-prefetch class="user-brand flex min-h-11 min-w-0 items-center gap-3" aria-label="Jadwal Harian, Beranda">
                 <span class="brand-mark flex h-10 w-10 shrink-0 items-center justify-center" aria-hidden="true">
                     <x-concept-icon name="home" class="h-8 w-8" />
@@ -40,7 +40,7 @@
         </div>
     </header>
 
-    <aside class="user-sidebar fixed bottom-0 left-0 top-16 hidden w-64 lg:block">
+    <aside class="user-sidebar fixed bottom-0 left-0 top-[calc(4rem+env(safe-area-inset-top))] hidden w-64 lg:block">
         <div class="sidebar-inner flex h-full flex-col overflow-y-auto">
             <div class="sidebar-content px-5 py-6">
                 <nav aria-label="Navigasi utama" class="space-y-6">

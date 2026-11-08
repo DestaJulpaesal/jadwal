@@ -83,6 +83,8 @@ Lihat [docs/DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) untuk token visual, kompone
 - [Kemajuan fase polish](docs/PROGRESS.md)
 - [Audit polish](docs/AUDIT_POLISH.md)
 - [Arsitektur](docs/ARSITEKTUR.md)
+- [Panduan deployment](docs/DEPLOY.md)
+- [Panduan backup dan restore](docs/BACKUP.md)
 
 ## Checklist sebelum online
 

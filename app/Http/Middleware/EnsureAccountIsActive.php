@@ -5,12 +5,15 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsureAccountIsActive
 {
     public function handle(Request $request, Closure $next): Response
     {
+        Log::withContext(['user_id' => $request->user()->getAuthIdentifier()]);
+
         if (! $request->user()->is_active) {
             Auth::logout();
             $request->session()->invalidate();

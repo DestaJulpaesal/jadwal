@@ -700,7 +700,7 @@
 
     .user-app .user-sidebar {
         position: fixed;
-        top: 4rem;
+        top: calc(4rem + env(safe-area-inset-top));
         bottom: 0;
         left: 0;
         z-index: 20;

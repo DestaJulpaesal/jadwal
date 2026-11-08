@@ -1,0 +1,32 @@
+{
+  "name": "Jadwal Harian",
+  "short_name": "Jadwal",
+  "description": "Atur tugas, kebiasaan, agenda, dan catatan uangmu.",
+  "lang": "id",
+  "start_url": "/dashboard?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#226b50",
+  "background_color": "#f7f8f5",
+  "icons": [
+    {
+      "src": "/icons/jadwal-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/jadwal-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/jadwal-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

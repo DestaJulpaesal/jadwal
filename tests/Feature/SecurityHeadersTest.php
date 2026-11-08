@@ -15,6 +15,7 @@ class SecurityHeadersTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
+            ->assertHeader('X-Request-Id')
             ->assertHeader('X-Content-Type-Options', 'nosniff')
             ->assertHeader('X-Frame-Options', 'DENY')
             ->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin')

@@ -185,3 +185,11 @@ Untuk setiap fase, cakupan test mencakup isolasi antar pengguna, IDOR pada ID pa
 - Penghapusan pembayaran tagihan/cicilan membatalkan transaksi terkait secara atomik. Penghapusan akun menghapus data pemilik melalui foreign key cascade. Transaksi pinjaman dibedakan melalui `source_type` dan dikecualikan dari ringkasan pemasukan/pengeluaran.
 - Saldo awal dompet boleh negatif, sementara nominal transaksi/pembayaran tetap dibatasi pada bilangan Rupiah positif.
 - Halaman Kebiasaan, Keuangan, Tagihan/Cicilan, Utang/Piutang, Target, dan Laporan diuji di browser pada lebar 360, 390, 768, dan 1280 px; semua merespons HTTP 200 tanpa overflow horizontal. Aksesibilitas pola label, target sentuh, teks status, dan batang laporan ditinjau; uji pembaca layar lintas browser belum dilakukan.
+
+## Kapan pindah dari SQLite
+
+Pertahankan SQLite selama aplikasi berjalan pada satu server, jumlah pengguna aktif masih sekitar di bawah 200, penulisan bersamaan tidak sering, dan backup terenkripsi diuji berkala. WAL dan `busy_timeout` mengurangi kontensi tulis ringan, tetapi tidak mengubah SQLite menjadi database multi-writer.
+
+Evaluasi MySQL/MariaDB atau PostgreSQL jika aplikasi membutuhkan lebih dari satu server/instance, muncul lonjakan `database is locked`, volume penulisan bersamaan meningkat, dibutuhkan replikasi/hot backup, pengguna aktif tumbuh jauh di atas kisaran tersebut, atau diperlukan pencarian teks lanjutan.
+
+Jalur migrasi: pertahankan Eloquent/Query Builder dan uji migrasi skema pada mesin tujuan sebelum cutover; hindari SQL khusus SQLite. Audit tipe boolean/tanggal, rename kolom (mungkin memerlukan `doctrine/dbal` pada versi tertentu), collation dan perbandingan huruf besar-kecil pada unique email, indeks, serta locking/isolasi transaksi. Ambang pengguna hanyalah panduan operasional, bukan kapasitas atau jaminan performa.

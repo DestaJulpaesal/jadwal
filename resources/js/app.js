@@ -11,6 +11,7 @@ import { initializeNetworkUi } from './network';
 import { initializeNavigation } from './nav';
 import { initializePasswordUi } from './password';
 import { initializePrivacyUi } from './privacy';
+import { initializePwa } from './pwa';
 import { initializeToastQueue } from './toast';
 
 import './components';
@@ -22,6 +23,7 @@ const initializeApplicationUi = () => {
     initializeToastQueue();
     initializePasswordUi();
     initializePrivacyUi();
+    initializePwa();
 };
 
 if (document.readyState === 'loading') {

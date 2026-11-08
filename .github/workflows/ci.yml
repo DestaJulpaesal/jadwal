@@ -3,6 +3,8 @@ name: CI
 on:
   push:
   pull_request:
+  schedule:
+    - cron: '0 6 * * 1'
 
 jobs:
   php:
@@ -68,4 +70,3 @@ jobs:
 
       - name: Audit npm dependencies
         run: npm audit --audit-level=high
-        continue-on-error: true

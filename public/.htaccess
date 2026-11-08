@@ -3,6 +3,17 @@
         Options -MultiViews -Indexes
     </IfModule>
 
+    <IfModule mod_mime.c>
+        AddType application/manifest+json .webmanifest
+    </IfModule>
+
+    <IfModule mod_headers.c>
+        <Files "sw.js">
+            Header set Service-Worker-Allowed "/"
+            Header set Cache-Control "no-cache"
+        </Files>
+    </IfModule>
+
     RewriteEngine On
 
     # Handle Authorization Header
