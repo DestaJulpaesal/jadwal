@@ -87,7 +87,7 @@
         </div>
     </aside>
 
-    <main class="user-main min-h-[calc(100dvh-4rem)] px-4 py-6 pb-32 sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
+    <main id="main-content" tabindex="-1" class="user-main min-h-[calc(100dvh-4rem)] px-4 py-6 pb-32 sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
         @if (request()->routeIs('user.search'))
             <form method="GET" action="{{ route('user.search') }}" role="search" class="global-search-wrap mx-auto mb-6 max-w-6xl">
                 <label for="global-search" class="sr-only">Cari di semua data</label>

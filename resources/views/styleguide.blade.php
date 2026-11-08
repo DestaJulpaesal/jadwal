@@ -3,7 +3,7 @@
 @section('title', 'Panduan tampilan')
 @section('body-class', 'min-h-screen bg-canvas text-ink')
 @section('body')
-    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+    <main id="main-content" tabindex="-1" class="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         <x-page-header eyebrow="Hanya tersedia di lingkungan lokal" title="Panduan tampilan" description="Contoh komponen dan pola visual untuk halaman baru.">
             <x-button href="{{ route('home') }}" variant="secondary"><x-icon name="kembali" class="h-5 w-5" />Kembali ke beranda</x-button>
         </x-page-header>

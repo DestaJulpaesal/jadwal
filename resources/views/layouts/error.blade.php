@@ -2,7 +2,7 @@
 
 @section('body-class', 'flex min-h-[100dvh] items-center justify-center bg-canvas px-4 py-10 text-ink')
 @section('body')
-    <main class="surface-card w-full max-w-xl p-6 text-center sm:p-10">
+    <main id="main-content" tabindex="-1" class="surface-card w-full max-w-xl p-6 text-center sm:p-10">
         <p class="text-sm font-semibold tracking-wide text-primary-800">@yield('code')</p>
         <h1 class="mt-3 text-2xl font-semibold sm:text-3xl">@yield('heading')</h1>
         <p class="mx-auto mt-3 max-w-md leading-7 text-muted">@yield('message')</p>

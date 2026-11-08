@@ -28,7 +28,7 @@
         </nav>
     </header>
 
-    <main>
+    <main id="main-content" tabindex="-1">
         <section class="home-hero" aria-labelledby="home-title">
             <div class="hero-copy-card">
                 <svg class="home-spark" viewBox="0 0 24 24" aria-hidden="true"><use href="#spark" /></svg>

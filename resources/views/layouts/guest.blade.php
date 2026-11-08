@@ -19,10 +19,10 @@
             <svg class="hero-spark stk" viewBox="0 0 24 24" aria-hidden="true"><use href="#spark" /></svg>
             <p class="k">Jadwal Harian</p>
             @if (request()->routeIs('register'))
-                <h1>Hari baru,<br>rencana baru!</h1>
+                <p class="desktop-title">Hari baru,<br>rencana baru!</p>
                 <p class="desktop-copy">Buat ruang untuk semua yang ingin kamu capai, satu langkah kecil setiap hari.</p>
             @else
-                <h1>Rencanakan hari,<br>jalani dengan tenang.</h1>
+                <p class="desktop-title">Rencanakan hari,<br>jalani dengan tenang.</p>
                 <p class="desktop-copy">Tugas, kebiasaan, agenda, dan catatan uangmu—tertata dalam satu tempat.</p>
             @endif
             <div class="quick" aria-label="Fitur yang tersedia">
@@ -33,7 +33,7 @@
             </div>
             <p class="desktop-note">{{ request()->routeIs('register') ? 'Mulai dari hari ini. Besok, kamu akan berterima kasih.' : 'Mulai dari satu hal kecil. Sisanya bisa menyusul.' }}</p>
         </section>
-        <main class="ph">
+        <main id="main-content" tabindex="-1" class="ph">
             <div class="in {{ request()->routeIs('login') ? 'login-page' : '' }}">
                 <x-feedback-host />
                 <a class="auth-home-link" href="{{ route('home') }}">
@@ -48,7 +48,7 @@
     <div data-network-banner role="status" aria-live="polite" hidden class="fixed inset-x-0 top-0 z-[60] bg-warning px-4 py-2 text-center text-sm font-semibold text-ink">
         {{ __('ui.feedback.offline') }}
     </div>
-    <main class="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:gap-16 lg:py-12">
+    <main id="main-content" tabindex="-1" class="mx-auto flex min-h-[100dvh] w-full max-w-6xl flex-col px-4 py-6 sm:px-6 lg:flex-row lg:items-center lg:gap-16 lg:py-12">
         <section class="hidden flex-1 lg:block">
             <a href="{{ route('home') }}" class="inline-flex items-center gap-3 text-lg font-semibold text-ink">
                 <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-primary-100 text-primary-800" aria-hidden="true">

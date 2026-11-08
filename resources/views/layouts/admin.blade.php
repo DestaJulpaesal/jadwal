@@ -54,7 +54,7 @@
                 </x-button>
                 <span class="font-semibold">@yield('heading', 'Ringkasan akun')</span>
             </header>
-            <main class="mx-auto max-w-7xl p-4 pb-10 sm:p-6">
+            <main id="main-content" tabindex="-1" class="mx-auto max-w-7xl p-4 pb-10 sm:p-6">
                 <x-feedback-host />
                 @if ($errors->has('account'))
                     <x-alert type="danger" class="mb-5">{{ $errors->first('account') }}</x-alert>

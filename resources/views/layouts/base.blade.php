@@ -24,6 +24,7 @@
     @yield('extra-assets')
 </head>
 <body class="@yield('body-class')" @yield('body-attributes')>
+    <a class="skip-link" href="#main-content">Lompat ke konten</a>
     @yield('body')
 </body>
 </html>

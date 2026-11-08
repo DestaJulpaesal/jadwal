@@ -103,3 +103,41 @@ Belum tersedia pada environment ini. URL dan empat viewport yang harus diukur pa
 
 - Folder `list/` adalah salinan skeleton lama; jangan diubah atau dihapus tanpa persetujuan pemilik. Sarannya: keluarkan dari repository/deployment pada pekerjaan terpisah.
 - Standardisasi tombol, form mobile, pesan, navigasi, motion, security headers, CSP, aksesibilitas, PWA, dan backup mengikuti fase masing-masing.
+
+## Hasil akhir Fase 8 — checkpoint (belum lulus penuh)
+
+Link “Lompat ke konten” dan target `main#main-content` kini tersedia di layout dasar dan halaman utama; tes struktur mencakup halaman publik, auth, user, dan admin. Matriks di bawah ini sengaja membedakan tinjauan kode dari verifikasi browser. `Belum tervalidasi` bukan tanda lulus.
+
+| Halaman / alur | Tombol, header, empty state | Form dan pesan | Kontras dan motion | Keyboard/fokus | 320 px, tema gelap, zoom | Bukti |
+|---|---|---|---|---|---|---|
+| Beranda publik | Komponen dan header ditinjau; empty state tidak berlaku | Tidak ada form transaksi | Token desain terdokumentasi; belum audit visual | Skip link bersama; browser belum diuji | Belum tervalidasi | View `welcome` |
+| Masuk | Komponen dan header ditinjau | Label, bantuan, error dan feedback terlihat | Tema gelap belum audit visual; reduced motion durasi animasi 1 ms | Skip link dan target main diuji | 320/360/390/768/1280 tanpa overflow; zoom CSS 200% tanpa overflow | Browser + tes satu `h1` |
+| Daftar | Komponen dan header ditinjau | Form daftar memakai komponen field | Belum audit visual per field | Skip link tersedia; tab seluruh kontrol belum diuji | Belum tervalidasi | Tes satu `h1` dan target struktur |
+| Lupa/reset/konfirmasi/verifikasi kata sandi | Komponen shared | Form auth berbagi field/error; tiap status belum diuji | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Layout guest |
+| Dashboard user | Header/CTA shared; empty state belum audit per data | N/A | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Tes layout user |
+| Kalender user | Tombol tanggal dan agenda | N/A | Belum tervalidasi | Pemilihan tanggal keyboard belum diuji | Belum tervalidasi | View kalender |
+| Daftar dan form tugas | Tombol/form shared | Error/help ada; tiap error bag belum audit aksesibilitas | Belum tervalidasi | Skip link tersedia; urutan fokus belum diuji | Belum tervalidasi | Views tugas |
+| Daftar dan form kebiasaan | Tombol/form shared | Error/help ada; field kondisional belum diuji dengan pembaca layar | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views kebiasaan |
+| Daftar dan form target | Tombol/form shared | Form kondisional belum diuji dengan pembaca layar | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views target |
+| Ringkasan dan transaksi uang | Tombol/modal shared; empty state belum audit per data | Form nominal memiliki label; mode privasi belum diuji aksesibilitas | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views uang |
+| Daftar/form tagihan dan cicilan | Tombol/modal shared | Field dan konfirmasi belum audit per skenario | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views kewajiban |
+| Daftar/form utang-piutang | Tombol/modal shared | Form create/edit belum audit per skenario | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views pinjaman |
+| Laporan dan pencarian | Header/hasil ditinjau sebagian | Filter/search belum diuji dengan keyboard | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views laporan/pencarian |
+| Lainnya, profil, pengaturan | Header/form shared | Validasi belum audit per field | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views akun |
+| Dashboard, daftar akun, detail akun admin | Header/tabel/aksi admin belum diuji visual | Form aksi admin belum diuji | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Views admin |
+| Kategori admin | Tombol/form shared | Pemilih warna belum diuji pembaca layar | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | View kategori |
+| Error 403 | Layout error shared | N/A | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Template error |
+| Error 404 | Layout error shared | N/A | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Template error |
+| Error 419 | Layout error shared | N/A | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Template error |
+| Error 429 | Layout error shared | N/A | Belum tervalidasi | Retry countdown belum diuji screen reader | Belum tervalidasi | Template error |
+| Error 500 | Layout error shared | N/A | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Template error |
+| Error 503 | Layout error shared | N/A | Belum tervalidasi | Skip link tersedia | Belum tervalidasi | Template error |
+| Styleguide | Variasi komponen ditinjau | Input Rupiah berfungsi saat CSP enforce | Browser enforce diuji; mode gelap belum audit visual | Modal dibuka/ditutup; focus loop belum diverifikasi browser | Belum tervalidasi | Browser lokal |
+
+### Pengukuran checkpoint
+
+- Login: tidak ada scroll horizontal pada viewport 320×640, 360×640, 390×844, 768×1024, dan 1280×800 setelah memperbaiki flex layout yang sebelumnya overflow pada layar sempit.
+- Skip link menerima Tab pertama dan Enter memfokuskan target main.
+- Simulasi `prefers-reduced-motion: reduce` menghasilkan durasi animasi 1 ms; perubahan token ini bukan pengganti audit semua halaman.
+- Simulasi CSS zoom 200% pada lebar viewport 640 px tidak menghasilkan scroll horizontal. Ini bukan uji browser zoom/OS sungguhan.
+- Lighthouse, screenshot before/after enam halaman, audit kontras seluruh halaman, tema gelap menyeluruh, dan browser sweep semua route belum dilakukan. Fase 8 tetap terbuka.

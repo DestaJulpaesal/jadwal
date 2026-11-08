@@ -270,3 +270,25 @@ Tuntaskan audit wajib Fase 3 dan Fase 4 serta verifikasi browser Fase 5. Fase 6 
 ### Langkah pertama fase berikutnya
 
 Mulai Fase 8 dari audit aksesibilitas dan baseline tes yang sudah ada; lengkapi verifikasi lintas-halaman, fokus/keyboard, zoom/320px, reduced-motion/tema gelap, dan tabel hasil per halaman. Pertahankan keterbatasan baseline test dan jangan mengklaim Lighthouse tanpa pengukuran.
+
+## Fase 8 — Aksesibilitas, konsistensi akhir, dan tes (belum selesai)
+
+### Dikerjakan pada checkpoint ini
+
+- Menambahkan tautan “Lompat ke konten” yang terlihat saat fokus, target `main#main-content` yang dapat menerima fokus pada layout publik/auth/user/admin/error/styleguide, dan tes strukturnya.
+- Mengubah judul dekoratif panel login/register menjadi teks biasa agar alur auth hanya memiliki satu `h1`; tes memastikan satu `h1` pada beranda, login, dan daftar.
+- Memperbaiki overflow horizontal login yang ditemukan pada 320 px dengan menjadikan body login kolom responsif; uji browser tidak menemukan overflow pada 320, 360, 390, 768, atau 1280 px.
+- Memperpendek motion saat `prefers-reduced-motion` dari 100 ms menjadi 1 ms; browser emulasi mengukur `0.001s`. Simulasi CSS zoom 200% pada lebar viewport 640 px tidak menghasilkan overflow.
+- Membuat matriks per halaman di `docs/AUDIT_POLISH.md`; setiap sel menyatakan status/bukti, dan halaman yang belum diuji browser tidak ditandai lulus.
+
+### Verifikasi dan pekerjaan tertunda
+
+- Tes `AccessibilityStructureTest`: 1 lulus (18 assertions), termasuk layout publik/auth/user/admin dan satu `h1` di beranda/login/daftar.
+- Suite lengkap: 158 lulus, 4 gagal (750 assertions); keempat kegagalan sama dengan baseline yang sudah tercatat di `AdminUserManagementTest` dan `UserTaskTest`, tanpa kegagalan baru.
+- Browser login: skip link fokus pada Tab pertama, Enter memfokuskan main, dan ukuran 320/360/390/768/1280 px tanpa overflow. Tema gelap hanya diemulasi, bukan audit kontras penuh.
+- Belum audit semua route dan komponen dengan keyboard/screen reader, screenshot enam halaman, target sentuh/kontras seluruh halaman, tema gelap penuh, serta Lighthouse. Fase 8 tetap terbuka.
+- Build terakhir lulus; ukuran gzip saat ini JS 53,49 KB, CSS bersama 19,09 KB, CSS masuk 3,06 KB, CSS beranda 3,79 KB.
+
+### Langkah berikutnya
+
+Selesaikan sisa verifikasi Fase 8 yang dapat dijalankan di environment ini; Lighthouse dan screenshot sebelum perubahan perlu dicatat sebagai keterbatasan bila alat/baseline tidak tersedia. Fase 9 belum boleh ditandai selesai sebelum prasyarat fase sebelumnya ditinjau.
