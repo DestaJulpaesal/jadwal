@@ -99,6 +99,61 @@ class FeedbackTest extends TestCase
         }
     }
 
+    public function test_inline_validation_fields_have_indonesian_attribute_names(): void
+    {
+        $attributes = __('validation.attributes');
+
+        foreach ([
+            'amount', 'amount_paid', 'avatar', 'category_color', 'category_id',
+            'category_name', 'color', 'confirmation', 'counterparty',
+            'current_password', 'dashboard_sections', 'dashboard_sections.*',
+            'description', 'digest_days', 'digest_days.*', 'digest_enabled',
+            'digest_time', 'direction', 'due', 'due_date', 'due_day', 'due_on',
+            'duration_minutes', 'email', 'ends_at', 'ends_on', 'frequency',
+            'goal_unit_other', 'goal_value', 'habit_id', 'hide_financial_amounts',
+            'installments_total', 'is_active', 'kind', 'loan_date', 'log_date',
+            'money_category_id', 'month', 'name', 'note', 'occurred_on',
+            'opening_balance', 'paid_on', 'password', 'password_confirmation',
+            'performed_at', 'q', 'query', 'recorded_on', 'remember', 'remind_days_before',
+            'remove_avatar', 'role', 'schedule_times', 'schedule_times.*', 'search',
+            'section', 'starts_at', 'starts_on', 'status', 'status_id',
+            'task_status_id', 'theme', 'timezone', 'title', 'to_wallet_id', 'token',
+            'type', 'value', 'wallet_id', 'week_starts_on', 'weekdays', 'weekdays.*',
+            'weekly_target', 'year',
+        ] as $field) {
+            $this->assertArrayHasKey($field, $attributes, "Missing Indonesian label for {$field}.");
+            $this->assertNotSame('', $attributes[$field], "Empty Indonesian label for {$field}.");
+        }
+    }
+
+    public function test_inline_create_form_validation_messages_are_indonesian(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
+        foreach ([
+            'user.money.wallets.store',
+            'user.money.categories.store',
+            'user.money.transactions.store',
+            'user.obligations.store',
+            'user.loans.store',
+        ] as $routeName) {
+            $response = $this->post(route($routeName), []);
+
+            $response->assertSessionHasErrors();
+            $messages = $response->getSession()->get('errors')->getBag('default')->all();
+            $this->assertNotEmpty($messages, "Expected validation messages for {$routeName}.");
+
+            foreach ($messages as $message) {
+                $this->assertDoesNotMatchRegularExpression(
+                    '/validation\\.[a-z_.]+|The .+ field| is required\\.?/i',
+                    $message,
+                    "{$routeName} exposed an untranslated validation message."
+                );
+            }
+        }
+    }
+
     public function test_disabled_account_message_is_only_shown_for_the_correct_password(): void
     {
         $user = \App\Models\User::factory()->create(['is_active' => false]);

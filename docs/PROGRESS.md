@@ -142,6 +142,7 @@ Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`
 - Menyelaraskan istilah yang ditemukan pada halaman detail admin, email ringkasan, dan pesan akun nonaktif.
 - Toast kini menggunakan antrean: maksimal tiga tampil bersamaan, sisanya menunggu; waktu tampil dijeda saat pointer/fokus berada di toast, dan menutup toast memajukan antrean.
 - Memusatkan pesan validasi inline untuk tautan reset kata sandi, konfirmasi hapus akun, pengaturan, dan pesan khusus hapus admin terakhir; menambah tes pesan untuk jalur tersebut dan filter tugas.
+- Melengkapi label global untuk field validasi turunan dan pencarian (`goal_unit_other`, `weekdays.*`, `schedule_times.*`, `remove_avatar`, dan `q`) serta menambahkan tes regresi cakupan label untuk field yang dipakai controller.
 
 ### Belum selesai — jangan tandai fase ini sebagai selesai
 
@@ -160,6 +161,8 @@ Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`
 ### Verifikasi checkpoint
 
 - Tes terarah feedback, pengaturan, reset kata sandi, profil, dan validasi filter tugas: 32 lulus (171 assertion).
+- Checkpoint audit: `FeedbackTest` 10 lulus (228 assertion), termasuk validasi form dompet, kategori uang, transaksi, tagihan, dan utang/piutang; gabungan tes feedback, pengaturan, profil, autentikasi, dan reset kata sandi 39 lulus (343 assertion). Pint lulus pada dua file yang berubah; build Vite lulus. Pemeriksaan login di browser tidak menemukan overflow horizontal pada 360, 390, 768, atau 1280 px.
+- Suite penuh pada checkpoint ini: 160 lulus, 7 gagal. Empat kegagalan baseline yang sudah diketahui tetap ada; dua kegagalan `CspReportTest` dan satu `EncryptedSqliteBackupTest` pada Windows belum ditangani dan harus ditutup pada audit fase terkait.
 - Uji browser antrean: dari lima toast, tiga tampil dan dua menunggu; setelah satu ditutup, toast berikutnya tampil.
 - `npm run build`, `php artisan view:cache`, Pint pada PHP yang berubah, dan `git diff --check` lulus.
 - Suite penuh terakhir: 145 lulus, 4 gagal pada empat tes baseline yang tercatat di atas; nama kegagalannya tetap sama.
