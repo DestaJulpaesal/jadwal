@@ -10,6 +10,7 @@ class CspReportTest extends TestCase
 {
     public function test_csp_report_accepts_legacy_payload_and_logs_only_sanitized_origins(): void
     {
+        $this->withoutExceptionHandling();
         $logger = Mockery::mock();
         $logger->shouldReceive('warning')
             ->once()
@@ -22,6 +23,8 @@ class CspReportTest extends TestCase
                 return true;
             }));
         Log::shouldReceive('channel')->once()->with('csp')->andReturn($logger);
+        Log::shouldReceive('withoutContext')->once()->andReturnNull();
+        Log::shouldReceive('withContext')->once()->andReturnNull();
 
         $this->postJson('/csp-report', [
             'csp-report' => [
@@ -51,9 +54,12 @@ class CspReportTest extends TestCase
 
     public function test_csp_report_accepts_reporting_api_batches(): void
     {
+        $this->withoutExceptionHandling();
         $logger = Mockery::mock();
         $logger->shouldReceive('warning')->twice();
         Log::shouldReceive('channel')->twice()->with('csp')->andReturn($logger);
+        Log::shouldReceive('withoutContext')->once()->andReturnNull();
+        Log::shouldReceive('withContext')->once()->andReturnNull();
 
         $this->postJson('/csp-report', [
             [

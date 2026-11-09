@@ -5,7 +5,9 @@ namespace App\Providers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +24,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if (app()->isProduction() && config('app.debug')) {
+            throw new \LogicException('APP_DEBUG must be disabled in production.');
+        }
+
+        if (app()->isProduction()) {
+            URL::forceScheme('https');
+        }
+
+        PasswordRule::defaults(static fn (): PasswordRule => PasswordRule::min(8)->mixedCase()->numbers());
+
         \Illuminate\Support\Carbon::setLocale('id');
         Model::preventLazyLoading(! app()->isProduction());
         Event::listen(ConnectionEstablished::class, static function (ConnectionEstablished $event): void {

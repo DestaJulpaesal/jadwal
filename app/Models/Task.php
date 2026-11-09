@@ -13,6 +13,7 @@ class Task extends Model
         'due_date' => 'datetime',
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
+        'completed_at' => 'datetime',
     ];
 
     protected $fillable = [
@@ -23,6 +24,7 @@ class Task extends Model
         'due_date',
         'starts_at',
         'ends_at',
+        'completed_at',
     ];
 
     public function user()

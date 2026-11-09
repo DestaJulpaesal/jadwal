@@ -16,6 +16,7 @@
             </div>
             <x-button href="{{ route('user.habits.create') }}" variant="primary" class="habit-add-button"><x-concept-icon name="spark" class="h-5 w-5" />Tambah kebiasaan</x-button>
         </header>
+        @include('user.partials.habits-subnav')
         <div class="habit-stats habit-overview">
             <article class="habit-stat habit-stat-blue">
                 <span class="habit-stat-icon" aria-hidden="true"><x-concept-icon name="fl" class="h-5 w-5" /></span>
@@ -79,7 +80,7 @@
                             <strong>Aksi kebiasaan</strong>
                             <span>Catat aktivitas hari ini atau kelola kebiasaan.</span>
                         </div>
-                        <x-button href="{{ route('user.habits.edit', $habit) }}" variant="secondary" class="habit-edit-button">Edit kebiasaan</x-button>
+                        <x-button href="{{ route('user.habits.edit', $habit) }}" variant="secondary" class="habit-edit-button">Ubah kebiasaan</x-button>
                         @if ($habit->today_log?->status->value === 'done')
                             <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}" data-optimistic-action="cancel-habit-checkin">
                                 @csrf

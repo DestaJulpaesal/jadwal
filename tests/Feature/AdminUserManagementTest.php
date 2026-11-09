@@ -30,7 +30,7 @@ class AdminUserManagementTest extends TestCase
             ->assertSee('Manajemen')
             ->assertSee($admin->name)
             ->assertSee($admin->email)
-            ->assertSee('Buka menu akun')
+            ->assertSee('Buka navigasi admin')
             ->assertSee(route('settings.edit'))
             ->assertSee(route('profile.edit'));
     }
@@ -95,6 +95,7 @@ class AdminUserManagementTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
             ->patch(route('admin.users.status', $user))
             ->assertRedirect(route('admin.dashboard'));
 
@@ -104,6 +105,24 @@ class AdminUserManagementTest extends TestCase
             ->assertRedirect(route('admin.dashboard'));
 
         $this->assertDatabaseHas('users', ['id' => $user->id, 'is_active' => true]);
+        $this->assertDatabaseHas('admin_audit_logs', [
+            'admin_id' => $admin->id,
+            'action' => 'account.activated',
+            'target_id' => $user->id,
+        ]);
+    }
+
+    public function test_admin_account_changes_require_recent_password_confirmation(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create();
+
+        $this->actingAs($admin)
+            ->patch(route('admin.users.status', $user))
+            ->assertRedirect(route('password.confirm'));
+
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'is_active' => true]);
+        $this->assertDatabaseCount('admin_audit_logs', 0);
     }
 
     public function test_deactivated_users_cannot_log_in_or_continue_using_an_existing_session(): void
@@ -111,7 +130,9 @@ class AdminUserManagementTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $user = User::factory()->create(['email_verified_at' => now()]);
 
-        $this->actingAs($admin)->patch(route('admin.users.status', $user));
+        $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
+            ->patch(route('admin.users.status', $user));
         $this->post(route('logout'));
 
         $this->post(route('login'), [
@@ -137,6 +158,7 @@ class AdminUserManagementTest extends TestCase
         ]);
 
         $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
             ->delete(route('admin.users.destroy', $user))
             ->assertRedirect(route('admin.dashboard'));
 
@@ -150,6 +172,7 @@ class AdminUserManagementTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
             ->patch(route('admin.users.status', $admin))
             ->assertSessionHasErrors('account');
 
@@ -165,6 +188,7 @@ class AdminUserManagementTest extends TestCase
         $user = User::factory()->create(['role' => 'user']);
 
         $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
             ->patch(route('admin.users.role', $user))
             ->assertRedirect(route('admin.users.show', $user));
 
@@ -181,6 +205,7 @@ class AdminUserManagementTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
             ->patch(route('admin.users.role', $admin))
             ->assertSessionHasErrors('account');
 
@@ -194,6 +219,7 @@ class AdminUserManagementTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($admin)
+            ->withSession(['auth.password_confirmed_at' => time()])
             ->post(route('admin.users.password-reset', $user))
             ->assertRedirect()
             ->assertSessionHas('feedback.type', 'success');

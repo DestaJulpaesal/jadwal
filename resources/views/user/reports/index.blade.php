@@ -13,6 +13,7 @@
                 <x-button type="submit" variant="secondary" data-submit-default>Terapkan</x-button>
             </form>
         </x-page-header>
+        @include('user.partials.finance-subnav')
         <section class="grid gap-3 sm:grid-cols-3">
             <article class="surface-card p-4"><p class="text-sm text-muted">Pemasukan</p><strong class="mt-1 block text-xl" data-private>{{ rupiah($current['income']) }}</strong></article>
             <article class="surface-card p-4"><p class="text-sm text-muted">Pengeluaran</p><strong class="mt-1 block text-xl" data-private>{{ rupiah($current['expense']) }}</strong></article>

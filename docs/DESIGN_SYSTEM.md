@@ -43,11 +43,30 @@ Gunakan skala Tailwind yang tersedia untuk jarak (kelipatan 4 px), sudut 8 px un
 - `<x-alert>` untuk pesan tetap; `<x-toast>` untuk konfirmasi singkat.
 - `<x-confirm-action>` dan `<x-modal>` untuk menjelaskan konsekuensi sebelum tindakan penting.
 - `<x-page-header>`, `<x-empty-state>`, dan `<x-skeleton>` untuk pola halaman yang konsisten.
+- `<x-subnav :items="$items" label="Keuangan">` untuk sub-menu berupa tautan biasa dengan ikon, label, badge opsional, dan item aktif. Setiap item menggunakan `url` serta `active` atau `active_pattern`; beri setiap nav nama aksesibel yang sesuai induknya.
 - `<x-money-input>` untuk nilai Rupiah tanpa desimal; nilai saldo awal boleh negatif. Mode privasi hanya menyimpan pilihan tampil/sembunyi di `localStorage`, bukan nominal.
 - Grafik laporan sederhana memakai batang CSS dengan label dan nilai teks; jangan menambahkan pustaka chart.
 - Tabel desktop harus memiliki bentuk kartu/list pada ponsel; lihat `admin/users/index.blade.php`.
 - Di ponsel, aksi ubah/hapus tugas berada di menu aksi; aksi selesai tetap punya target sentuh minimal 44 px.
 - Pagination menggunakan view `resources/views/vendor/pagination/tailwind.blade.php`.
+
+## Navigasi utama
+
+Bottom-nav ponsel harus selalu tepat lima item dan urutannya tidak berubah: **Beranda · Tugas · Kebiasaan · Keuangan · Profil**. Jangan menambah item utama; fitur baru harus ditambahkan sebagai tab/sub-menu pada induk yang paling sesuai. Item induk tetap aktif pada semua halaman turunannya.
+
+| Menu induk | Sub-menu | Rute |
+|---|---|---|
+| Beranda | Hari ini · Kalender · Perlu perhatian | `user.dashboard` · `user.calendar` · `user.dashboard?tab=attention#attention-heading` |
+| Tugas | Daftar | `user.tasks.*` |
+| Kebiasaan | Kebiasaan · Target | `user.habits.*` · `user.goals.*` |
+| Keuangan | Ringkasan · Transaksi · Dompet · Tagihan · Utang-piutang · Laporan | `user.money.index` · `user.obligations.*` · `user.loans.*` · `user.reports.*` |
+| Profil | Profil · Pengaturan · Aplikasi · Panel Admin (admin saja) · Keluar | `profile.*` · `settings.*` · `user.application` · `admin.*` |
+
+Kalender berada di Beranda; target berada di Kebiasaan; tagihan, utang-piutang, dan laporan berada di Keuangan; pengaturan serta panel admin berada di Profil. Pencarian dan Perlu perhatian tetap dapat diakses dari ikon header; notifikasi menuju tab Perlu perhatian. Keluar disediakan di halaman Profil dengan konfirmasi, bukan sebagai item bottom-nav.
+
+Api aktivitas dibuka dari ikon api di header, di samping notifikasi, tanpa menambah item navigasi bawah. Riwayat streak diurutkan berdasarkan rentetan terpanjang agar rekor terbaik tetap terlihat setelah api terputus. Instalasi dan pembaruan PWA tersedia di halaman Aplikasi dan tidak menggunakan banner mengambang.
+
+`<x-subnav>` memakai link URL biasa agar bookmark, navigasi browser Back, dan penggunaan tanpa JavaScript tetap berfungsi. Tab boleh digeser horizontal; tab aktif dipusatkan saat halaman dibuka, memiliki `aria-current="page"`, target sentuh minimal 44 px, serta tetap mengikuti reduced-motion. Sidebar desktop mencerminkan lima grup yang sama dan membuka grup aktif secara otomatis. Tombol tambah global tetap menyediakan tugas, kebiasaan, catat uang, target, tagihan/cicilan, dan utang-piutang.
 
 Contoh kolom:
 

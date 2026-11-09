@@ -193,3 +193,9 @@ Pertahankan SQLite selama aplikasi berjalan pada satu server, jumlah pengguna ak
 Evaluasi MySQL/MariaDB atau PostgreSQL jika aplikasi membutuhkan lebih dari satu server/instance, muncul lonjakan `database is locked`, volume penulisan bersamaan meningkat, dibutuhkan replikasi/hot backup, pengguna aktif tumbuh jauh di atas kisaran tersebut, atau diperlukan pencarian teks lanjutan.
 
 Jalur migrasi: pertahankan Eloquent/Query Builder dan uji migrasi skema pada mesin tujuan sebelum cutover; hindari SQL khusus SQLite. Audit tipe boolean/tanggal, rename kolom (mungkin memerlukan `doctrine/dbal` pada versi tertentu), collation dan perbandingan huruf besar-kecil pada unique email, indeks, serta locking/isolasi transaksi. Ambang pengguna hanyalah panduan operasional, bukan kapasitas atau jaminan performa.
+
+### Verifikasi penutupan 9 November 2026
+
+Run penuh sesudah penutupan security, navigasi, feedback, backup, dan test Windows: **176 test lulus, 1.095 assertion** pada checkpoint sebelum penambahan tes housekeeping terakhir. Build Vite lulus dan bundle tercatat di `docs/MOTION.md`. `npm audit` kemudian dibersihkan dengan update non-major; `composer audit` tidak dapat dijalankan karena Composer CLI tidak terpasang.
+
+Hasil ini tidak menggantikan audit N+1 lintas semua halaman autentikasi, pengukuran Lighthouse, uji screen reader, CSP report lintas route, uji install PWA di perangkat, atau restore backup produksi; semuanya tetap menjadi verifikasi deployment.

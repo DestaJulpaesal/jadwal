@@ -491,7 +491,7 @@ class LifeHubTest extends TestCase
         $this->actingAs($user)
             ->get(route('user.dashboard'))
             ->assertOk()
-            ->assertSee('Buka notifikasi')
+            ->assertSee('Buka bagian Perlu perhatian')
             ->assertSee('notification-icon-wrap')
             ->assertSee('Cari')
             ->assertSee(route('user.search'));

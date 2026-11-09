@@ -7,14 +7,7 @@
         <x-page-header eyebrow="Catatan pribadi" title="Keuangan" description="Pantau saldo dompet dan arus uang bulanan.">
             <p class="concept-chip">{{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $month)->translatedFormat('F Y') }}</p>
         </x-page-header>
-        <x-tabs :tabs="[
-            ['key' => 'overview', 'label' => 'Ringkasan', 'url' => route('user.money.index', ['section' => 'overview', 'month' => $month])],
-            ['key' => 'transactions', 'label' => 'Transaksi', 'url' => route('user.money.index', ['section' => 'transactions', 'month' => $month])],
-            ['key' => 'wallets', 'label' => 'Dompet & kategori', 'url' => route('user.money.index', ['section' => 'wallets', 'month' => $month])],
-            ['key' => 'obligations', 'label' => 'Tagihan', 'url' => route('user.obligations.index', ['month' => $month])],
-            ['key' => 'loans', 'label' => 'Utang-piutang', 'url' => route('user.loans.index', ['month' => $month])],
-            ['key' => 'reports', 'label' => 'Laporan', 'url' => route('user.reports.index', ['month' => $month])],
-        ]" :active="request()->routeIs('user.obligations.*') ? 'obligations' : (request()->routeIs('user.loans.*') ? 'loans' : (request()->routeIs('user.reports.*') ? 'reports' : $section))" />
+        @include('user.partials.finance-subnav')
         @if (in_array($section, ['overview', 'reports'], true))
         <section class="money-summary-grid" aria-label="Ringkasan keuangan">
             <article class="money-summary-card"><p class="text-sm">Pemasukan</p><p class="display-number mt-1" data-private>{{ rupiah($totals['income']) }}</p></article>

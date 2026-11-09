@@ -41,6 +41,7 @@ class EncryptedSqliteBackupTest extends TestCase
             $pdo = DB::connection('sqlite')->getPdo();
             $this->assertSame('wal', strtolower((string) $pdo->query('PRAGMA journal_mode')->fetchColumn()));
             $this->assertSame(5000, (int) $pdo->query('PRAGMA busy_timeout')->fetchColumn());
+            $pdo = null;
             $backupPath = $backup->create();
             $this->assertFileExists($backupPath);
             $this->assertStringStartsWith('JDBAK1', (string) file_get_contents($backupPath));

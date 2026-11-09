@@ -25,7 +25,9 @@ class SaveTaskRequest extends FormRequest
             'category_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('categories', 'id')->where('user_id', $this->user()->id),
+                Rule::exists('categories', 'id')->where(
+                    fn ($query) => $query->whereNull('user_id')->orWhere('user_id', $this->user()->id)
+                ),
             ],
             'task_status_id' => ['nullable', 'integer', 'exists:task_statuses,id'],
             'due_date' => ['nullable', 'date'],

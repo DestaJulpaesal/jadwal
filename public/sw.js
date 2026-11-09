@@ -1,5 +1,6 @@
 const CACHE_PREFIX = 'jadwal-static-';
-const CACHE_NAME = `${CACHE_PREFIX}v1`;
+const CACHE_VERSION = 'v1';
+const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const HASHED_ASSET = /^\/build\/assets\/.+-[A-Za-z0-9_-]{8,}\.[A-Za-z0-9]+$/;
 const STATIC_FILES = ['/offline.html'];
 

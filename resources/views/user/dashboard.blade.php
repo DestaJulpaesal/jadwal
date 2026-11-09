@@ -31,6 +31,8 @@
             </div>
         </section>
 
+        @include('user.partials.home-subnav')
+
         @if (session('schedule_conflicts'))
             <x-alert type="warning" class="dashboard-wide mb-5">
                 <p class="font-semibold">Tugas tersimpan, tetapi waktunya bertabrakan dengan jadwal berikut:</p>
@@ -42,10 +44,10 @@
             </x-alert>
         @endif
 
-        @if (in_array('attention', $dashboardSections, true))
-        <section class="concept-card concept-card-pink dashboard-panel" aria-labelledby="attention-heading">
+        @if (in_array('attention', $dashboardSections, true) || request('tab') === 'attention')
+        <section id="attention-heading" class="concept-card concept-card-pink dashboard-panel scroll-mt-24" aria-labelledby="attention-title">
             <div class="concept-card-header">
-                <div class="concept-heading mb-0"><x-concept-icon name="bl" /><h2 id="attention-heading">Perlu perhatian</h2></div>
+                <div class="concept-heading mb-0"><x-concept-icon name="bl" /><h2 id="attention-title">Perlu perhatian</h2></div>
                 <p class="text-sm">Yang perlu dibereskan lebih dulu.</p>
             </div>
             @if ($overdueTasks->isEmpty() && $attentionItems->isEmpty())

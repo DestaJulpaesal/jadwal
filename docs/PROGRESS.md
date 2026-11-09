@@ -1,5 +1,40 @@
 # Progress polish
 
+## Status penutupan terakhir — 9 November 2026
+
+Fase 0–2 tercatat selesai pada checkpoint sebelumnya. Fase 3–9 telah ditinjau dan sisa pekerjaan yang aman serta dapat diverifikasi di repo sudah dilanjutkan; fase yang membutuhkan bukti produksi/perangkat nyata tidak ditandai selesai hanya berdasarkan inspeksi kode.
+
+| Fase | Status saat ini |
+|---|---|
+| 0–2 | Selesai menurut catatan checkpoint masing-masing. |
+| 3 | Katalog search dan validasi diperluas, teks kebiasaan diperbaiki, tes pesan bertambah. Audit semua teks/email dan seluruh validasi inline belum tuntas. |
+| 4 | Bottom-nav kembali tepat lima induk; sub-menu Kalender, Target, Keuangan, Pengaturan, dan Panel Admin dipetakan lewat URL; sidebar desktop dan tes pemetaan diperbarui. Audit seluruh halaman/aksi serta uji manual seluruh viewport/tema masih terbuka. |
+| 5 | Motion terdokumentasi; token CSS, optimistic actions, dan ukuran bundle diperiksa. Lighthouse, N+1 seluruh route, dan CPU throttling belum diukur. |
+| 6 | Sesi/password/login/IP limiter, host/proxy, IDOR kategori global, hardening upload, audit log admin, password confirmation, serta retensi audit ditangani dan dites. Audit IDOR menyeluruh per semua metode/resource dan verifikasi server tetap perlu. |
+| 7 | CSP dengan nonce dan mode rollback tersedia; default `off` dipertahankan. Belum ada masa observasi report lintas halaman, jadi belum siap enforce/production. |
+| 8 | Struktur aksesibilitas dan login diuji pada beberapa viewport/reduced-motion; audit seluruh halaman, screen reader, tema/kontras, screenshot, dan Lighthouse belum tersedia. |
+| 9 | Manifest, ikon, worker yang hanya cache aset statis berhash/offline, health check, WAL, backup terenkripsi, jadwal, restore test, dan panduan tersedia. Install fisik dan pemulihan backup produksi belum diuji. |
+| 10 | Opsional; tidak dikerjakan karena tidak dipilih sebagai cakupan wajib. |
+
+Verifikasi final: suite penuh **177 lulus (1.107 assertion)**. Vite build, `npm audit` (0 vulnerability), Pint `--test` untuk file PHP yang berubah, kompilasi Blade, pemeriksaan route health, dan `git diff --check` lulus. Composer CLI tidak tersedia sehingga `composer audit` belum dapat dijalankan. Uji browser login pada 360×640, 390×844, 768×1024, dan 1280×800 tidak menemukan overflow horizontal; reduced-motion menghasilkan 0,001 s. Bukti dan batas tiap fase dirangkum di `docs/LAPORAN_POLISH.md`.
+
+### Perubahan penutupan yang ditambahkan
+
+- Password default terpusat, pembatas login per IP, `auth.session`, pemaksaan HTTPS URL di production, pemeriksaan debug production, dan aktivasi `TrustHosts`.
+- Aksi admin sensitif meminta konfirmasi password; perubahan status/peran/reset/hapus dicatat di audit log dengan retensi 365 hari.
+- Penghapusan akun menghapus kategori pribadi. Validasi kategori menerima kategori global dan kategori yang memang dimiliki pengguna, tanpa menerima data pengguna lain.
+- Foto profil dibatasi dimensi dan diproses ulang melalui GD sebelum disimpan privat; MIME dan nama berkas yang dikirim klien tidak dipakai untuk menentukan berkas keluaran.
+- Uji test yang usang disesuaikan dengan perilaku kategori global dan label navigasi terbaru; backup restore pada Windows menutup PDO fixture sebelum mengganti file database.
+- `docs/MOTION.md` dan pembaruan `docs/KEAMANAN.md` dibuat.
+
+### Pekerjaan/verifikasi yang masih terbuka
+
+- Composer audit belum dapat dilakukan karena executable Composer tidak tersedia.
+- `npm audit` melaporkan 0 vulnerability setelah pembaruan lock/dependency non-major; peringatan install-script esbuild memerlukan kebijakan allow-scripts terpisah.
+- Pemeriksaan login/halaman publik di browser bukan pengganti pengujian seluruh route terautentikasi pada perangkat nyata.
+- CSP tetap `off` sampai report dipantau; backup luar server dan uji restore berkala wajib dioperasikan pemilik deployment.
+- Butuh keputusan pemilik: keluarkan folder `list/` dari repo/deploy; persetujuan eksplisit sebelum menggunakan layanan eksternal untuk kata sandi bocor; kunci backup dan tujuan salinan luar server.
+
 ## Fase 0 — Audit, repo, CSS, CI
 
 Status: selesai secara kode, dengan baseline test yang sudah gagal sebelum perubahan.
@@ -124,9 +159,9 @@ Status: selesai secara implementasi. Build, kompilasi Blade, format PHP, dan syn
 
 Buat branch Fase 3 dan baca `04_FASE3_PESAN_VALIDASI.md`; fokus pada penyelarasan pesan validasi tanpa mengubah validasi atau perilaku bisnis.
 
-## Fase 3 — Pesan, validasi, dan umpan balik (sedang dikerjakan)
+## Fase 3 — Pesan, validasi, dan umpan balik (belum selesai)
 
-Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`; fondasi feedback/auth dan katalog sudah diperluas, tetapi checklist belum seluruhnya terpenuhi.
+Status: belum selesai. Fondasi feedback/auth dan katalog sudah diperluas, tetapi checklist belum seluruhnya terpenuhi.
 
 ### Sudah diterapkan
 
@@ -171,33 +206,24 @@ Status: belum selesai. Implementasi berlanjut di branch `polish/fase-3-closeout`
 
 Audit pesan yang terlihat dan seluruh jalur validasi inline, lengkapi tes lintas-pengguna, lalu putuskan rancangan undo yang aman; jangan menandai Fase 3 selesai sebelum semua butir wajib ditutup.
 
-## Fase 4 — Navigasi dan struktur halaman (sedang dikerjakan; belum boleh ditandai selesai)
+## Fase 4 — Navigasi dan struktur halaman (sedang dikerjakan; belum selesai)
 
-### Selesai pada implementasi saat ini
+### Diterapkan pada perbaikan navigasi lima menu
 
-- Menambahkan `layouts/base`; seluruh layout web user/admin/guest/error, beranda, dan styleguide kini menggunakannya. Layout email tetap memakai kerangka HTML email.
-- Menambahkan halaman `Lainnya`, mengganti slot Profil pada bottom-nav, dan melengkapi tautan sidebar untuk kalender, target, bagian keuangan, tagihan, utang-piutang, laporan, pengaturan, dan profil.
-- Menghubungkan `reports.index` ke `ReportController` dan menjaga nama rute yang sudah ada.
-- Memperbaiki penanda tab aktif Keuangan agar tetap benar saat URL memuat parameter bulan.
-- Menyeragamkan header daftar tugas, target, tagihan, utang-piutang, laporan, dan halaman Lainnya; menambahkan tombol Kembali berikon pada halaman buat/ubah.
-- Menambahkan ikon, penjelasan, dan CTA pada empty state target, tagihan, utang-piutang, transaksi, pencarian, serta daftar tugas.
-- Memastikan formulir login muat tanpa scroll pada 360×640; tidak ada overflow horizontal pada 360, 390, 768, dan 1280 px.
-- Memverifikasi ulang di browser: formulir login seluruhnya terlihat tanpa scroll pada 360×640 dan 390×844; tidak ada overflow horizontal pada 360, 390, 768, dan 1280 px.
-- Mengubah notifikasi menjadi sheet Perlu perhatian; di Beranda sheet menampilkan tugas terlambat dan pengingat, sedangkan halaman lain memberi pintasan ke ringkasan Beranda.
-- Menampilkan onboarding 3 langkah dengan status selesai berdasarkan tugas, kebiasaan, dan transaksi yang sudah ada.
-- Menambahkan ikon, manfaat, dan aksi langsung pada empty state dompet/kategori uang, serta CTA dari ringkasan tanpa data; menyamakan header Keuangan, Pencarian, Pengaturan, dan Profil dengan `x-page-header`.
-- Membuat lekukan indikator bottom-nav berpindah dengan transisi token `--dur-base` dan menghormati `prefers-reduced-motion`.
-- Validasi lanjutan: tes `UserNavigationTest` dan `LifeHubTest` lulus (31 tes, 178 assertions); suite lengkap 138 lulus dan 4 gagal, sama dengan kegagalan baseline di `AdminUserManagementTest` dan `UserTaskTest`. Cache Blade, build Vite, Pint dari binary paket, dan `git diff --check` lulus.
+- Bottom-nav mengembalikan urutan tepat **Beranda · Tugas · Kebiasaan · Keuangan · Profil**. Pencocokan grup rute mempertahankan induk aktif di halaman turunan; tidak ada "Lainnya" di navigasi.
+- Route bernama `user.more` tetap tersedia dan mengarahkan pengguna ke Profil. Isi halaman bantuan singkat dan informasi instalasi dipindahkan ke Profil; rute lain tidak dihapus atau diganti nama.
+- Menambahkan komponen `<x-subnav>` berisi link biasa dengan label landmark, ikon, `aria-current`, scroll horizontal, scroll-snap, badge opsional, serta pemusatan tab aktif saat halaman dibuka. Transisi menggunakan token yang tersedia dan menghormati reduced-motion.
+- Pemetaan: Beranda → Hari ini/Kalender/Perlu perhatian; Kebiasaan → Kebiasaan/Target; Keuangan → Ringkasan/Transaksi/Dompet/Tagihan/Utang-piutang/Laporan; Profil → Profil/Pengaturan/Panel Admin untuk admin. Tugas tetap satu tujuan.
+- Menyelaraskan lima grup sidebar desktop dengan pemetaan; grup yang berisi route aktif dibuka otomatis dan dapat diciutkan.
+- Ikon pencarian tetap di header; ikon notifikasi menuju anchor Perlu perhatian di Beranda. FAB dan enam jenis tambah dipertahankan. Tombol Keluar tersedia di Profil dengan dialog konfirmasi.
+- Menambah contoh `<x-subnav>` pada `/styleguide` dan mendokumentasikan aturan lima menu serta tabel pemetaan di `docs/DESIGN_SYSTEM.md`.
+- Tes mencakup tepat lima link, grup induk aktif pada route pemetaan, tab sub-menu aktif, redirect rute `user.more`, dan visibilitas Panel Admin hanya bagi admin.
 
-### Belum selesai
+### Belum selesai / verifikasi manual
 
-- Header halaman belum diseragamkan di semua halaman; navigasi kembali/breadcrumb belum diaudit.
-- Empty state dan CTA setiap daftar belum diaudit menyeluruh; termasuk daftar admin dan semua halaman detail/form.
-- Audit penuh aksi daftar pada layar HP/desktop dan pengukuran browser untuk halaman terautentikasi masih perlu dilakukan.
-
-### Langkah berikutnya
-
-Panel/sheet Perlu perhatian kini menampilkan item dashboard dan onboarding memiliki tiga langkah dengan status penyelesaian berbasis data; tes baru mencakup keduanya. Build Vite dan tes navigasi/keuangan lulus. Launcher Composer `vendor/bin/pint` rusak karena `__DIR__` terpotong, tetapi formatter berhasil dijalankan langsung dari binary paket. Fase 3 masih memiliki butir wajib terbuka. Selesaikan audit dan closeout Fase 3 sebelum menandai Fase 4 selesai; setelah itu tuntaskan audit header, empty state, aksi daftar, dan pengukuran browser pada layar terautentikasi.
+- Uji manual geser tab, tombol Back/bookmark, posisi tab aktif, safe-area/FAB, mode gelap, dan reduced-motion pada 360×640, 390×844, 768, serta 1280 px belum dijalankan sebagai sweep browser.
+- Tab Panel Admin ditautkan dari Profil; halaman admin memakai shell admin tersendiri, bukan bottom-nav pengguna.
+- Audit semua route detail/form dan aksi untuk breadcrumb/kembali serta semua navigasi yang sebelumnya hanya tersedia melalui halaman Lainnya masih perlu pemeriksaan lanjutan.
 
 ## Fase 5 — Animasi, transisi, dan performa (sedang dikerjakan; belum selesai)
 
@@ -295,3 +321,14 @@ Mulai Fase 8 dari audit aksesibilitas dan baseline tes yang sudah ada; lengkapi 
 ### Langkah berikutnya
 
 Selesaikan sisa verifikasi Fase 8 yang dapat dijalankan di environment ini; Lighthouse dan screenshot sebelum perubahan perlu dicatat sebagai keterbatasan bila alat/baseline tidak tersedia. Fase 9 belum boleh ditandai selesai sebelum prasyarat fase sebelumnya ditinjau.
+
+## Fase 9 — PWA, backup, dan operasi (sebagian terverifikasi)
+
+- Metadata/ikon PWA, offline fallback, cache aset statis berhash, request navigasi tanpa penyimpanan HTML, halaman `/up`, dan pembersihan cache dinamis saat logout tersedia.
+- SQLite memakai WAL, `busy_timeout`, foreign keys, dan synchronous NORMAL. Backup terkompresi/terenkripsi, retensi, scheduler 02:30, restore dengan validasi integrity, dan cadangan otomatis sebelum restore tersedia.
+- `EncryptedSqliteBackupTest` lulus pada Windows setelah fixture menutup PDO eksternal sebelum penggantian file; tes membuktikan data SQLite dan foto kembali ke snapshot.
+- Belum diuji install nyata di Android/iOS, kondisi offline pada perangkat, transfer salinan backup ke storage luar server, atau simulasi restore produksi. Fase 9 belum ditandai selesai operasional.
+
+## Serah-terima akhir
+
+Laporan ringkas per fase, bukti yang tersedia, batas pengukuran, perubahan, dan keputusan terbuka ada di `docs/LAPORAN_POLISH.md`. Jangan mengubah status "sebagian" menjadi "selesai" tanpa bukti tambahan dari production/browser/perangkat yang disebutkan di laporan.

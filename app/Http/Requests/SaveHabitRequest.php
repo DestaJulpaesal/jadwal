@@ -38,7 +38,9 @@ class SaveHabitRequest extends FormRequest
             'category_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('categories', 'id')->where('user_id', $this->user()->id),
+                Rule::exists('categories', 'id')->where(
+                    fn ($query) => $query->whereNull('user_id')->orWhere('user_id', $this->user()->id)
+                ),
             ],
             'category_name' => ['nullable', 'string', 'max:60'],
             'category_color' => ['nullable', 'regex:/\A#[0-9a-fA-F]{6}\z/'],

@@ -31,14 +31,6 @@
 </head>
 <body class="@yield('body-class')" @yield('body-attributes')>
     <a class="skip-link" href="#main-content">Lompat ke konten</a>
-    <div id="pwa-install-banner" class="fixed inset-x-4 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-[100] mx-auto flex max-w-lg items-center justify-between gap-4 rounded-xl bg-white p-4 text-ink shadow-lg" role="region" aria-label="Pasang aplikasi" hidden>
-        <span>Pasang Jadwal di perangkatmu.</span>
-        <button class="shrink-0 rounded-lg bg-primary-700 px-3 py-2 font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" data-pwa-install type="button">Pasang aplikasi</button>
-    </div>
-    <div id="pwa-update-banner" class="fixed inset-x-4 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[100] mx-auto flex max-w-lg items-center justify-between gap-4 rounded-xl bg-primary-900 p-4 text-white shadow-lg" role="status" aria-live="polite" hidden>
-        <span>Versi baru tersedia.</span>
-        <button id="pwa-update-button" class="shrink-0 rounded-lg bg-white px-3 py-2 font-semibold text-primary-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2" type="button">Muat ulang</button>
-    </div>
     @yield('body')
 </body>
 </html>

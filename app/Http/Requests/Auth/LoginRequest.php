@@ -7,6 +7,7 @@ use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -60,6 +61,10 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             $user = User::where('email', $this->input('email'))->first();
+            if (! $user) {
+                Hash::check($this->input('password'), (string) config('security.dummy_login_hash'));
+            }
+
             if ($user && ! $user->is_active && Hash::check($this->input('password'), $user->password)) {
                 throw ValidationException::withMessages([
                     'credentials' => trans('auth.disabled'),
@@ -86,6 +91,10 @@ class LoginRequest extends FormRequest
         }
 
         event(new Lockout($this));
+        Log::notice('A login attempt was rate limited.', [
+            'ip' => $this->ip(),
+            'user_agent' => mb_substr((string) $this->userAgent(), 0, 300),
+        ]);
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 

@@ -9,6 +9,7 @@
             title="Hasil pencarian"
             :description="$query !== '' ? 'Hasil untuk “'.$query.'”.' : 'Temukan tugas, kebiasaan, dan catatan uangmu.'"
         />
+        @include('user.partials.home-subnav')
 
         @if ($searchErrors->has('q'))
             <x-alert type="danger">{{ $searchErrors->first('q') }}</x-alert>

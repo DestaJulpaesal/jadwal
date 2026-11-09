@@ -24,6 +24,7 @@
 
     <div class="mx-auto max-w-3xl space-y-5">
         <x-page-header eyebrow="Sesuaikan aplikasi" title="Pengaturan" description="Atur tampilan, pengingat, dan informasi yang muncul di dashboard." />
+        @include('user.partials.profile-subnav')
 
         <x-error-summary :errors="$errors->messages()" title="Pengaturan belum disimpan. Periksa isian berikut:" />
 

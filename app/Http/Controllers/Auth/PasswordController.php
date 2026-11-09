@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 class PasswordController extends Controller
 {
@@ -18,9 +19,10 @@ class PasswordController extends Controller
     {
         $validated = $request->validateWithBag('updatePassword', [
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::min(8)->mixedCase()->numbers(), 'confirmed'],
+            'password' => ['required', PasswordRule::defaults(), 'confirmed'],
         ]);
 
+        Auth::logoutOtherDevices($validated['current_password']);
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);

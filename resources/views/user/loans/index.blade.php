@@ -7,6 +7,7 @@
         <x-page-header eyebrow="Catatan kesepakatan" title="Utang dan piutang" description="Pantau pinjaman, piutang, dan pembayaran yang sudah dicatat.">
             <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'loan-create')">Tambah catatan</x-button>
         </x-page-header>
+        @include('user.partials.finance-subnav')
         <x-bottom-sheet name="loan-create" title="Tambah utang/piutang" :show="request('create') === 'loan' || (old('form_context') === 'loan-create' && $errors->any())">
             @if (old('form_context') === 'loan-create')
                 <x-error-summary :errors="$errors->messages()" title="Utang/piutang belum tersimpan. Periksa isian berikut:" />

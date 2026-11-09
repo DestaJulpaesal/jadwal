@@ -22,6 +22,7 @@ class PruneStaleData extends Command
         $deletedSessions = 0;
         $deletedFailedJobs = 0;
         $deletedTemporaryFiles = 0;
+        $deletedAuditLogs = 0;
 
         try {
             $resetTable = config('auth.passwords.users.table');
@@ -41,6 +42,12 @@ class PruneStaleData extends Command
             if (Schema::hasTable('failed_jobs')) {
                 $deletedFailedJobs = DB::table('failed_jobs')
                     ->where('failed_at', '<', now()->subDays(30))
+                    ->delete();
+            }
+
+            if (Schema::hasTable('admin_audit_logs')) {
+                $deletedAuditLogs = DB::table('admin_audit_logs')
+                    ->where('created_at', '<', now()->subDays(365))
                     ->delete();
             }
 
@@ -66,7 +73,8 @@ class PruneStaleData extends Command
 
         $this->info(
             "Housekeeping selesai: {$deletedTokens} token reset, {$deletedSessions} sesi, "
-            ."{$deletedFailedJobs} failed job, dan {$deletedTemporaryFiles} file sementara dihapus."
+            ."{$deletedFailedJobs} failed job, {$deletedAuditLogs} catatan audit, dan "
+            ."{$deletedTemporaryFiles} file sementara dihapus."
         );
 
         return self::SUCCESS;

@@ -141,3 +141,20 @@ Link “Lompat ke konten” dan target `main#main-content` kini tersedia di layo
 - Simulasi `prefers-reduced-motion: reduce` menghasilkan durasi animasi 1 ms; perubahan token ini bukan pengganti audit semua halaman.
 - Simulasi CSS zoom 200% pada lebar viewport 640 px tidak menghasilkan scroll horizontal. Ini bukan uji browser zoom/OS sungguhan.
 - Lighthouse, screenshot before/after enam halaman, audit kontras seluruh halaman, tema gelap menyeluruh, dan browser sweep semua route belum dilakukan. Fase 8 tetap terbuka.
+
+## Hasil akhir — checkpoint 9 November 2026
+
+| Bukti | Hasil |
+|---|---|
+| Layout dokumen HTML | View aplikasi memakai `layouts.base`; elemen `<html>` tersisa hanya di layout dasar dan layout email vendor. |
+| Inline event handler di Blade | Tidak ditemukan `onclick`, `onchange`, atau `onsubmit`. Ekspresi Alpine memakai komponen CSP dan pemanggilan sederhana. |
+| Durasi/easing CSS | Nilai `ms` dan `cubic-bezier()` hanya ditemukan di `resources/css/tokens.css`. |
+| Test suite | 177 lulus (1.107 assertion) pada run penuh final. |
+| Build | Vite lulus; bundle saat checkpoint: JS 54,15 KB gzip, CSS bersama 19,15 KB, login 3,06 KB, beranda 3,79 KB. |
+| Dependency audit | `npm audit` 0 vulnerability setelah update non-major; Composer CLI tidak tersedia. |
+| Format/route/patch | Pint `--test`, Blade view cache, route health, dan `git diff --check` lulus. |
+| Browser | Login diuji di 360×640, 390×844, 768×1024, dan 1280×800 tanpa overflow horizontal; reduced motion terukur 0,001 s. |
+| PWA/backup | Manifest/icon dan kebijakan cache statis diuji; backup/restore SQLite plus foto lulus test otomatis pada Windows. |
+| Belum dapat dibuktikan | Lighthouse, N+1 semua route terautentikasi, screen reader, kontras semua tema/halaman, report CSP semua halaman, install/offline Android/iOS, Composer audit, dan restore production. |
+
+Sel yang belum terverifikasi dalam matriks aksesibilitas di atas tetap berstatus belum terverifikasi; tidak diubah menjadi lulus berdasarkan inspeksi sumber saja.

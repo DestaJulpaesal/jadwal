@@ -291,6 +291,7 @@ return [
             'avatar.image' => 'Foto profil harus berupa gambar yang valid.',
             'avatar.mimes' => 'Foto profil harus berformat JPG, PNG, atau WebP.',
             'avatar.max' => 'Ukuran foto profil maksimal 5 MB.',
+            'avatar.dimensions' => 'Ukuran foto profil tidak boleh melebihi 4.000 × 4.000 piksel.',
         ],
         'settings' => [
             'timezone.required' => 'Pilih zona waktu.',
@@ -305,6 +306,11 @@ return [
         'profile_deletion' => [
             'confirmation.required' => 'Ketik HAPUS untuk mengonfirmasi penghapusan akun.',
             'confirmation.in' => 'Ketik HAPUS dengan benar untuk mengonfirmasi penghapusan akun.',
+        ],
+        'search' => [
+            'q.required' => 'Isi kata kunci pencarian.',
+            'q.string' => 'Kata kunci pencarian harus berupa teks.',
+            'q.max' => 'Kata kunci pencarian maksimal 100 karakter.',
         ],
     ],
 ];

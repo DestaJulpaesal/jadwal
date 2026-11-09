@@ -11,6 +11,7 @@
                 <h1 class="mt-1 text-2xl font-semibold">Ubah {{ $obligation->kind->label() }}</h1>
                 <p class="mt-2 text-sm text-muted">Data periode dikunci setelah pembayaran tercatat agar riwayat tetap konsisten.</p>
             </header>
+            @include('user.partials.finance-subnav')
             <x-error-summary :errors="$errors->messages()" title="Pengingat belum diperbarui. Periksa isian berikut:" />
             <form method="POST" action="{{ route('user.obligations.update', $obligation) }}" class="space-y-5" data-dirty-guard>
                 @csrf

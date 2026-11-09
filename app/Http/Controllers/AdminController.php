@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Support\Feedback;
 use Illuminate\Http\Request;
@@ -56,8 +57,10 @@ class AdminController extends Controller
             }
         }
 
-        $user->is_active = ! $user->is_active;
+        $wasActive = $user->is_active;
+        $user->is_active = ! $wasActive;
         $user->save();
+        $this->audit($wasActive ? 'account.deactivated' : 'account.activated', $user);
 
         $message = $user->is_active ? __('ui.feedback.account_enabled') : __('ui.feedback.account_disabled');
 
@@ -79,6 +82,7 @@ class AdminController extends Controller
 
         $user->role = $user->isAdmin() ? 'user' : 'admin';
         $user->save();
+        $this->audit('account.role_changed', $user);
 
         $message = $user->isAdmin() ? __('ui.feedback.role_admin') : __('ui.feedback.role_user');
 
@@ -90,6 +94,8 @@ class AdminController extends Controller
         $status = Password::sendResetLink(['email' => $user->email]);
 
         if ($status === Password::RESET_LINK_SENT) {
+            $this->audit('account.password_reset_link_sent', $user);
+
             return Feedback::success(back(), __('ui.feedback.password_reset_sent_admin'));
         }
 
@@ -109,8 +115,21 @@ class AdminController extends Controller
             }
         }
 
+        $this->audit('account.deleted', $user);
         $user->delete();
 
         return Feedback::success(redirect()->route('admin.dashboard'), __('ui.feedback.account_deleted'));
+    }
+
+    private function audit(string $action, User $target): void
+    {
+        AdminAuditLog::query()->create([
+            'admin_id' => auth()->id(),
+            'action' => $action,
+            'target_type' => User::class,
+            'target_id' => $target->getKey(),
+            'ip_address' => request()->ip(),
+            'user_agent' => mb_substr((string) request()->userAgent(), 0, 500),
+        ]);
     }
 }

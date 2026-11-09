@@ -11,6 +11,7 @@
                 <h1 class="mt-1 text-2xl font-semibold">Ubah transaksi</h1>
                 <p class="mt-2 text-sm text-muted">Perubahan transaksi akan memperbarui saldo dompet dan laporan.</p>
             </header>
+            @include('user.partials.finance-subnav')
             <x-error-summary :errors="$errors->messages()" title="Transaksi belum diperbarui. Periksa isian berikut:" />
             <form method="POST" action="{{ route('user.money.transactions.update', $transaction) }}" class="space-y-5" data-dirty-guard>
                 @csrf

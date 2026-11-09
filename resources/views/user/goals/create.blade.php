@@ -11,6 +11,7 @@
                 <h1 class="mt-1 text-2xl font-semibold">Buat target</h1>
                 <p class="mt-2 text-sm text-muted">Tentukan hasil akhir dan cara kamu ingin mengukur progres.</p>
             </header>
+            @include('user.partials.habits-subnav')
             <x-error-summary :errors="$errors->messages()" title="Target belum tersimpan. Periksa isian berikut:" />
             <form method="POST" action="{{ route('user.goals.store') }}" class="space-y-5" data-dirty-guard>
                 @csrf

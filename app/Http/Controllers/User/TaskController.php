@@ -81,6 +81,7 @@ class TaskController extends Controller
             return $request->user()->tasks()->create([
                 'category_id' => $category?->id,
                 'task_status_id' => $validated['task_status_id'] ?? null,
+                'completed_at' => $this->isCompletedStatus($validated['task_status_id'] ?? null) ? now('UTC') : null,
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'due_date' => $validated['due_date'] ?? null,
@@ -105,13 +106,17 @@ class TaskController extends Controller
     public function update(SaveTaskRequest $request, Task $task)
     {
         $validated = $this->normalizeScheduleTimes($request->validated(), $request->user());
+        $wasCompleted = $task->status()->where('is_completed', true)->exists();
+        $isCompleted = $this->isCompletedStatus($validated['task_status_id'] ?? null);
+        $completedAt = ! $wasCompleted && $isCompleted ? now('UTC') : $task->completed_at;
 
-        DB::transaction(function () use ($validated, $request, $task) {
+        DB::transaction(function () use ($validated, $request, $task, $completedAt) {
             $category = $this->resolveCategory($validated, $request);
 
             $task->update([
                 'category_id' => $category?->id,
                 'task_status_id' => $validated['task_status_id'] ?? null,
+                'completed_at' => $completedAt,
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'due_date' => $validated['due_date'] ?? null,
@@ -148,7 +153,10 @@ class TaskController extends Controller
             return Feedback::info(back(), __('ui.feedback.task_already_completed'));
         }
 
-        $task->update(['task_status_id' => $completedStatus->id]);
+        $task->update([
+            'task_status_id' => $completedStatus->id,
+            'completed_at' => now('UTC'),
+        ]);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -174,6 +182,12 @@ class TaskController extends Controller
             'categories' => Category::query()->orderBy('name')->get(),
             'statuses' => TaskStatus::orderBy('name')->get(),
         ];
+    }
+
+    private function isCompletedStatus(?int $statusId): bool
+    {
+        return $statusId !== null
+            && TaskStatus::query()->whereKey($statusId)->where('is_completed', true)->exists();
     }
 
     private function resolveCategory(array $validated, Request $request): ?Category

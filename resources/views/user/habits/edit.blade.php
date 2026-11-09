@@ -10,6 +10,7 @@
                 <span class="habit-form-icon"><x-concept-icon name="fl" class="h-8 w-8" /></span>
                 <div><p class="k">Perbarui ritmemu</p><h1>Ubah kebiasaan</h1><p class="habit-form-subtitle">Sesuaikan jadwal dan target agar tetap realistis.</p></div>
             </div>
+            @include('user.partials.habits-subnav')
             <x-error-summary :errors="$errors->messages()" title="Perubahan kebiasaan belum tersimpan. Periksa isian berikut:" />
             <form method="POST" action="{{ route('user.habits.update', $habit) }}" class="habit-form" data-dirty-guard>
                 @csrf

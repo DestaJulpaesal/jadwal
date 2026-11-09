@@ -15,11 +15,7 @@ class SearchController extends Controller
             'q' => is_string($rawQuery) ? trim($rawQuery) : $rawQuery,
         ], [
             'q' => ['required', 'string', 'max:100'],
-        ], [
-            'q.required' => 'Isi kata kunci pencarian.',
-            'q.string' => 'Kata kunci pencarian harus berupa teks.',
-            'q.max' => 'Kata kunci pencarian maksimal 100 karakter.',
-        ]);
+        ], __('validation.catalog.search'));
 
         if ($validator->fails()) {
             return view('user.search', [

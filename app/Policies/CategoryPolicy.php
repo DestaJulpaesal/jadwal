@@ -14,7 +14,7 @@ class CategoryPolicy
 
     public function view(User $user, Category $category): bool
     {
-        return $category->user_id === null;
+        return $category->user_id === null || $category->user_id === $user->id;
     }
 
     public function create(User $user): bool
@@ -34,6 +34,6 @@ class CategoryPolicy
 
     public function useForTask(User $user, Category $category): bool
     {
-        return $category->user_id === null;
+        return $category->user_id === null || $category->user_id === $user->id;
     }
 }

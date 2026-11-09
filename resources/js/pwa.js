@@ -14,21 +14,28 @@ const canRegisterServiceWorker = () => {
 
 export const initializePwa = () => {
     const installButtons = document.querySelectorAll('[data-pwa-install]');
-    const iosHelp = document.querySelector('[data-pwa-ios-help]');
-    const updateBanner = document.getElementById('pwa-update-banner');
+    const iosHelp = document.querySelectorAll('[data-pwa-ios-help]');
+    const installStatus = document.getElementById('pwa-install-status');
+    const updateCard = document.getElementById('pwa-update-card');
     const updateButton = document.getElementById('pwa-update-button');
+    const updateStatus = document.getElementById('pwa-update-status');
     let waitingWorker = null;
     let installPrompt = null;
     let reloadAfterUpdate = false;
 
     if (!isStandalone() && isIos()) {
-        iosHelp?.removeAttribute('hidden');
+        iosHelp.forEach((element) => element.removeAttribute('hidden'));
+    } else if (isStandalone() && installStatus) {
+        installStatus.textContent = 'Jadwal Harian sudah terpasang di perangkat ini.';
     }
 
     window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();
         installPrompt = event;
         installButtons.forEach((button) => button.removeAttribute('hidden'));
+        if (installStatus) {
+            installStatus.textContent = 'Jadwal Harian siap dipasang di perangkat ini.';
+        }
     });
 
     installButtons.forEach((button) => button.addEventListener('click', async () => {
@@ -36,15 +43,33 @@ export const initializePwa = () => {
             return;
         }
 
-        await installPrompt.prompt();
-        installPrompt = null;
-        installButtons.forEach((installButton) => installButton.setAttribute('hidden', ''));
+        try {
+            const prompt = installPrompt;
+            installPrompt = null;
+            await prompt.prompt();
+            const choice = await prompt.userChoice;
+            if (installStatus) {
+                installStatus.textContent = choice.outcome === 'accepted'
+                    ? 'Jadwal Harian berhasil dipasang.'
+                    : 'Pemasangan dibatalkan. Kamu bisa mencobanya lagi nanti.';
+            }
+            installButtons.forEach((installButton) => installButton.setAttribute('hidden', ''));
+        } catch (error) {
+            console.error('PWA installation prompt failed.', error);
+            installButtons.forEach((installButton) => installButton.setAttribute('hidden', ''));
+            if (installStatus) {
+                installStatus.textContent = 'Pemasangan belum berhasil. Coba lagi dari browser.';
+            }
+        }
     }));
 
     window.addEventListener('appinstalled', () => {
         installPrompt = null;
         installButtons.forEach((button) => button.setAttribute('hidden', ''));
-        iosHelp?.setAttribute('hidden', '');
+        iosHelp.forEach((element) => element.setAttribute('hidden', ''));
+        if (installStatus) {
+            installStatus.textContent = 'Jadwal Harian berhasil dipasang di perangkat ini.';
+        }
     });
 
     document.addEventListener('submit', (event) => {
@@ -62,7 +87,7 @@ export const initializePwa = () => {
 
     const showUpdate = (worker) => {
         waitingWorker = worker;
-        updateBanner?.removeAttribute('hidden');
+        updateCard?.removeAttribute('hidden');
     };
 
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
@@ -88,7 +113,10 @@ export const initializePwa = () => {
                 reloadAfterUpdate = true;
                 waitingWorker.postMessage({ type: 'SKIP_WAITING' });
                 updateButton.setAttribute('disabled', '');
-                updateButton.textContent = 'Memuat...';
+                updateButton.textContent = 'Menerapkan...';
+                if (updateStatus) {
+                    updateStatus.textContent = 'Pembaruan sedang diterapkan. Halaman akan dimuat kembali otomatis.';
+                }
             });
 
             navigator.serviceWorker.addEventListener('controllerchange', () => {

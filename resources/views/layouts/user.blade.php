@@ -19,17 +19,17 @@
                 <span class="block min-w-0 truncate">Jadwal Harian</span>
             </a>
             <div class="user-header-actions flex shrink-0 items-center gap-2 sm:gap-3">
-                @if (request()->routeIs('user.search'))
-                    <x-button href="{{ route('user.dashboard') }}" aria-label="Kembali ke beranda" title="Kembali ke beranda" variant="ghost" class="global-search-close">
-                        <x-concept-icon name="home" class="h-6 w-6" />
-                    </x-button>
-                @else
-                    <button type="button" x-data x-on:click="$dispatch('open-modal', 'attention-panel')" class="notification-button" aria-label="Buka notifikasi" aria-haspopup="dialog" title="Notifikasi">
-                        <span class="notification-icon-wrap">
-                            <x-icon name="notifikasi" class="h-8 w-8" />
-                        </span>
-                    </button>
-                @endif
+                <a href="{{ route('user.search') }}" class="header-action-link" aria-label="Cari" title="Cari">
+                    <x-concept-icon name="sc" class="h-6 w-6" />
+                </a>
+                <a href="{{ route('user.dashboard', ['tab' => 'attention']).'#attention-heading' }}" class="notification-button" aria-label="Buka bagian Perlu perhatian" title="Perlu perhatian">
+                    <span class="notification-icon-wrap">
+                        <x-icon name="notifikasi" class="h-8 w-8" />
+                    </span>
+                </a>
+                <a href="{{ route('user.streak') }}" class="header-action-link" aria-label="Lihat api aktivitas" title="Api aktivitas" @if (request()->routeIs('user.streak')) aria-current="page" @endif>
+                    <x-concept-icon name="fl" class="h-7 w-7" />
+                </a>
                 <a href="{{ route('profile.edit') }}" class="profile-header-link" aria-label="Buka profil" title="Profil">
                     <span class="profile-header-frame">
                         <x-profile-avatar :user="auth()->user()" class="h-10 w-10" />
@@ -43,42 +43,54 @@
     <aside class="user-sidebar fixed bottom-0 left-0 top-[calc(4rem+env(safe-area-inset-top))] hidden w-64 lg:block">
         <div class="sidebar-inner flex h-full flex-col overflow-y-auto">
             <div class="sidebar-content px-5 py-6">
-                <nav aria-label="Navigasi utama" class="space-y-6">
-                    <section>
-                        <p class="sidebar-section-label mb-2 px-3">Ringkasan</p>
+                <nav aria-label="Navigasi utama" class="space-y-3">
+                    <details class="sidebar-nav-group" @if (request()->routeIs('user.dashboard', 'user.calendar')) open @endif>
+                        <summary><x-concept-icon name="home" class="h-5 w-5" />Beranda</summary>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.dashboard') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.dashboard') ? 'nav-link-active' : '' }}"><x-concept-icon name="home" class="h-5 w-5" />Beranda</a>
-                            <a href="{{ route('user.calendar') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.calendar') ? 'nav-link-active' : '' }}"><x-concept-icon name="cl" class="h-5 w-5" />Kalender</a>
+                            <a href="{{ route('user.dashboard') }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') && request('tab') !== 'attention' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard') && request('tab') !== 'attention') aria-current="page" @endif>Hari ini</a>
+                            <a href="{{ route('user.calendar') }}" class="nav-link w-full {{ request()->routeIs('user.calendar') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.calendar')) aria-current="page" @endif>Kalender</a>
+                            <a href="{{ route('user.dashboard', ['tab' => 'attention']).'#attention-heading' }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') && request('tab') === 'attention' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard') && request('tab') === 'attention') aria-current="page" @endif>Perlu perhatian</a>
                         </div>
-                    </section>
-                    <section>
-                        <p class="sidebar-section-label mb-2 px-3">Aktivitas</p>
+                    </details>
+                    <details class="sidebar-nav-group" @if (request()->routeIs('user.tasks.*')) open @endif>
+                        <summary><x-concept-icon name="tk" class="h-5 w-5" />Tugas</summary>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.tasks.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.tasks.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="tk" class="h-5 w-5" />Tugas</a>
-                            <a href="{{ route('user.habits.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.habits.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</a>
-                            <a href="{{ route('user.goals.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}"><x-icon name="target" class="h-5 w-5" />Target</a>
+                            <a href="{{ route('user.tasks.index') }}" class="nav-link w-full {{ request()->routeIs('user.tasks.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>Daftar tugas</a>
                         </div>
-                    </section>
-                    <section>
-                        <p class="sidebar-section-label mb-2 px-3">Keuangan</p>
+                    </details>
+                    <details class="sidebar-nav-group" @if (request()->routeIs('user.habits.*', 'user.goals.*')) open @endif>
+                        <summary><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</summary>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.money.index', ['section' => 'overview']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section', 'overview') === 'overview' ? 'nav-link-active' : '' }}"><x-concept-icon name="wl" class="h-5 w-5" />Ringkasan</a>
-                            <a href="{{ route('user.money.index', ['section' => 'transactions']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'transactions' ? 'nav-link-active' : '' }}"><x-icon name="keuangan" class="h-5 w-5" />Transaksi</a>
-                            <a href="{{ route('user.money.index', ['section' => 'wallets']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'wallets' ? 'nav-link-active' : '' }}"><x-icon name="keuangan" class="h-5 w-5" />Dompet</a>
-                            <a href="{{ route('user.obligations.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.obligations.*') ? 'nav-link-active' : '' }}"><x-icon name="tagihan" class="h-5 w-5" />Tagihan & cicilan</a>
-                            <a href="{{ route('user.loans.index') }}" data-prefetch class="nav-link w-full {{ request()->routeIs('user.loans.*') ? 'nav-link-active' : '' }}"><x-icon name="utang" class="h-5 w-5" />Utang-piutang</a>
-                            <a href="{{ route('user.reports.index') }}" class="nav-link w-full {{ request()->routeIs('user.reports.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="rc" class="h-5 w-5" />Laporan</a>
+                            <a href="{{ route('user.habits.index') }}" class="nav-link w-full {{ request()->routeIs('user.habits.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*')) aria-current="page" @endif>Kebiasaan</a>
+                            <a href="{{ route('user.goals.index') }}" class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.goals.*')) aria-current="page" @endif>Target</a>
                         </div>
-                    </section>
-                    <section>
-                        <p class="sidebar-section-label mb-2 px-3">Akun</p>
+                    </details>
+                    <details class="sidebar-nav-group" @if (request()->routeIs('user.money.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*')) open @endif>
+                        <summary><x-concept-icon name="wl" class="h-5 w-5" />Keuangan</summary>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('settings.edit') }}" class="nav-link w-full {{ request()->routeIs('settings.*') ? 'nav-link-active' : '' }}"><x-icon name="zona-waktu" class="h-5 w-5" />Pengaturan</a>
-                            <a href="{{ route('profile.edit') }}" class="nav-link w-full {{ request()->routeIs('profile.*') ? 'nav-link-active' : '' }}"><x-concept-icon name="pr" class="h-5 w-5" />Profil</a>
+                            <a href="{{ route('user.money.index', ['section' => 'overview']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section', 'overview') === 'overview' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.money.index') && request('section', 'overview') === 'overview') aria-current="page" @endif>Ringkasan</a>
+                            <a href="{{ route('user.money.index', ['section' => 'transactions']) }}" class="nav-link w-full {{ (request()->routeIs('user.money.*') && request('section') === 'transactions') || request()->routeIs('user.money.transactions.*') ? 'nav-link-active' : '' }}" @if ((request()->routeIs('user.money.*') && request('section') === 'transactions') || request()->routeIs('user.money.transactions.*')) aria-current="page" @endif>Transaksi</a>
+                            <a href="{{ route('user.money.index', ['section' => 'wallets']) }}" class="nav-link w-full {{ request()->routeIs('user.money.index') && request('section') === 'wallets' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.money.index') && request('section') === 'wallets') aria-current="page" @endif>Dompet</a>
+                            <a href="{{ route('user.obligations.index') }}" class="nav-link w-full {{ request()->routeIs('user.obligations.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.obligations.*')) aria-current="page" @endif>Tagihan</a>
+                            <a href="{{ route('user.loans.index') }}" class="nav-link w-full {{ request()->routeIs('user.loans.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.loans.*')) aria-current="page" @endif>Utang-piutang</a>
+                            <a href="{{ route('user.reports.index') }}" class="nav-link w-full {{ request()->routeIs('user.reports.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.reports.*')) aria-current="page" @endif>Laporan</a>
                         </div>
-                    </section>
-                    <a href="{{ route('user.search') }}" class="nav-link w-full {{ request()->routeIs('user.search') ? 'nav-link-active' : '' }}"><x-concept-icon name="sc" class="h-5 w-5" />Pencarian</a>
-                    <a href="{{ route('user.more') }}#bantuan" class="nav-link w-full"><x-icon name="info" class="h-5 w-5" />Bantuan</a>
+                    </details>
+                    <details class="sidebar-nav-group" @if (request()->routeIs('profile.*', 'settings.*', 'user.application', 'admin.*')) open @endif>
+                        <summary><x-concept-icon name="pr" class="h-5 w-5" />Profil</summary>
+                        <div class="sidebar-nav space-y-1.5">
+                            <a href="{{ route('profile.edit') }}" class="nav-link w-full {{ request()->routeIs('profile.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('profile.*')) aria-current="page" @endif>Profil</a>
+                            <a href="{{ route('settings.edit') }}" class="nav-link w-full {{ request()->routeIs('settings.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('settings.*')) aria-current="page" @endif>Pengaturan</a>
+                            <a href="{{ route('user.application') }}" class="nav-link w-full {{ request()->routeIs('user.application') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.application')) aria-current="page" @endif>Aplikasi</a>
+                            @if (auth()->user()->isAdmin())
+                                <a href="{{ route('admin.dashboard') }}" class="nav-link w-full {{ request()->routeIs('admin.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('admin.*')) aria-current="page" @endif>Panel Admin</a>
+                            @endif
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" class="nav-link w-full text-left"><x-icon name="keluar" class="h-5 w-5" />Keluar</button>
+                            </form>
+                        </div>
+                    </details>
                 </nav>
             </div>
             <div class="sidebar-profile-footer">
@@ -87,7 +99,7 @@
         </div>
     </aside>
 
-    <main id="main-content" tabindex="-1" class="user-main min-h-[calc(100dvh-4rem)] px-4 py-6 pb-32 sm:px-6 sm:py-8 lg:ml-64 lg:pb-10">
+    <main id="main-content" tabindex="-1" class="user-main min-h-[calc(100dvh-4rem)] px-4 py-6 pb-32 sm:px-6 sm:py-8 lg:ml-64 lg:px-8 lg:pb-10">
         @if (request()->routeIs('user.search'))
             <form method="GET" action="{{ route('user.search') }}" role="search" class="global-search-wrap mx-auto mb-6 max-w-6xl">
                 <label for="global-search" class="sr-only">Cari di semua data</label>
@@ -104,26 +116,23 @@
         @yield('content')
     </main>
 
-    @php
-        $isMoreActive = request()->routeIs('user.more', 'user.calendar', 'user.goals.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*', 'user.search', 'settings.*', 'profile.*');
-    @endphp
     <nav id="mobileNavigationMenu" class="mobile-nav fixed bottom-0 z-40 lg:hidden" aria-label="Navigasi utama">
         <span class="mobile-nav-shape" aria-hidden="true"></span>
         <div class="mobile-nav-grid grid grid-cols-5 items-stretch">
-            <a href="{{ route('user.dashboard') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.dashboard') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard')) aria-current="page" @endif>
+            <a href="{{ route('user.dashboard') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.dashboard', 'user.calendar', 'user.search') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard', 'user.calendar', 'user.search')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="home" /></span><span>Beranda</span>
             </a>
             <a href="{{ route('user.tasks.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.tasks.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="tk" /></span><span>Tugas</span>
             </a>
-            <a href="{{ route('user.habits.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.habits.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*')) aria-current="page" @endif>
+            <a href="{{ route('user.habits.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.habits.*', 'user.goals.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*', 'user.goals.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="fl" /></span><span>Kebiasaan</span>
             </a>
-            <a href="{{ route('user.money.index') }}" class="mobile-nav-link {{ request()->routeIs('user.money.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.money.*')) aria-current="page" @endif>
+            <a href="{{ route('user.money.index') }}" class="mobile-nav-link {{ request()->routeIs('user.money.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.money.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="wl" /></span><span>Keuangan</span>
             </a>
-            <a href="{{ route('user.more') }}" class="mobile-nav-link {{ $isMoreActive ? 'mobile-nav-link-active' : '' }}" @if ($isMoreActive) aria-current="page" @endif>
-                <span class="mobile-nav-icon"><x-icon name="menu" /></span><span>Lainnya</span>
+            <a href="{{ route('profile.edit') }}" class="mobile-nav-link {{ request()->routeIs('profile.*', 'settings.*', 'user.application', 'admin.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('profile.*', 'settings.*', 'user.application', 'admin.*')) aria-current="page" @endif>
+                <span class="mobile-nav-icon"><x-profile-avatar :user="auth()->user()" class="h-6 w-6" /></span><span>Profil</span>
             </a>
         </div>
     </nav>
@@ -156,34 +165,4 @@
         </div>
     </x-bottom-sheet>
 
-    <x-bottom-sheet name="attention-panel" title="Perlu perhatian">
-        @if (isset($overdueTasks, $attentionItems))
-            @if ($overdueTasks->isEmpty() && $attentionItems->isEmpty())
-                <p class="text-sm text-muted">Tidak ada yang perlu dikejar sekarang. Hari ini bisa dimulai dengan tenang.</p>
-            @else
-                <ul class="divide-y divide-line">
-                    @foreach ($overdueTasks as $task)
-                        <li class="py-3">
-                            <a href="{{ route('user.tasks.edit', $task) }}" class="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-700">
-                                <span class="font-semibold">{{ $task->title }}</span>
-                                <span class="block text-sm text-muted">Tugas terlambat · Atur tugas</span>
-                            </a>
-                        </li>
-                    @endforeach
-                    @foreach ($attentionItems as $item)
-                        <li class="py-3">
-                            <a href="{{ $item['url'] }}" class="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-700">
-                                <span class="font-semibold">{{ $item['title'] }}</span>
-                                <span class="block text-sm text-muted">{{ $item['status'] }} · Lihat detail</span>
-                            </a>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
-            <x-button href="{{ route('user.dashboard') }}" variant="secondary" class="mt-4">Buka beranda</x-button>
-        @else
-            <p class="text-sm text-muted">Ringkasan ini menampilkan tugas terlambat dan pengingat yang perlu ditindaklanjuti.</p>
-            <x-button href="{{ route('user.dashboard') }}#attention-heading" variant="secondary" class="mt-4">Lihat ringkasan di Beranda</x-button>
-        @endif
-    </x-bottom-sheet>
 @endsection

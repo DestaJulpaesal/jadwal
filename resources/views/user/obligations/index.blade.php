@@ -7,6 +7,7 @@
         <x-page-header eyebrow="Pengingat berkala" title="Tagihan dan cicilan" description="Pembayaran hanya dicatat pada periode yang jatuh tempo.">
             <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'obligation-create')">Tambah pengingat</x-button>
         </x-page-header>
+        @include('user.partials.finance-subnav')
         <x-bottom-sheet name="obligation-create" title="Tambah pengingat" :show="request('create') === 'obligation' || (old('form_context') === 'obligation-create' && $errors->any())">
             @if (old('form_context') === 'obligation-create')
                 <x-error-summary :errors="$errors->messages()" title="Pengingat belum tersimpan. Periksa isian berikut:" />

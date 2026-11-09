@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
 use App\Models\TaskStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,9 +39,8 @@ class UserTaskTest extends TestCase
             ->assertSee('Jadwal hari ini')
             ->assertSee('7 hari mendatang')
             ->assertSee('Ringkasan')
-            ->assertSee('Aktivitas')
+            ->assertSee('Perlu perhatian')
             ->assertSee('Keuangan')
-            ->assertSee('Perencanaan')
             ->assertSee('class="concept-quick-link"><svg', false);
     }
 
@@ -55,29 +55,25 @@ class UserTaskTest extends TestCase
             ->assertSee('Oktober 2026');
     }
 
-    public function test_user_can_create_a_task_with_a_new_category_and_status(): void
+    public function test_user_can_create_a_task_with_a_global_category_and_status(): void
     {
         $user = User::factory()->create(['email_verified_at' => now()]);
         $status = TaskStatus::create(['name' => 'Belum dimulai']);
+        $category = Category::query()->create(['name' => 'Belajar', 'color' => '#22AA44']);
 
         $response = $this->actingAs($user)->post(route('user.tasks.store'), [
             'title' => 'Belajar Laravel',
             'description' => 'Selesaikan latihan',
-            'category_name' => 'Belajar',
-            'category_color' => '#22AA44',
+            'category_id' => $category->id,
             'task_status_id' => $status->id,
             'due_date' => now()->addDay()->format('Y-m-d\TH:i'),
         ]);
 
         $response->assertRedirect(route('user.tasks.index'));
-        $this->assertDatabaseHas('categories', [
-            'user_id' => $user->id,
-            'name' => 'Belajar',
-            'color' => '#22AA44',
-        ]);
         $this->assertDatabaseHas('tasks', [
             'user_id' => $user->id,
             'title' => 'Belajar Laravel',
+            'category_id' => $category->id,
             'task_status_id' => $status->id,
         ]);
     }

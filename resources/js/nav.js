@@ -1,6 +1,21 @@
 const blockedPrefetchPaths = new Set(['/dashboard/money', '/dashboard/reports', '/reports']);
 
 export function initializeNavigation() {
+    document.querySelectorAll('[data-subnav]').forEach((nav) => {
+        const track = nav.querySelector('.user-subnav-track');
+        const activeLink = nav.querySelector('[data-subnav-active]');
+        if (!(track instanceof HTMLElement) || !(activeLink instanceof HTMLElement) || track.scrollWidth <= track.clientWidth) {
+            return;
+        }
+
+        const trackRect = track.getBoundingClientRect();
+        const linkRect = activeLink.getBoundingClientRect();
+        const left = track.scrollLeft + linkRect.left - trackRect.left - (track.clientWidth - linkRect.width) / 2;
+        const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+
+        track.scrollTo({ left, behavior });
+    });
+
     const prefetchTimers = new WeakMap();
     const prefetchedUrls = new Set();
 

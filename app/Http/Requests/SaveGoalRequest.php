@@ -35,7 +35,13 @@ class SaveGoalRequest extends FormRequest
             'start_value' => ['nullable', 'integer', 'min:0', 'lte:target_value'],
             'unit' => ['nullable', 'string', 'max:40'],
             'due_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:'.$clock->date($this->user())],
-            'category_id' => ['nullable', 'integer', Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
+            'category_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where(
+                    fn ($query) => $query->whereNull('user_id')->orWhere('user_id', $this->user()->id)
+                ),
+            ],
             'habit_id' => ['nullable', 'integer', Rule::exists('habits', 'id')->where('user_id', $this->user()->id)],
             'wallet_id' => ['nullable', 'integer', Rule::exists('wallets', 'id')->where('user_id', $this->user()->id)->whereNull('archived_at')],
         ];

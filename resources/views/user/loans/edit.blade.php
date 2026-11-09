@@ -11,6 +11,7 @@
                 <h1 class="mt-1 text-2xl font-semibold">Ubah utang/piutang</h1>
                 <p class="mt-2 text-sm text-muted">Data transaksi awal dikunci setelah pembayaran tercatat agar saldo dan riwayat tetap konsisten.</p>
             </header>
+            @include('user.partials.finance-subnav')
             <x-error-summary :errors="$errors->messages()" title="Utang/piutang belum diperbarui. Periksa isian berikut:" />
             <form method="POST" action="{{ route('user.loans.update', $loan) }}" class="space-y-5" data-dirty-guard>
                 @csrf

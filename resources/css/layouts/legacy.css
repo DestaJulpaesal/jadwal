@@ -90,6 +90,7 @@
     html.motion-paused .user-app .bobf {
         animation-play-state: paused;
     }
+}
 
     @media (max-width: 380px) {
         .user-app .concept-stat b {
@@ -137,11 +138,6 @@
     }
 
     @media (min-width: 1280px) {
-        .user-app .user-main {
-            width: calc(100% - 16rem);
-            margin-right: 0;
-        }
-
         .user-app .dashboard-page {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -223,13 +219,6 @@
         .user-app .money-panel-grid {
             grid-template-columns: minmax(0, 1.2fr) minmax(320px, .8fr);
             align-items: start;
-        }
-    }
-
-    @media (min-width: 1280px) {
-        .user-app .user-main {
-            padding-right: 48px;
-            padding-left: 48px;
         }
     }
 
@@ -522,7 +511,6 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
-}
 
 @media (prefers-reduced-motion: reduce) {
     *,

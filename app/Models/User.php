@@ -44,6 +44,10 @@ class User extends Authenticatable implements MustVerifyEmailContract
 
     protected static function booted(): void
     {
+        static::deleting(function (User $user): void {
+            $user->categories()->delete();
+        });
+
         static::deleted(function (User $user): void {
             $path = $user->profile_photo_path;
             $disk = Storage::disk('local');

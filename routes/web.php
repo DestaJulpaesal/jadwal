@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
@@ -12,11 +12,12 @@ use App\Http\Controllers\User\MoneyController;
 use App\Http\Controllers\User\ObligationController;
 use App\Http\Controllers\User\ReportController;
 use App\Http\Controllers\User\SearchController;
+use App\Http\Controllers\User\StreakController;
 use App\Http\Controllers\User\TaskController as UserTaskController;
 use App\Http\Controllers\UserController;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,7 +67,7 @@ if (app()->environment('local')) {
     Route::view('/styleguide', 'styleguide')->name('styleguide');
 }
 
-Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'auth.session', 'active', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
     Route::get('/users', [AdminController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminController::class, 'show'])->name('users.show');
@@ -74,15 +75,21 @@ Route::middleware(['auth', 'active', 'admin'])->prefix('admin')->name('admin.')-
     Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
     Route::patch('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
-    Route::patch('/users/{user}/status', [AdminController::class, 'toggleStatus'])->name('users.status');
-    Route::patch('/users/{user}/role', [AdminController::class, 'updateRole'])->name('users.role');
+    Route::patch('/users/{user}/status', [AdminController::class, 'toggleStatus'])
+        ->middleware('password.confirm')
+        ->name('users.status');
+    Route::patch('/users/{user}/role', [AdminController::class, 'updateRole'])
+        ->middleware('password.confirm')
+        ->name('users.role');
     Route::post('/users/{user}/password-reset', [AdminController::class, 'sendPasswordResetLink'])
-        ->middleware('throttle:5,1')
+        ->middleware(['password.confirm', 'throttle:5,1'])
         ->name('users.password-reset');
-    Route::delete('/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
+    Route::delete('/users/{user}', [AdminController::class, 'destroy'])
+        ->middleware('password.confirm')
+        ->name('users.destroy');
 });
 
-$dashboardMiddleware = ['auth', 'active'];
+$dashboardMiddleware = ['auth', 'auth.session', 'active'];
 
 if (config('auth.email_verification')) {
     $dashboardMiddleware[] = 'verified';
@@ -93,7 +100,9 @@ Route::middleware($dashboardMiddleware)->group(function () {
         Route::post('/onboarding/dismiss', [UserController::class, 'dismissOnboarding'])->middleware('throttle:60,1')->name('onboarding.dismiss');
         Route::get('/', [UserController::class, 'index'])->name('dashboard');
         Route::get('/calendar', [UserController::class, 'calendar'])->name('calendar');
-        Route::view('/more', 'user.more.index')->name('more');
+        Route::get('/streak', StreakController::class)->name('streak');
+        Route::view('/application', 'user.application')->name('application');
+        Route::get('/more', fn () => redirect()->route('profile.edit'))->name('more');
         Route::get('/search', SearchController::class)->name('search');
         Route::patch('tasks/{task}/complete', [UserTaskController::class, 'complete'])->name('tasks.complete');
         Route::resource('tasks', UserTaskController::class)->except(['show']);
@@ -134,7 +143,7 @@ Route::middleware($dashboardMiddleware)->group(function () {
     });
 });
 
-Route::middleware(['auth', 'active'])->group(function () {
+Route::middleware(['auth', 'auth.session', 'active'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
     Route::get('/profile/photo', [ProfileController::class, 'photo'])->name('profile.photo');

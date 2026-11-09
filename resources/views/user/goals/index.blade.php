@@ -7,6 +7,7 @@
         <x-page-header eyebrow="Langkah demi langkah" title="Target" description="Pantau kemajuan dari hal yang ingin kamu capai.">
             <x-button href="{{ route('user.goals.create') }}" variant="primary" icon="tambah">Buat target</x-button>
         </x-page-header>
+        @include('user.partials.habits-subnav')
         <section class="space-y-4">
             @forelse ($goals as $goal)
                 <article class="surface-card p-5">

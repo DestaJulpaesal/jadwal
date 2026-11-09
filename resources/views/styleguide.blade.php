@@ -81,6 +81,22 @@
                 <x-form-actions :cancel-url="route('home')" submit-label="Simpan contoh" />
             </section>
 
+            <section class="surface-card space-y-4 p-5 lg:col-span-2">
+                <h2 class="text-lg font-semibold">Sub-menu dan navigasi lima tab</h2>
+                <p class="text-sm text-muted">Pola navigasi berbasis URL biasa. Di ponsel, geser tab yang tidak muat ke samping.</p>
+                <div class="user-app rounded-xl border border-line p-3">
+                    <x-subnav label="Keuangan" :items="[
+                        ['label' => 'Ringkasan', 'concept' => 'wl', 'url' => '#ringkasan', 'active' => true],
+                        ['label' => 'Transaksi', 'icon' => 'keuangan', 'url' => '#transaksi'],
+                        ['label' => 'Dompet', 'icon' => 'keuangan', 'url' => '#dompet'],
+                        ['label' => 'Tagihan', 'icon' => 'tagihan', 'url' => '#tagihan'],
+                        ['label' => 'Utang-piutang', 'icon' => 'utang', 'url' => '#utang'],
+                        ['label' => 'Laporan', 'concept' => 'rc', 'url' => '#laporan'],
+                    ]" />
+                </div>
+                <p class="text-sm font-semibold">Menu utama tetap: Beranda · Tugas · Kebiasaan · Keuangan · Profil.</p>
+            </section>
+
             <section class="surface-card space-y-3 p-5">
                 <h2 class="text-lg font-semibold">Pesan dan status</h2>
                 <x-alert type="success">Tugas berhasil disimpan.</x-alert>

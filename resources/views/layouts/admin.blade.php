@@ -38,6 +38,19 @@
                         </a>
                     </div>
                 </section>
+                <section>
+                    <p class="px-2 pb-2 text-xs font-semibold uppercase tracking-wide text-muted">Akun</p>
+                    <div class="space-y-1">
+                        <a href="{{ route('settings.edit') }}" @class(['nav-link w-full', 'nav-link-active' => request()->routeIs('settings.*')]) @if (request()->routeIs('settings.*')) aria-current="page" @endif>
+                            <x-icon name="zona-waktu" class="h-5 w-5" />
+                            Pengaturan
+                        </a>
+                        <a href="{{ route('profile.edit') }}" @class(['nav-link w-full', 'nav-link-active' => request()->routeIs('profile.*')]) @if (request()->routeIs('profile.*')) aria-current="page" @endif>
+                            <x-concept-icon name="pr" class="h-5 w-5" />
+                            Profil
+                        </a>
+                    </div>
+                </section>
             </nav>
             <div class="mt-auto border-t border-line p-4">
                 <x-sidebar-profile-card :user="auth()->user()" />
