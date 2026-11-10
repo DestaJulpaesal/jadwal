@@ -35,23 +35,20 @@
                 {{ $errors->first('throttle') }}
             </p>
         @endif
-        <label class="k login-label" for="email">Email (wajib)</label>
+        <p class="required-note">Kolom bertanda <span class="required-mark" aria-hidden="true">*</span> perlu diisi.</p>
+        <label class="k login-label" for="email">Email <span class="required-mark" aria-hidden="true">*</span></label>
         <div class="fld">
-            <span class="ic" style="background: var(--y)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#ml" /></svg></span>
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#ml" /></svg></span>
             <input id="email" name="email" type="email" inputmode="email" autocapitalize="none" enterkeyhint="next" autocomplete="username" value="{{ old('email') }}" placeholder="nama@email.com" aria-label="Alamat email" aria-describedby="login-email-help login-email-error" aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}" maxlength="255" required>
         </div>
         <p id="login-email-help" class="field-help">Gunakan alamat email yang terdaftar di akun kamu.</p>
         <x-input-error id="login-email-error" :messages="$errors->get('email')" />
 
         <div class="password-heading">
-            <label class="k" for="password">Kata sandi (wajib)</label>
-            <label for="remember_me" class="remember">
-                <input id="remember_me" type="checkbox" name="remember" @checked(old('remember'))>
-                Ingat saya
-            </label>
+            <label class="k" for="password">Kata sandi <span class="required-mark" aria-hidden="true">*</span></label>
         </div>
         <div class="fld">
-            <span class="ic" style="background: var(--g)" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
+            <span class="ic" aria-hidden="true"><svg viewBox="0 0 48 48"><use href="#lk" /></svg></span>
             <input id="password" name="password" type="password" enterkeyhint="done" autocomplete="current-password" data-password-field data-caps-lock placeholder="Masukkan kata sandi" aria-label="Kata sandi" aria-describedby="login-password-help login-caps-lock" aria-invalid="{{ $errors->has('password') ? 'true' : 'false' }}" @if ($errors->has('credentials')) autofocus @endif required>
             <x-button type="button" class="ic password-toggle" data-password-toggle data-password-show-icon="#password-visible" data-password-hide-icon="#password-hidden" aria-label="Tampilkan kata sandi">
                 <svg viewBox="0 0 24 24" data-password-icon aria-hidden="true"><use href="#password-visible" /></svg>
@@ -62,7 +59,13 @@
         <p id="login-caps-lock" class="field-help" data-caps-lock-hint hidden>Caps Lock sedang aktif.</p>
         <x-input-error id="login-password-error" :messages="$errors->get('password')" />
 
-        <div class="row"><x-button type="submit" variant="primary" icon="kelola-akun" id="lg" data-loading-text="Memeriksa...">Masuk</x-button></div>
+        <div class="login-actions">
+            <x-button type="submit" variant="primary" icon="kelola-akun" id="lg" data-loading-text="Memeriksa...">Masuk</x-button>
+            <label for="remember_me" class="remember">
+                <input id="remember_me" type="checkbox" name="remember" @checked(old('remember'))>
+                Ingat saya
+            </label>
+        </div>
         <div class="lnk">
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}">Lupa kata sandi?</a>

@@ -307,6 +307,18 @@ h2 {
     margin: 0 0 5px 2px;
 }
 
+.required-note {
+    margin: 0;
+    color: #625e55;
+    font-family: var(--font-sans), sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.required-mark {
+    color: #b3321b;
+}
+
 .register-form .fld {
     margin-bottom: 0;
 }
@@ -373,8 +385,7 @@ h2 {
 .fld .ic {
     width: 34px;
     height: 34px;
-    border: 2px solid var(--ink);
-    border-radius: 9px;
+    background: transparent;
 }
 
 .fld .ic svg {
@@ -471,9 +482,15 @@ h2 {
 .password-heading {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 8px;
     margin-bottom: 5px;
+}
+
+.login-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
 }
 
 .msg {
@@ -546,6 +563,136 @@ h2 {
     font-family: var(--font-sans), sans-serif;
     font-size: 12.5px;
     font-weight: 700;
+    cursor: pointer;
+    transition: transform var(--dur-fast) var(--ease-standard), box-shadow var(--dur-fast) var(--ease-standard);
+}
+
+.q.is-animating {
+    animation: feature-card-pop 720ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.q .ic svg {
+    transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.q:hover {
+    transform: translateY(-2px);
+    box-shadow: 4px 5px 0 var(--ink);
+}
+
+.q:hover .ic svg {
+    transform: translateY(-2px) rotate(-4deg) scale(1.05);
+}
+
+.q:active {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+}
+
+.q:active .ic svg {
+    transform: translateY(2px) scale(.92);
+}
+
+.q:focus-visible {
+    outline: 3px solid var(--ink);
+    outline-offset: 3px;
+}
+
+.q.is-animating:nth-child(4n + 1) .ic svg {
+    animation: feature-bounce 760ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.q.is-animating:nth-child(4n + 2) .ic svg {
+    animation: feature-wiggle 760ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.q.is-animating:nth-child(4n + 3) .ic svg {
+    animation: feature-spin 760ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.q.is-animating:nth-child(4n) .ic svg {
+    animation: feature-hop 760ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.hero-mascot,
+.hero-spark,
+.hero-calendar,
+.hero-wallet,
+.register-mascot,
+.register-spark {
+    cursor: pointer;
+}
+
+.hero-mascot.is-animating,
+.register-mascot.is-animating {
+    animation: hero-mascot-wave 900ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.hero-spark.is-animating,
+.register-spark.is-animating {
+    animation: hero-spark-twinkle 760ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.hero-calendar.is-animating {
+    animation: hero-calendar-roll 850ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+.hero-wallet.is-animating {
+    animation: hero-wallet-hop 800ms cubic-bezier(.2, .8, .25, 1.25) both;
+}
+
+@keyframes feature-card-pop {
+    28% { transform: translateY(-5px) scale(1.06) rotate(-1deg); }
+    58% { transform: translateY(1px) scale(.97) rotate(1deg); }
+    82% { transform: translateY(-2px) scale(1.02); }
+}
+
+@keyframes hero-mascot-wave {
+    25% { transform: translateY(-12px) rotate(-10deg) scale(1.08); }
+    50% { transform: translateY(1px) rotate(9deg) scale(.96); }
+    75% { transform: translateY(-6px) rotate(-5deg) scale(1.03); }
+}
+
+@keyframes hero-spark-twinkle {
+    25% { transform: rotate(-35deg) scale(.65); }
+    55% { transform: rotate(25deg) scale(1.55); }
+    80% { transform: rotate(-12deg) scale(.9); }
+}
+
+@keyframes hero-calendar-roll {
+    30% { transform: translateY(-12px) rotate(35deg) scale(1.16); }
+    60% { transform: translateY(2px) rotate(-20deg) scale(.92); }
+    82% { transform: translateY(-5px) rotate(10deg) scale(1.04); }
+}
+
+@keyframes hero-wallet-hop {
+    28% { transform: translateY(-14px) rotate(-18deg) scale(1.16); }
+    55% { transform: translateY(1px) rotate(14deg) scale(.92); }
+    80% { transform: translateY(-5px) rotate(-7deg) scale(1.05); }
+}
+
+@keyframes feature-bounce {
+    25% { transform: translateY(-15px) rotate(-16deg) scale(1.25); }
+    55% { transform: translateY(3px) rotate(12deg) scale(.9); }
+    78% { transform: translateY(-7px) rotate(-7deg) scale(1.1); }
+}
+
+@keyframes feature-wiggle {
+    20% { transform: rotate(-22deg) translateY(-8px) scale(1.12); }
+    42% { transform: rotate(20deg) translateY(-12px) scale(1.2); }
+    64% { transform: rotate(-16deg) translateY(-4px) scale(.95); }
+    82% { transform: rotate(10deg) translateY(-8px) scale(1.08); }
+}
+
+@keyframes feature-spin {
+    45% { transform: translateY(-10px) rotate(35deg) scale(1.28); }
+    75% { transform: translateY(2px) rotate(-18deg) scale(.9); }
+    100% { transform: translateY(0) rotate(0) scale(1); }
+}
+
+@keyframes feature-hop {
+    25%, 72% { transform: translateY(-14px) scale(1.2) rotate(10deg); }
+    50% { transform: translateY(2px) scale(.9) rotate(-8deg); }
 }
 
 .q .ic {
@@ -724,14 +871,84 @@ h2 {
 }
 
 @media (max-width: 360px) {
+    .hero-card {
+        min-height: 0;
+        padding-right: 82px;
+    }
+
+    .register-hero {
+        min-height: 0;
+        padding-right: 82px;
+    }
+
+    .hero-mascot,
+    .register-mascot {
+        top: 8px;
+        right: 4px;
+        width: 68px;
+        height: 62px;
+    }
+
+    .hero-spark,
+    .register-spark {
+        top: 8px;
+        right: 70px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .hero-calendar {
+        right: 78px;
+        bottom: 4px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .hero-wallet {
+        right: 4px;
+        bottom: 4px;
+        width: 34px;
+        height: 34px;
+    }
+
+    .register-hero h1 {
+        font-size: 22px;
+    }
+
+    .password-heading {
+        flex-wrap: wrap;
+    }
+
     .lnk {
+        flex-wrap: wrap;
+        justify-content: flex-start;
         font-size: 12px;
+    }
+
+    .register-links {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 600px) {
+    body.concept-login-body {
+        padding-block: 0;
+    }
+
+    .concept-login-shell,
+    .ph {
+        min-height: 100vh;
+        min-height: 100dvh;
+    }
+
+    .auth-home-link {
+        min-height: 44px;
     }
 }
 
 @media (max-width: 400px) and (max-height: 700px) {
     body.concept-login-body {
-        padding-block: 4px;
+        padding-block: 0;
     }
 
     .in {
@@ -754,7 +971,7 @@ h2 {
     }
 
     .in.login-page .auth-home-link {
-        min-height: 32px;
+        min-height: 44px;
         padding: 3px 8px;
     }
 
@@ -767,27 +984,40 @@ h2 {
         font-size: 23px;
     }
 
-    .in.login-page .hero-card .hero-chip,
-    .in.login-page .hero-card .hero-spark,
-    .in.login-page .hero-card .hero-calendar,
-    .in.login-page .hero-card .hero-wallet,
-    .in.login-page > section[aria-label="Fitur Jadwal Harian"] {
+    .in.login-page .hero-card .hero-chip {
         display: none;
     }
 
     .in.login-page .hero-mascot {
         top: 8px;
         right: 4px;
-        width: 72px;
-        height: 68px;
+        width: 68px;
+        height: 62px;
+    }
+
+    .in.login-page .hero-card .hero-spark {
+        top: 8px;
+        right: 70px;
+        width: 18px;
+        height: 18px;
+    }
+
+    .in.login-page .hero-card .hero-calendar {
+        right: 78px;
+        bottom: 4px;
+        width: 30px;
+        height: 30px;
+    }
+
+    .in.login-page .hero-card .hero-wallet {
+        right: 4px;
+        bottom: 4px;
+        width: 34px;
+        height: 34px;
     }
 
     .in.login-page .login-form {
         padding: 10px;
-    }
-
-    .in.login-page .login-form .field-help {
-        display: none;
     }
 
     .in.login-page .login-form .fld {
@@ -798,13 +1028,16 @@ h2 {
         margin-bottom: 2px;
     }
 
-    .in.login-page .login-form .remember {
-        min-height: 36px;
-    }
-
     .in.login-page .login-form .lnk {
         margin-top: 5px;
         font-size: 12px;
+    }
+}
+
+@media (max-width: 360px) and (max-height: 700px) {
+    .in.login-page .hero-card,
+    .in:not(.login-page) .register-hero {
+        padding-right: 82px;
     }
 }
 
@@ -815,6 +1048,13 @@ h2 {
         animation-duration: var(--dur-reduced) !important;
         animation-iteration-count: 1 !important;
         transition-duration: var(--dur-reduced) !important;
+    }
+
+    .q:hover,
+    .q:hover .ic svg,
+    .q:active,
+    .q:active .ic svg {
+        transform: none;
     }
 }
 
