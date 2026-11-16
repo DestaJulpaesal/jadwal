@@ -53,7 +53,7 @@ Pada environment `local`, `php artisan db:seed` juga menyiapkan data demo yang a
 
 Secara default, verifikasi email dinonaktifkan agar pendaftaran dan login lokal tidak mengirim email. Untuk mengaktifkannya, atur `AUTH_EMAIL_VERIFICATION=true` dan konfigurasi mailer (contohnya `MAIL_MAILER=log` untuk mencatat email verifikasi lokal di `storage/logs/laravel.log`). Untuk penggunaan online, atur provider email yang benar dan HTTPS.
 
-Ringkasan harian bersifat opsional dan mati secara default. Pengguna mengaktifkannya dari Profil. Perintah `php artisan app:send-daily-digest` dijalankan oleh scheduler Laravel setiap jam; untuk menjalankan scheduler, panggil `php artisan schedule:run` setiap menit. Contoh cron Linux:
+Ringkasan harian bersifat opsional dan mati secara default. Pengguna mengaktifkannya dari Profil. Perintah `php artisan app:send-daily-digest` diperiksa oleh scheduler Laravel setiap menit; untuk menjalankan scheduler, panggil `php artisan schedule:run` setiap menit. Contoh cron Linux:
 
 ```cron
 * * * * * cd /path/to/jadwal-harian && php artisan schedule:run >> /dev/null 2>&1

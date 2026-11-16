@@ -1,5 +1,32 @@
 # Progress polish
 
+## Hardening prompt — 16 November 2026
+
+### Baseline and scope
+
+- Work is on branch `chore/hardening-2026-11`, based on `main`.
+- The existing `docs/ARSITEKTUR.md`, `docs/DESIGN_SYSTEM.md`, `docs/DEPLOY.md`, `docs/BACKUP.md`, and `docs/AUDIT_POLISH.md` were present and contain project-specific guidance; they will be updated where the hardening work changes behavior.
+- The worktree already contained user-requested deletions of the old root planning files and the nested `list/` application. These remain outside this work and must not be staged or committed with hardening changes.
+- Baseline before the CI fix: `php artisan test` passed 185 tests (1,263 assertions, 250.46 seconds); `npm run build` passed; `npm audit --audit-level=high` reported zero vulnerabilities.
+- Baseline `Pint --test` found 18 formatting issues in 206 PHP files. The generated `vendor/bin/pint` proxy is malformed on this Windows/PHP 8.4 environment, so the package executable was run directly as `php vendor/laravel/pint/builds/pint --test`. Those 18 style issues were fixed; the subsequent Pint check passes all 206 files.
+- The production JS bundle is 54.76 KB gzip, above the 50 KB budget required by Phase 4.
+
+### Fase 0 — Baseline and CI
+
+- Confirmed the CI PHP job does not build Vite assets and the test base did not disable Vite. Reproduced a 500 rendering `/login` with both `public/build` and `public/hot` temporarily moved aside, then restored them.
+- Added `withoutVite()` in `Tests\TestCase::setUp()`; the same login-render test passes with both Vite outputs absent.
+- Corrected the README: the daily digest is checked by the Laravel scheduler every minute, not every hour.
+- The full suite passes after the change: 185 tests, 1,263 assertions. `npm run build`, `npm audit --audit-level=high` (zero advisories), and Pint `--test` (206 files) pass.
+- Ran `composer audit` using a checksum-verified temporary Composer PHAR. It reports 55 advisories across 15 packages, including high and critical severity; resolving these requires the separately specified Laravel/dependency upgrade work. Do not treat the hardening branch as production-ready until the upgrade branch is merged and audited.
+- Phase 0 documentation already existed and was reviewed. The README schedule mismatch is corrected; Composer audit remains a gate failure.
+
+### Execution order
+
+1. Complete Fase 0 gates and CI baseline.
+2. Address Fase 1 data-loss and correctness bugs in isolated, tested changes, beginning with the task/category foreign key.
+3. Continue Fase 1 through its full regression gate before starting Fase 2.
+4. Proceed to Fase 3 and Fase 4 only after their prerequisite phase gates pass; do not mark production/device-only checks complete without evidence.
+
 ## Status penutupan terakhir — 9 November 2026
 
 Fase 0–2 tercatat selesai pada checkpoint sebelumnya. Fase 3–9 telah ditinjau dan sisa pekerjaan yang aman serta dapat diverifikasi di repo sudah dilanjutkan; fase yang membutuhkan bukti produksi/perangkat nyata tidak ditandai selesai hanya berdasarkan inspeksi kode.
