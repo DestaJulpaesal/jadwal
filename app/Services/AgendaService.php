@@ -14,10 +14,12 @@ use Illuminate\Support\Collection;
 class AgendaService
 {
     public function __construct(
-        private readonly ObligationScheduler $obligationScheduler,
+        private readonly ObligationSchedule $obligationSchedule,
         private readonly UserClock $clock,
         private readonly LoanBalance $loanBalance
     ) {}
+
+    private const MAX_OVERDUE_PERIODS = 12;
 
     public function forDate(User $user, CarbonInterface|string $date): Collection
     {
@@ -108,13 +110,10 @@ class AgendaService
             ->with('payments')
             ->get();
         foreach ($obligations as $obligation) {
-            $from = max($obligation->starts_on->toDateString(), $startKey);
-            $periods = $this->obligationScheduler->periods($from, $obligation->due_day, $endKey);
+            $periods = $this->obligationSchedule->duePeriods($obligation, $startKey, $endKey);
             foreach ($periods as $due) {
                 $key = $due->toDateString();
-                if (! $dates->has($key) || $obligation->payments->contains(
-                    fn ($payment) => $payment->due_on->toDateString() === $key
-                )) {
+                if (! $dates->has($key)) {
                     continue;
                 }
                 $daysUntil = CarbonImmutable::parse($this->clock->date($user), $timezone)
@@ -172,61 +171,86 @@ class AgendaService
 
     public function attentionFor(User $user, CarbonInterface|string $today, int $daysAhead = 3): Collection
     {
-        $today = CarbonImmutable::parse($today, $user->timezone)->toDateString();
-        $through = CarbonImmutable::parse($today, $user->timezone)->addDays($daysAhead)->toDateString();
-        $items = $this->forRange($user, $today, $through)->flatten(1)
-            ->filter(fn (array $item) => in_array($item['type'], ['bill', 'installment', 'loan_due'], true))
-            ->values();
-        $yesterday = CarbonImmutable::parse($today, $user->timezone)->subDay()->toDateString();
+        $todayDate = CarbonImmutable::parse($today, $user->timezone)->startOfDay();
+        $today = $todayDate->toDateString();
+        $through = $todayDate->addDays(max(0, $daysAhead))->toDateString();
+        $yesterday = $todayDate->subDay()->toDateString();
+        $items = collect();
+        $loans = $user->loans()->whereNull('archived_at')
+            ->whereNotNull('due_on')
+            ->where('due_on', '<=', $through)
+            ->with('repayments')
+            ->get();
 
-        if ($yesterday < $today) {
-            $obligations = $user->obligations()->whereNull('archived_at')
-                ->where('starts_on', '<', $today)->with('payments')->get();
-            foreach ($obligations as $obligation) {
-                $from = max(
-                    $obligation->starts_on->toDateString(),
-                    CarbonImmutable::parse($today, $user->timezone)->subMonths(11)->startOfMonth()->toDateString()
-                );
-                $periods = $this->obligationScheduler->periodsBetween(
-                    $obligation->starts_on->toDateString(),
-                    $obligation->due_day,
-                    $from,
-                    $yesterday
-                );
-                foreach ($periods as $due) {
-                    if ($obligation->payments->contains(fn ($payment) => $payment->due_on->toDateString() === $due->toDateString())) {
-                        continue;
-                    }
-                    $daysLate = $due->diffInDays(CarbonImmutable::parse($today, $user->timezone));
-                    $items->push($this->item(
-                        $obligation->kind->value,
-                        $obligation->title,
-                        null,
-                        'Terlambat '.$daysLate.' hari',
-                        route('user.obligations.index'),
-                        route('user.obligations.index')
-                    ));
-                }
+        foreach ($loans as $loan) {
+            if ($this->loanBalance->remaining($loan) === 0) {
+                continue;
             }
 
-            $loans = $user->loans()->whereNull('archived_at')->where('due_on', '<', $today)->with('repayments')->get();
-            foreach ($loans as $loan) {
-                if ($this->loanBalance->remaining($loan) === 0) {
-                    continue;
-                }
-                $daysLate = $loan->due_on->diffInDays(CarbonImmutable::parse($today, $user->timezone));
-                $items->push($this->item(
-                    'loan_due',
-                    ($loan->direction === LoanDirection::Lent ? 'Piutang · ' : 'Utang · ').$loan->counterparty,
-                    null,
-                    'Terlambat '.$daysLate.' hari',
-                    route('user.loans.index'),
-                    null
-                ));
-            }
+            $dueDate = CarbonImmutable::parse($loan->due_on->toDateString(), $user->timezone);
+            $status = $dueDate->lt($todayDate)
+                ? 'Terlambat '.$dueDate->diffInDays($todayDate).' hari'
+                : 'Jatuh tempo';
+            $items->push($this->item(
+                'loan_due',
+                ($loan->direction === LoanDirection::Lent ? 'Piutang · ' : 'Utang · ').$loan->counterparty,
+                null,
+                $status,
+                route('user.loans.index'),
+                null
+            ));
         }
 
-        return $items->unique(fn (array $item) => $item['type'].'|'.$item['title'].'|'.$item['status'])->values();
+        $historyFrom = $todayDate
+            ->subMonthsNoOverflow(self::MAX_OVERDUE_PERIODS - 1)
+            ->startOfMonth()
+            ->toDateString();
+        $obligations = $user->obligations()->whereNull('archived_at')
+            ->where('starts_on', '<=', $through)
+            ->with('payments')
+            ->get();
+
+        foreach ($obligations as $obligation) {
+            $overdueFrom = max($historyFrom, $obligation->starts_on->toDateString());
+            $overdue = $this->obligationSchedule->duePeriods($obligation, $overdueFrom, $yesterday);
+
+            if ($overdue !== []) {
+                $periodsLate = count($overdue);
+                $periodLabel = $periodsLate === self::MAX_OVERDUE_PERIODS ? $periodsLate.'+' : (string) $periodsLate;
+                $items->push($this->item(
+                    $obligation->kind->value,
+                    $obligation->title,
+                    null,
+                    'Terlambat '.$periodLabel.' periode',
+                    route('user.obligations.index'),
+                    route('user.obligations.index')
+                ));
+
+                continue;
+            }
+
+            $reminderDays = (int) ($obligation->remind_days_before ?? 3);
+            $reminderThrough = $todayDate->addDays($reminderDays)->toDateString();
+            $upcoming = $this->obligationSchedule->duePeriods($obligation, $today, $reminderThrough);
+            $due = $upcoming[0] ?? null;
+
+            if ($due === null) {
+                continue;
+            }
+
+            $daysUntil = $todayDate->diffInDays($due, false);
+            $status = $daysUntil === 0 ? 'Jatuh tempo hari ini' : 'Jatuh tempo '.$daysUntil.' hari lagi';
+            $items->push($this->item(
+                $obligation->kind->value,
+                $obligation->title,
+                null,
+                $status,
+                route('user.obligations.index'),
+                route('user.obligations.pay', $obligation)
+            ));
+        }
+
+        return $items->values();
     }
 
     private function item(string $type, string $title, ?string $time, string $status, string $url, ?string $quickAction): array

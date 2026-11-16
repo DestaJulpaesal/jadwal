@@ -37,7 +37,16 @@
 - Risiko migrasi lama `make_categories_global` direproduksi pada SQLite terisolasi: menjalankannya di transaksi dapat menghapus tugas melalui cascade. Perbaikan baru tidak memulihkan data historis. Bukti backup sebelum migration diperlukan untuk menilai dampak database produksi.
 - Pemeriksaan read-only database kerja menunjukkan migration lama sudah tercatat dan saat ini tidak ada baris tugas; tanpa snapshot sebelum migration, riwayat kehilangan data tidak dapat disimpulkan.
 - Pemeriksaan setelah perubahan: 187 tes lulus (1.279 assertions), Pint `--test` lulus untuk 209 file, build Vite lulus, dan `npm audit` melaporkan nol vulnerability. `composer audit` masih merah dengan 55 advisory.
-- Butir 1.1 selesai di kode dan tes; butir Fase 1 lain belum dikerjakan. Fase 1 tidak ditandai selesai dan gate Composer tetap terbuka.
+- Butir 1.1 selesai di kode dan tes; butir 1.2–1.4 diterapkan sesudahnya. Butir 1.5–1.12 belum dikerjakan. Fase 1 tidak ditandai selesai dan gate Composer tetap terbuka.
+
+### Fase 1 — 1.2 cicilan lunas dan pengingat tagihan (diterapkan)
+
+- `ObligationSchedule` menjadi sumber tunggal untuk periode terjadwal dan belum dibayar. Ia menghormati tanggal mulai, pembayaran yang tercatat, dan batas jumlah cicilan; cicilan yang jumlah pembayarannya mencapai total tidak menghasilkan periode lanjutan.
+- Agenda, daftar tagihan, validasi pembayaran tertua, dan rencana pengeluaran uang memakai service tersebut.
+- `attentionFor()` kini memakai `remind_days_before` per tagihan (default 3 hari, validasi 0–30), menghapus kondisi kemarin yang mati, membatasi riwayat overdue dengan konstanta 12 periode, dan menggabungkan tunggakan menjadi satu baris per tagihan, mis. `Terlambat 3 periode` atau `12+`.
+- Tes regresi mencakup mulai setelah tanggal jatuh tempo bulanan, periode yang sudah dibayar, cicilan tiga kali, cicilan lunas di agenda/rencana uang/digest, pengingat individual, dan satu baris tunggakan teragregasi.
+- Gerbang setelah perubahan: 196 tes lulus (1.333 assertions), Pint `--test` lulus untuk 215 file, dan Vite build lulus. Bundle JavaScript tetap 54,76 KB gzip; `composer audit` masih melaporkan 55 advisory.
+- Butir 1.2 selesai di kode dan tes. Butir 1.5–1.12 belum dikerjakan; Fase 1 belum selesai.
 
 ### Fase 1 — 1.3 timestamp penyelesaian tugas (diterapkan)
 
@@ -45,7 +54,7 @@
 - Controller memakainya saat membuat, memperbarui, dan menyelesaikan tugas lewat aksi cepat. Tidak ada migration data karena opsi tersebut tidak diwajibkan dan tidak aman dijalankan pada database kerja yang belum dicadangkan.
 - Tes regresi membuktikan pembukaan kembali mengosongkan `completed_at`, penyelesaian ulang menetapkan waktu transisi, pembaruan judul mempertahankan timestamp, dan streak tidak menghitung tugas yang dibuka kembali.
 - Gerbang setelah perubahan: 189 tes lulus (1.297 assertions), tes terfokus Task/Streak lulus (31 tes, 154 assertions), dan Pint `--test` lulus untuk 210 file.
-- Butir 1.3 selesai di kode dan tes; butir 1.2 dan 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
+- Butir 1.3 selesai di kode dan tes; butir 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
 
 ### Fase 1 — 1.4 rentang bulan pada tanggal akhir bulan (diterapkan)
 
@@ -54,7 +63,7 @@
 - Tes unit mencakup akhir bulan, Februari kabisat, navigasi, dan format tidak valid. Tes feature mereproduksi bulan November pada 31 Desember, Februari pada 31 Maret, dan April pada 31 Mei; seluruh laporan dan bulan pembanding cocok.
 - Pemeriksaan `createFromFormat('Y-m')` pada `app/` dan `resources/` tidak menemukan pemakaian.
 - Gerbang setelah perubahan: 192 tes lulus (1.319 assertions), Pint `--test` lulus untuk 213 file, dan Vite build lulus. Bundle JavaScript tetap 54,76 KB gzip (ambang prompt 50 KB); `composer audit` tetap merah dengan 55 advisory.
-- Butir 1.4 selesai di kode dan tes; butir 1.2 dan 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
+- Butir 1.4 selesai di kode dan tes; butir 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
 
 ### Commit hardening
 
@@ -63,7 +72,8 @@
 - `f3d8e77` — `docs: record hardening baseline and correct digest schedule`.
 - `ad73739` — `fix(categories): preserve tasks when deleting global categories`.
 - `10b8d70` — `fix(tasks): clear completion timestamp when reopened`.
-- Commit perbaikan 1.4 akan dicatat setelah review akhir.
+- `3e386fc` — `fix(reports): use safe calendar month ranges`.
+- Commit perbaikan 1.2 akan dicatat setelah review akhir.
 
 ## Status penutupan terakhir — 9 November 2026
 

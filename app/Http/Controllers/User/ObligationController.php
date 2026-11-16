@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Obligation;
 use App\Models\ObligationPayment;
 use App\Models\Transaction;
+use App\Services\ObligationSchedule;
 use App\Services\ObligationScheduler;
 use App\Support\Feedback;
 use App\Support\Rupiah;
@@ -19,36 +20,27 @@ use Illuminate\Validation\Rule;
 
 class ObligationController extends Controller
 {
-    public function index(Request $request, UserClock $clock, ObligationScheduler $scheduler)
+    public function index(Request $request, UserClock $clock, ObligationSchedule $obligationSchedule)
     {
         $this->authorize('viewAny', Obligation::class);
         $today = $clock->date($request->user());
         $obligations = $request->user()->obligations()->whereNull('archived_at')->with('payments')->orderBy('due_day')->get();
-        $obligations->each(function (Obligation $obligation) use ($today, $scheduler) {
+        $obligations->each(function (Obligation $obligation) use ($today, $obligationSchedule) {
             $lastDate = \Illuminate\Support\Carbon::parse($today)->addMonths(12)->toDateString();
-            $monthCount = \Illuminate\Support\Carbon::parse($obligation->starts_on->toDateString())
-                ->startOfMonth()->diffInMonths(\Illuminate\Support\Carbon::parse($lastDate)->startOfMonth()) + 1;
-            $periods = $scheduler->periodsBetween(
-                $obligation->starts_on->toDateString(),
-                $obligation->due_day,
-                $obligation->starts_on->toDateString(),
-                $lastDate,
-                $monthCount
+            $startsOn = $obligation->starts_on->toDateString();
+            $periods = $obligationSchedule->scheduledPeriods(
+                $obligation,
+                $startsOn,
+                $lastDate
             );
-            if ($obligation->kind === ObligationKind::Installment
-                && $obligation->payments->count() >= $obligation->installments_total) {
-                $periods = [];
-            }
             $periods = collect($periods)
-                ->filter(fn ($date) => $date->gte($obligation->starts_on))
                 ->map(function ($date) use ($obligation, $today) {
-                    $payment = $obligation->payments->first(
-                        fn ($item) => $item->due_on->toDateString() === $date->toDateString()
-                    );
+                    $dateKey = $date->toDateString();
+                    $payment = $obligation->payments->first(fn ($item) => $item->due_on->toDateString() === $dateKey);
                     $status = match (true) {
                         $payment !== null => 'Lunas',
-                        $date->toDateString() < $today => 'Terlambat '.$date->diffInDays(\Illuminate\Support\Carbon::parse($today)).' hari',
-                        $date->toDateString() === $today => 'Jatuh tempo hari ini',
+                        $dateKey < $today => 'Terlambat '.$date->diffInDays(\Illuminate\Support\Carbon::parse($today)).' hari',
+                        $dateKey === $today => 'Jatuh tempo hari ini',
                         default => 'Belum jatuh tempo',
                     };
 
@@ -87,7 +79,7 @@ class ObligationController extends Controller
 
         $obligation = new Obligation;
 
-        return view('user.obligations.index', compact('obligations', 'wallets', 'categories', 'today', 'scheduler', 'obligation'));
+        return view('user.obligations.index', compact('obligations', 'wallets', 'categories', 'today', 'obligation'));
     }
 
     public function edit(Request $request, Obligation $obligation)
@@ -162,8 +154,13 @@ class ObligationController extends Controller
         return Feedback::success(redirect()->route('user.obligations.index'), __('ui.feedback.obligation_updated'));
     }
 
-    public function pay(Request $request, Obligation $obligation, UserClock $clock, ObligationScheduler $scheduler)
-    {
+    public function pay(
+        Request $request,
+        Obligation $obligation,
+        UserClock $clock,
+        ObligationScheduler $scheduler,
+        ObligationSchedule $obligationSchedule
+    ) {
         $this->authorize('update', $obligation);
         abort_if($obligation->user_id !== $request->user()->id || $obligation->archived_at, 404);
         $request->merge(['amount_paid' => Rupiah::normalize($request->input('amount_paid'))]);
@@ -182,23 +179,16 @@ class ObligationController extends Controller
         abort_if($data['due_on'] < $obligation->starts_on->toDateString(), 422, __('ui.feedback.obligation_period_before_start'));
         abort_if($data['due_on'] > $clock->date($request->user()), 422, __('ui.feedback.obligation_not_due'));
 
-        DB::transaction(function () use ($data, $obligation, $request, $scheduler, $clock) {
+        DB::transaction(function () use ($data, $obligation, $request, $obligationSchedule, $clock) {
             $lockedObligation = $request->user()->obligations()->lockForUpdate()->findOrFail($obligation->id);
             $duplicate = $lockedObligation->payments()->where('due_on', $data['due_on'])->lockForUpdate()->exists();
             abort_if($duplicate, 422, __('ui.feedback.obligation_already_paid'));
             $today = $clock->date($request->user());
-            $periodLimit = \Illuminate\Support\Carbon::parse($lockedObligation->starts_on->toDateString())
-                ->startOfMonth()->diffInMonths(\Illuminate\Support\Carbon::parse($today)->startOfMonth()) + 1;
-            $paidDueDates = $lockedObligation->payments()->pluck('due_on')->all();
-            $oldestUnpaid = collect($scheduler->periodsBetween(
+            $oldestUnpaid = $obligationSchedule->duePeriods(
+                $lockedObligation,
                 $lockedObligation->starts_on->toDateString(),
-                $lockedObligation->due_day,
-                $lockedObligation->starts_on->toDateString(),
-                $today,
-                $periodLimit
-            ))->first(fn ($date) => $date->gte($lockedObligation->starts_on)
-                && $date->toDateString() <= $today
-                && ! in_array($date->toDateString(), $paidDueDates, true));
+                $today
+            )[0] ?? null;
             abort_unless(
                 $oldestUnpaid && $oldestUnpaid->toDateString() === $data['due_on'],
                 422,

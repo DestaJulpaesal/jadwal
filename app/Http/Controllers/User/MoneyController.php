@@ -14,7 +14,7 @@ use App\Models\Wallet;
 use App\Services\LoanBalance;
 use App\Services\MonthlyCategoryReport;
 use App\Services\MonthlySummary;
-use App\Services\ObligationScheduler;
+use App\Services\ObligationSchedule;
 use App\Services\WalletBalance;
 use App\Support\Feedback;
 use App\Support\MonthRange;
@@ -31,7 +31,7 @@ class MoneyController extends Controller
         WalletBalance $balances,
         MonthlySummary $summary,
         MonthlyCategoryReport $categoryReport,
-        ObligationScheduler $scheduler,
+        ObligationSchedule $obligationSchedule,
         LoanBalance $loanBalances,
         UserClock $clock
     ) {
@@ -67,15 +67,14 @@ class MoneyController extends Controller
             ->whereNull('archived_at')
             ->with(['payments', 'wallet', 'moneyCategory'])
             ->get()
-            ->map(function (Obligation $obligation) use ($monthRange, $scheduler) {
-                $monthDate = $monthRange->start;
-                $dueDate = $scheduler->dueDate($obligation->due_day, $monthDate->year, $monthDate->month);
+            ->map(function (Obligation $obligation) use ($monthRange, $obligationSchedule) {
+                $dueDate = $obligationSchedule->duePeriods(
+                    $obligation,
+                    $monthRange->start->toDateString(),
+                    $monthRange->end->toDateString()
+                )[0] ?? null;
 
-                if ($obligation->starts_on->gt($monthDate->endOfMonth())
-                    || $dueDate->lt($obligation->starts_on)
-                    || $obligation->payments->contains(fn ($payment) => $payment->due_on->isSameDay($dueDate))
-                    || ($obligation->kind->value === 'installment'
-                        && $obligation->payments->count() >= $obligation->installments_total)) {
+                if ($dueDate === null) {
                     return null;
                 }
 
