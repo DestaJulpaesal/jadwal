@@ -45,7 +45,16 @@
 - Controller memakainya saat membuat, memperbarui, dan menyelesaikan tugas lewat aksi cepat. Tidak ada migration data karena opsi tersebut tidak diwajibkan dan tidak aman dijalankan pada database kerja yang belum dicadangkan.
 - Tes regresi membuktikan pembukaan kembali mengosongkan `completed_at`, penyelesaian ulang menetapkan waktu transisi, pembaruan judul mempertahankan timestamp, dan streak tidak menghitung tugas yang dibuka kembali.
 - Gerbang setelah perubahan: 189 tes lulus (1.297 assertions), tes terfokus Task/Streak lulus (31 tes, 154 assertions), dan Pint `--test` lulus untuk 210 file.
-- Butir 1.3 selesai di kode dan tes; butir 1.2 dan 1.4–1.12 belum dikerjakan. Fase 1 belum selesai.
+- Butir 1.3 selesai di kode dan tes; butir 1.2 dan 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
+
+### Fase 1 — 1.4 rentang bulan pada tanggal akhir bulan (diterapkan)
+
+- `MonthRange::fromString()` memvalidasi format `YYYY-MM` dan memakai `!Y-m`; rentang bulan bersifat immutable dan menyediakan batas awal/akhir serta navigasi bulan sebelumnya/berikutnya.
+- Controller uang dan laporan menggunakan satu rentang untuk query dan perbandingan. Query kategori pengeluaran teratas dipusatkan di `MonthlyCategoryReport`, mengelompokkan berdasarkan ID kategori dan memakai label tanpa kategori dari katalog bahasa. Cabang route mati dan parsing bulan di view dihapus.
+- Tes unit mencakup akhir bulan, Februari kabisat, navigasi, dan format tidak valid. Tes feature mereproduksi bulan November pada 31 Desember, Februari pada 31 Maret, dan April pada 31 Mei; seluruh laporan dan bulan pembanding cocok.
+- Pemeriksaan `createFromFormat('Y-m')` pada `app/` dan `resources/` tidak menemukan pemakaian.
+- Gerbang setelah perubahan: 192 tes lulus (1.319 assertions), Pint `--test` lulus untuk 213 file, dan Vite build lulus. Bundle JavaScript tetap 54,76 KB gzip (ambang prompt 50 KB); `composer audit` tetap merah dengan 55 advisory.
+- Butir 1.4 selesai di kode dan tes; butir 1.2 dan 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
 
 ### Commit hardening
 
@@ -53,7 +62,8 @@
 - `6199b82` — `style: normalize PHP baseline formatting`.
 - `f3d8e77` — `docs: record hardening baseline and correct digest schedule`.
 - `ad73739` — `fix(categories): preserve tasks when deleting global categories`.
-- Perbaikan 1.3 akan dicatat setelah review akhir.
+- `10b8d70` — `fix(tasks): clear completion timestamp when reopened`.
+- Commit perbaikan 1.4 akan dicatat setelah review akhir.
 
 ## Status penutupan terakhir — 9 November 2026
 

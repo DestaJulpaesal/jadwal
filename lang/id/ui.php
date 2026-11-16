@@ -98,6 +98,9 @@ return [
     'category' => [
         'usage_count' => ':count item dipakai',
     ],
+    'money' => [
+        'uncategorized' => 'Tanpa kategori',
+    ],
     'confirmations' => [
         'category_delete_title' => 'Hapus kategori?',
         'category_delete_message' => 'Kategori “:name” akan dihapus. :count item yang memakainya tetap ada tanpa kategori.',

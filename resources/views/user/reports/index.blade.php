@@ -21,7 +21,7 @@
         </section>
         <section class="surface-card p-5">
             <h2 class="text-lg font-semibold">Dibanding bulan lalu</h2>
-            <p class="mt-2 text-sm text-muted">Pengeluaran bulan {{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $previousMonth)->translatedFormat('F') }}: <strong data-private>{{ rupiah($previous['expense']) }}</strong></p>
+            <p class="mt-2 text-sm text-muted">Pengeluaran bulan {{ $previousMonthLabel }}: <strong data-private>{{ rupiah($previous['expense']) }}</strong></p>
             @if ($comparison === null)
                 <p class="mt-1 text-sm text-muted">Belum ada data pengeluaran bulan lalu untuk dibandingkan.</p>
             @elseif ($comparison === 0)

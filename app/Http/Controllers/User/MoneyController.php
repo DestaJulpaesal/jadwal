@@ -12,14 +12,15 @@ use App\Models\Obligation;
 use App\Models\Transaction;
 use App\Models\Wallet;
 use App\Services\LoanBalance;
+use App\Services\MonthlyCategoryReport;
 use App\Services\MonthlySummary;
 use App\Services\ObligationScheduler;
 use App\Services\WalletBalance;
 use App\Support\Feedback;
+use App\Support\MonthRange;
 use App\Support\Rupiah;
 use App\Support\UserClock;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -29,6 +30,7 @@ class MoneyController extends Controller
         Request $request,
         WalletBalance $balances,
         MonthlySummary $summary,
+        MonthlyCategoryReport $categoryReport,
         ObligationScheduler $scheduler,
         LoanBalance $loanBalances,
         UserClock $clock
@@ -46,23 +48,27 @@ class MoneyController extends Controller
             'section' => ['nullable', Rule::in(['overview', 'transactions', 'wallets', 'reports'])],
         ]);
         $month = $filters['month'] ?? substr($today, 0, 7);
-        $section = $filters['section'] ?? ($request->routeIs('user.reports.index') ? 'reports' : 'overview');
+        $monthRange = MonthRange::fromString($month);
+        $previousRange = $monthRange->previous();
+        $section = $filters['section'] ?? 'overview';
         $wallets = $balances->forUser($user);
         $transactions = $user->transactions()->with(['wallet', 'destinationWallet', 'moneyCategory'])
             ->whereBetween('occurred_on', [
-                \Illuminate\Support\Carbon::parse($month)->startOfMonth()->toDateString(),
-                \Illuminate\Support\Carbon::parse($month)->endOfMonth()->toDateString(),
+                $monthRange->start->toDateString(),
+                $monthRange->end->toDateString(),
             ])->orderByDesc('occurred_on')->orderByDesc('id')->paginate(15)->withQueryString();
         $categories = $user->moneyCategories()->whereNull('archived_at')->orderBy('type')->orderBy('name')->get();
         $totals = $summary->forMonth($user, $month);
-        $previousMonth = Carbon::createFromFormat('Y-m', $month)->subMonthNoOverflow()->format('Y-m');
+        $previousMonth = $previousRange->key();
+        $monthLabel = $monthRange->start->translatedFormat('F Y');
+        $previousMonthLabel = $previousRange->start->translatedFormat('F');
         $previous = $summary->forMonth($user, $previousMonth);
         $plannedObligations = $user->obligations()
             ->whereNull('archived_at')
             ->with(['payments', 'wallet', 'moneyCategory'])
             ->get()
-            ->map(function (Obligation $obligation) use ($month, $scheduler) {
-                $monthDate = Carbon::createFromFormat('Y-m', $month);
+            ->map(function (Obligation $obligation) use ($monthRange, $scheduler) {
+                $monthDate = $monthRange->start;
                 $dueDate = $scheduler->dueDate($obligation->due_day, $monthDate->year, $monthDate->month);
 
                 if ($obligation->starts_on->gt($monthDate->endOfMonth())
@@ -86,8 +92,8 @@ class MoneyController extends Controller
             ->whereNotNull('due_on')
             ->with('repayments')
             ->get()
-            ->map(function ($loan) use ($month, $loanBalances) {
-                $monthDate = Carbon::createFromFormat('Y-m', $month);
+            ->map(function ($loan) use ($monthRange, $loanBalances) {
+                $monthDate = $monthRange->start;
                 $remaining = $loanBalances->remaining($loan);
 
                 if ($remaining === 0 || ! $loan->due_on->isSameMonth($monthDate)) {
@@ -107,26 +113,7 @@ class MoneyController extends Controller
         $plannedLoanExpense = (int) $plannedLoans
             ->where('direction', LoanDirection::Borrowed)
             ->sum('planned_amount');
-        $reportCategories = DB::table('transactions')
-            ->leftJoin('money_categories', function ($join) use ($user) {
-                $join->on('transactions.money_category_id', '=', 'money_categories.id')
-                    ->where('money_categories.user_id', '=', $user->id);
-            })
-            ->where('transactions.user_id', $user->id)
-            ->where('transactions.type', 'expense')
-            ->whereBetween('transactions.occurred_on', [
-                Carbon::createFromFormat('Y-m', $month)->startOfMonth()->toDateString(),
-                Carbon::createFromFormat('Y-m', $month)->endOfMonth()->toDateString(),
-            ])
-            ->where(function ($query) {
-                $query->whereNull('transactions.source_type')
-                    ->orWhereNotIn('transactions.source_type', ['loan', 'loan_repayment']);
-            })
-            ->selectRaw('COALESCE(money_categories.name, ?) AS category_name, SUM(transactions.amount) AS total', ['Tanpa kategori'])
-            ->groupBy('money_categories.name')
-            ->orderByDesc('total')
-            ->limit(5)
-            ->get();
+        $reportCategories = $categoryReport->topExpenses($user, $monthRange);
         $largest = (int) $reportCategories->max('total');
         $comparison = $previous['expense'] === 0
             ? null
@@ -139,10 +126,12 @@ class MoneyController extends Controller
             'categories',
             'totals',
             'month',
+            'monthLabel',
             'today',
             'walletTypes',
             'previous',
             'previousMonth',
+            'previousMonthLabel',
             'reportCategories',
             'largest',
             'comparison',

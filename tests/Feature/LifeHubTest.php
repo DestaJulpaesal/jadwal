@@ -250,6 +250,80 @@ class LifeHubTest extends TestCase
             ->assertSee('100% lebih tinggi');
     }
 
+    public function test_monthly_money_ranges_are_correct_on_the_last_day_of_the_month(): void
+    {
+        $user = User::factory()->create(['timezone' => 'UTC']);
+        $wallet = $user->wallets()->create(['name' => 'Bank', 'type' => WalletType::Bank]);
+        $periods = [
+            ['2026-11-15', 110_000, 'November'],
+            ['2026-12-15', 120_000, 'Desember'],
+            ['2026-02-15', 220_000, 'Februari'],
+            ['2027-03-15', 320_000, 'Maret'],
+            ['2026-04-15', 440_000, 'April'],
+            ['2026-05-15', 550_000, 'Mei'],
+        ];
+
+        foreach ($periods as [$date, $amount, $name]) {
+            $category = $user->moneyCategories()->create([
+                'name' => $name,
+                'type' => MoneyCategoryType::Expense,
+            ]);
+            $user->transactions()->create([
+                'wallet_id' => $wallet->id,
+                'money_category_id' => $category->id,
+                'type' => TransactionType::Expense,
+                'amount' => $amount,
+                'occurred_on' => $date,
+            ]);
+        }
+
+        $cases = [
+            [
+                'today' => '2026-12-31',
+                'route' => 'user.money.index',
+                'month' => '2026-11',
+                'previous' => '2026-10',
+                'amount' => 110_000,
+                'category' => 'November',
+                'summary' => 'totals',
+                'categories' => 'reportCategories',
+            ],
+            [
+                'today' => '2027-03-31',
+                'route' => 'user.reports.index',
+                'month' => '2026-02',
+                'previous' => '2026-01',
+                'amount' => 220_000,
+                'category' => 'Februari',
+                'summary' => 'current',
+                'categories' => 'categories',
+            ],
+            [
+                'today' => '2026-05-31',
+                'route' => 'user.money.index',
+                'month' => '2026-04',
+                'previous' => '2026-03',
+                'amount' => 440_000,
+                'category' => 'April',
+                'summary' => 'totals',
+                'categories' => 'reportCategories',
+            ],
+        ];
+
+        foreach ($cases as $case) {
+            $this->travelTo(\Illuminate\Support\Carbon::parse($case['today'].' 12:00:00', 'UTC'));
+
+            $this->actingAs($user)
+                ->get(route($case['route'], ['month' => $case['month']]))
+                ->assertOk()
+                ->assertViewHas('previousMonth', $case['previous'])
+                ->assertViewHas($case['summary'], fn (array $summary) => $summary['expense'] === $case['amount'])
+                ->assertViewHas($case['categories'], fn ($categories) => $categories->count() === 1
+                    && $categories->first()->category_name === $case['category']
+                    && (int) $categories->first()->total === $case['amount']);
+        }
+    }
+
     public function test_wallets_allow_a_negative_opening_balance(): void
     {
         $user = User::factory()->create();

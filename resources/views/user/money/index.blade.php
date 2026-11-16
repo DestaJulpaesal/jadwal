@@ -5,7 +5,7 @@
 @section('content')
     <div class="mx-auto max-w-6xl space-y-5">
         <x-page-header eyebrow="Catatan pribadi" title="Keuangan" description="Pantau saldo dompet dan arus uang bulanan.">
-            <p class="concept-chip">{{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $month)->translatedFormat('F Y') }}</p>
+            <p class="concept-chip">{{ $monthLabel }}</p>
         </x-page-header>
         @include('user.partials.finance-subnav')
         @if (in_array($section, ['overview', 'reports'], true))
@@ -68,7 +68,7 @@
             <div class="mt-4 grid gap-4 lg:grid-cols-2">
                 <div>
                     <h3 class="font-semibold">Dibanding bulan lalu</h3>
-                    <p class="mt-2 text-sm text-muted">Pengeluaran bulan {{ \Illuminate\Support\Carbon::createFromFormat('Y-m', $previousMonth)->translatedFormat('F') }}: <strong data-private>{{ rupiah($previous['expense']) }}</strong></p>
+                    <p class="mt-2 text-sm text-muted">Pengeluaran bulan {{ $previousMonthLabel }}: <strong data-private>{{ rupiah($previous['expense']) }}</strong></p>
                     @if ($comparison === null)
                         <p class="mt-1 text-sm text-muted">Belum ada data pengeluaran bulan lalu untuk dibandingkan.</p>
                     @elseif ($comparison === 0)
