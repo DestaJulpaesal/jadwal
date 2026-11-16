@@ -39,6 +39,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'hide_financial_amounts' => 'boolean',
         'dashboard_sections' => 'array',
         'digest_last_sent_on' => 'date',
+        'money_presets_seeded_at' => 'datetime',
         'onboarding_dismissed_at' => 'datetime',
     ];
 

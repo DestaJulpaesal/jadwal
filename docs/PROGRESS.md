@@ -65,6 +65,15 @@
 - Gerbang setelah perubahan: 192 tes lulus (1.319 assertions), Pint `--test` lulus untuk 213 file, dan Vite build lulus. Bundle JavaScript tetap 54,76 KB gzip (ambang prompt 50 KB); `composer audit` tetap merah dengan 55 advisory.
 - Butir 1.4 selesai di kode dan tes; butir 1.5–1.12 belum dikerjakan. Fase 1 belum selesai.
 
+### Fase 1 — 1.5 preset kategori dan GET read-only (diterapkan)
+
+- `MoneyController::index` tidak lagi membuat kategori pada GET. Preset disiapkan satu kali melalui `MoneyCategoryPresetSeeder` saat registrasi/pembuatan admin dan local seeder.
+- Migration menambah `users.money_presets_seeded_at`, mengisi kategori preset untuk pengguna lama secara idempoten, dan hanya memproses baris yang belum ditandai. Rollback menghapus marker tetapi mempertahankan kategori karena dapat sudah dipakai atau diubah nama.
+- Tes membuktikan preset tersedia setelah registrasi, nama preset yang diubah tidak muncul lagi saat halaman uang dibuka, GET tidak menulis ke `money_categories`, dan backfill dapat dijalankan ulang tanpa duplikasi atau kehilangan kategori.
+- Migration diuji pada SQLite memory terisolasi, termasuk hitungan baris, `foreign_key_check`, dan `integrity_check`; `migrate:fresh --seed` serta status migration juga lolos pada berkas SQLite sementara. Database kerja tidak dimigrasikan.
+- Gerbang setelah perubahan: 198 tes lulus (1.346 assertions), Pint `--test` lulus untuk 219 file, dan Vite build lulus. Composer audit tetap merah dengan 55 advisory.
+- Butir 1.5 selesai di kode dan tes; butir 1.6–1.12 belum dikerjakan. Fase 1 belum selesai.
+
 ### Commit hardening
 
 - `667ed4f` — `fix(ci): isolate feature tests from Vite assets`.
@@ -73,7 +82,8 @@
 - `ad73739` — `fix(categories): preserve tasks when deleting global categories`.
 - `10b8d70` — `fix(tasks): clear completion timestamp when reopened`.
 - `3e386fc` — `fix(reports): use safe calendar month ranges`.
-- Commit perbaikan 1.2 akan dicatat setelah review akhir.
+- `14de85c` — `fix(obligations): cap completed installment schedules`.
+- Commit perbaikan 1.5 akan dicatat setelah review akhir.
 
 ## Status penutupan terakhir — 9 November 2026
 

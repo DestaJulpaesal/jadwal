@@ -7,13 +7,14 @@ use App\Enums\MoneyCategoryType;
 use App\Enums\TransactionType;
 use App\Enums\WalletType;
 use App\Models\User;
+use App\Services\MoneyCategoryPresetSeeder;
 use App\Support\UserClock;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class LocalLifeHubSeeder extends Seeder
 {
-    public function run(): void
+    public function run(MoneyCategoryPresetSeeder $presetSeeder): void
     {
         $user = User::firstOrCreate(
             ['email' => 'demo@example.test'],
@@ -23,6 +24,7 @@ class LocalLifeHubSeeder extends Seeder
                 'timezone' => 'Asia/Jakarta',
             ]
         );
+        $presetSeeder->seedFor($user);
         $today = app(UserClock::class)->date($user);
 
         foreach (config('presets.habits') as $preset) {

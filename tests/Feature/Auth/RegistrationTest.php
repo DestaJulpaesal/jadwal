@@ -43,6 +43,11 @@ class RegistrationTest extends TestCase
         $user = User::where('email', 'test@example.com')->firstOrFail();
         $this->assertSame('user', $user->role);
         $this->assertFalse($user->hasVerifiedEmail());
+        $this->assertNotNull($user->money_presets_seeded_at);
+        $this->assertSame(
+            array_sum(array_map('count', config('presets.money_categories'))),
+            $user->moneyCategories()->count()
+        );
         Notification::assertNothingSent();
     }
 

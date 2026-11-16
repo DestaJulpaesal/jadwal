@@ -3,7 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\MoneyCategoryPresetSeeder;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -14,7 +16,7 @@ class CreateAdminUser extends Command
 
     protected $description = 'Create the first administrator account securely';
 
-    public function handle(): int
+    public function handle(MoneyCategoryPresetSeeder $presetSeeder): int
     {
         $email = strtolower($this->argument('email'));
         $validator = Validator::make(
@@ -41,16 +43,19 @@ class CreateAdminUser extends Command
             return self::FAILURE;
         }
 
-        $admin = User::create([
-            'name' => $this->option('name'),
-            'email' => $email,
-            'password' => Hash::make($password),
-            'role' => 'admin',
-        ]);
-        $admin->forceFill([
-            'email_verified_at' => now(),
-            'is_active' => true,
-        ])->save();
+        DB::transaction(function () use ($email, $password, $presetSeeder) {
+            $admin = User::create([
+                'name' => $this->option('name'),
+                'email' => $email,
+                'password' => Hash::make($password),
+                'role' => 'admin',
+            ]);
+            $admin->forceFill([
+                'email_verified_at' => now(),
+                'is_active' => true,
+            ])->save();
+            $presetSeeder->seedFor($admin);
+        });
 
         $this->info('Akun admin berhasil dibuat dan telah diverifikasi.');
 

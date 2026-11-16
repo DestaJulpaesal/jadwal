@@ -37,11 +37,6 @@ class MoneyController extends Controller
     ) {
         $this->authorize('viewAny', Transaction::class);
         $user = $request->user();
-        foreach (config('presets.money_categories') as $type => $names) {
-            foreach ($names as $name) {
-                $user->moneyCategories()->firstOrCreate(['type' => $type, 'name' => $name]);
-            }
-        }
         $today = $clock->date($user);
         $filters = $request->validate([
             'month' => ['nullable', 'date_format:Y-m'],
