@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Task;
 use App\Models\TaskStatus;
 use App\Models\User;
+use App\Services\TaskCompletion;
 use App\Support\Feedback;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -16,6 +17,8 @@ use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
+    public function __construct(private TaskCompletion $taskCompletion) {}
+
     public function index(Request $request)
     {
         $this->authorize('viewAny', Task::class);
@@ -74,14 +77,20 @@ class TaskController extends Controller
     public function store(SaveTaskRequest $request)
     {
         $validated = $this->normalizeScheduleTimes($request->validated(), $request->user());
+        $statusId = $validated['task_status_id'] ?? null;
+        $completedAt = $this->taskCompletion->forStatusTransition(
+            false,
+            $this->isCompletedStatus($statusId),
+            null
+        );
 
-        $task = DB::transaction(function () use ($validated, $request) {
+        $task = DB::transaction(function () use ($validated, $request, $completedAt) {
             $category = $this->resolveCategory($validated, $request);
 
             return $request->user()->tasks()->create([
                 'category_id' => $category?->id,
                 'task_status_id' => $validated['task_status_id'] ?? null,
-                'completed_at' => $this->isCompletedStatus($validated['task_status_id'] ?? null) ? now('UTC') : null,
+                'completed_at' => $completedAt,
                 'title' => $validated['title'],
                 'description' => $validated['description'] ?? null,
                 'due_date' => $validated['due_date'] ?? null,
@@ -108,7 +117,7 @@ class TaskController extends Controller
         $validated = $this->normalizeScheduleTimes($request->validated(), $request->user());
         $wasCompleted = $task->status()->where('is_completed', true)->exists();
         $isCompleted = $this->isCompletedStatus($validated['task_status_id'] ?? null);
-        $completedAt = ! $wasCompleted && $isCompleted ? now('UTC') : $task->completed_at;
+        $completedAt = $this->taskCompletion->forStatusTransition($wasCompleted, $isCompleted, $task->completed_at);
 
         DB::transaction(function () use ($validated, $request, $task, $completedAt) {
             $category = $this->resolveCategory($validated, $request);
@@ -155,7 +164,7 @@ class TaskController extends Controller
 
         $task->update([
             'task_status_id' => $completedStatus->id,
-            'completed_at' => now('UTC'),
+            'completed_at' => $this->taskCompletion->forStatusTransition(false, true, null),
         ]);
 
         if ($request->expectsJson()) {

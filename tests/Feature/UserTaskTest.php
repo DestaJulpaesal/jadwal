@@ -142,8 +142,92 @@ class UserTaskTest extends TestCase
         $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
     }
 
+    public function test_storing_a_completed_task_records_the_current_utc_time(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-09 16:00:00', 'UTC'));
+        $user = User::factory()->create();
+        $completedStatus = TaskStatus::create(['name' => 'Selesai']);
+
+        $this->actingAs($user)
+            ->post(route('user.tasks.store'), [
+                'title' => 'Selesaikan laporan',
+                'task_status_id' => $completedStatus->id,
+            ])
+            ->assertRedirect(route('user.tasks.index'));
+
+        $this->assertDatabaseHas('tasks', [
+            'user_id' => $user->id,
+            'title' => 'Selesaikan laporan',
+            'completed_at' => '2026-11-09 16:00:00',
+        ]);
+    }
+
+    public function test_reopening_a_task_clears_completion_and_recompletion_preserves_transition_time(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-09 16:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $completedStatus = TaskStatus::create(['name' => 'Selesai']);
+        $inProgressStatus = TaskStatus::create(['name' => 'Sedang dikerjakan']);
+        $task = $user->tasks()->create([
+            'title' => 'Selesaikan laporan',
+            'task_status_id' => $completedStatus->id,
+            'completed_at' => '2026-11-09 16:00:00',
+        ]);
+
+        $this->actingAs($user)
+            ->put(route('user.tasks.update', $task), [
+                'title' => $task->title,
+                'task_status_id' => $inProgressStatus->id,
+            ])
+            ->assertRedirect(route('user.tasks.index'));
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'task_status_id' => $inProgressStatus->id,
+            'completed_at' => null,
+        ]);
+
+        $this->put(route('user.tasks.update', $task), [
+            'title' => $task->title,
+            'task_status_id' => $completedStatus->id,
+        ])->assertRedirect(route('user.tasks.index'));
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'completed_at' => '2026-11-09 16:00:00',
+        ]);
+
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-10 08:00:00', 'UTC'));
+        $this->put(route('user.tasks.update', $task), [
+            'title' => 'Judul diperbarui',
+            'task_status_id' => $completedStatus->id,
+        ])->assertRedirect(route('user.tasks.index'));
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'title' => 'Judul diperbarui',
+            'completed_at' => '2026-11-09 16:00:00',
+        ]);
+
+        $this->put(route('user.tasks.update', $task), [
+            'title' => 'Judul diperbarui',
+            'task_status_id' => $inProgressStatus->id,
+        ])->assertRedirect(route('user.tasks.index'));
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'completed_at' => null,
+        ]);
+
+        $this->get(route('user.streak'))
+            ->assertOk()
+            ->assertViewHas('currentStreak', 0)
+            ->assertViewHas('bestStreak', 0);
+    }
+
     public function test_user_can_quickly_mark_their_own_task_as_completed(): void
     {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-09 16:00:00', 'UTC'));
         $user = User::factory()->create();
         $task = $user->tasks()->create(['title' => 'Selesaikan laporan']);
         $completedStatus = TaskStatus::create(['name' => 'Selesai']);
@@ -157,6 +241,7 @@ class UserTaskTest extends TestCase
         $this->assertDatabaseHas('tasks', [
             'id' => $task->id,
             'task_status_id' => $completedStatus->id,
+            'completed_at' => '2026-11-09 16:00:00',
         ]);
     }
 
