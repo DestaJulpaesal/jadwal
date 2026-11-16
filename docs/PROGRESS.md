@@ -27,6 +27,25 @@
 3. Continue Fase 1 through its full regression gate before starting Fase 2.
 4. Proceed to Fase 3 and Fase 4 only after their prerequisite phase gates pass; do not mark production/device-only checks complete without evidence.
 
+### Fase 1 — 1.1 kehilangan data kategori (diterapkan; fase belum selesai)
+
+- Tes feature awal mereproduksi bug: menghapus kategori global menghapus tugas milik dua pengguna.
+- Migration baru membangun ulang `tasks` di luar transaksi SQLite, mengubah FK kategori menjadi `SET NULL`, mempertahankan sequence ID, FK user/status, dan semua indeks.
+- Controller menghitung tugas, kebiasaan, dan target; dialog menampilkan jumlah pemakaian dan feedback menyebut item tetap ada tanpa kategori.
+- Tes migrasi skema lama lulus (9 assertions), termasuk pengulangan migration yang idempoten; tes feature penghapusan lintas pengguna lulus (7 assertions).
+- Playbook dijalankan pada snapshot konsisten lokal: 0 tugas sebelum/sesudah, `integrity_check=ok`, tanpa pelanggaran FK. Database kerja tidak dimigrasikan karena masih memiliki migration lain yang pending.
+- Risiko migrasi lama `make_categories_global` direproduksi pada SQLite terisolasi: menjalankannya di transaksi dapat menghapus tugas melalui cascade. Perbaikan baru tidak memulihkan data historis. Bukti backup sebelum migration diperlukan untuk menilai dampak database produksi.
+- Pemeriksaan read-only database kerja menunjukkan migration lama sudah tercatat dan saat ini tidak ada baris tugas; tanpa snapshot sebelum migration, riwayat kehilangan data tidak dapat disimpulkan.
+- Pemeriksaan setelah perubahan: 187 tes lulus (1.279 assertions), Pint `--test` lulus untuk 209 file, build Vite lulus, dan `npm audit` melaporkan nol vulnerability. `composer audit` masih merah dengan 55 advisory.
+- Butir 1.1 selesai di kode dan tes; butir Fase 1 1.2–1.12 belum dikerjakan. Fase 1 tidak ditandai selesai dan gate Composer tetap terbuka.
+
+### Commit hardening
+
+- `667ed4f` — `fix(ci): isolate feature tests from Vite assets`.
+- `6199b82` — `style: normalize PHP baseline formatting`.
+- `f3d8e77` — `docs: record hardening baseline and correct digest schedule`.
+- Commit perbaikan 1.1 akan dicatat setelah review akhir.
+
 ## Status penutupan terakhir — 9 November 2026
 
 Fase 0–2 tercatat selesai pada checkpoint sebelumnya. Fase 3–9 telah ditinjau dan sisa pekerjaan yang aman serta dapat diverifikasi di repo sudah dilanjutkan; fase yang membutuhkan bukti produksi/perangkat nyata tidak ditandai selesai hanya berdasarkan inspeksi kode.

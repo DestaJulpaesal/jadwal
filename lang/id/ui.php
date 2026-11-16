@@ -56,6 +56,7 @@ return [
         'category_created' => 'Kategori berhasil ditambahkan.',
         'category_updated' => 'Kategori berhasil diperbarui.',
         'category_deleted' => 'Kategori berhasil dihapus.',
+        'category_deleted_with_items' => 'Kategori berhasil dihapus; :count tugas, kebiasaan, dan target tetap ada tanpa kategori.',
         'settings_saved' => 'Pengaturan berhasil disimpan.',
         'account_enabled' => 'Akun berhasil diaktifkan.',
         'account_disabled' => 'Akun berhasil dinonaktifkan.',
@@ -93,5 +94,12 @@ return [
     'account' => [
         'profile_updated' => 'Informasi profil berhasil diperbarui.',
         'verification_sent' => 'Tautan verifikasi baru sudah dikirim ke alamat email kamu.',
+    ],
+    'category' => [
+        'usage_count' => ':count item dipakai',
+    ],
+    'confirmations' => [
+        'category_delete_title' => 'Hapus kategori?',
+        'category_delete_message' => 'Kategori “:name” akan dihapus. :count item yang memakainya tetap ada tanpa kategori.',
     ],
 ];

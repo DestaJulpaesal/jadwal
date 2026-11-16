@@ -136,3 +136,18 @@ Ikon PWA yang sudah dihasilkan tersimpan di `public/icons`. Jika perlu dibuat ul
 ## Health, logs, dan monitoring
 
 `GET /up` returns only `{"status":"ok"}` with HTTP 200 after a short database query, or a generic `{"status":"unavailable"}` with HTTP 503. It never includes connection details. Configure an external uptime monitor for this URL. Responses include `X-Request-Id`; share that ID when reporting a 500 error. Logs use a 14-day daily channel when `LOG_CHANNEL=daily`; never log passwords, tokens, private notes, or financial amounts.
+
+## Memverifikasi migrasi FK kategori tugas
+
+Sebelum rilis yang mengubah skema SQLite, pastikan backup terenkripsi selesai dan dapat dibaca. Catat jumlah tugas sebelum migrasi, lalu bandingkan setelahnya; migration FK kategori tidak boleh mengurangi jumlah baris `tasks`.
+
+```sh
+sqlite3 "$DB_DATABASE" "SELECT COUNT(*) FROM tasks;"
+php artisan migrate --force
+sqlite3 "$DB_DATABASE" "SELECT COUNT(*) FROM tasks;"
+sqlite3 "$DB_DATABASE" "PRAGMA foreign_key_check; PRAGMA integrity_check;"
+```
+
+`foreign_key_check` harus mengembalikan nol baris dan `integrity_check` harus mengembalikan `ok`. Pastikan jumlah tugas sesudah migrasi sama dengan jumlah sebelum migrasi. Penghapusan kategori sesudah rilis hanya boleh mengosongkan `tasks.category_id`, bukan menghapus tugas.
+
+Catatan historis: migration `2026_11_04_120000_make_categories_global` mengganti tabel kategori. Pada SQLite, pola ini berisiko menjalankan aksi cascade FK ketika tabel lama dihapus. Jika memeriksa database yang telah menjalankan migration tersebut, bandingkan juga dengan snapshot sebelum migration; jumlah saat ini saja tidak dapat mengungkap baris yang sudah hilang.

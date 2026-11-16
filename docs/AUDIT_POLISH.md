@@ -158,3 +158,11 @@ Link “Lompat ke konten” dan target `main#main-content` kini tersedia di layo
 | Belum dapat dibuktikan | Lighthouse, N+1 semua route terautentikasi, screen reader, kontras semua tema/halaman, report CSP semua halaman, install/offline Android/iOS, Composer audit, dan restore production. |
 
 Sel yang belum terverifikasi dalam matriks aksesibilitas di atas tetap berstatus belum terverifikasi; tidak diubah menjadi lulus berdasarkan inspeksi sumber saja.
+
+## Risiko migrasi kategori global dan perbaikan FK tugas
+
+Migration `2026_11_04_120000_make_categories_global` membuat tabel pengganti lalu menghapus tabel `categories`. Pada SQLite, migration ini memanggil `Schema::disableForeignKeyConstraints()` tetapi berjalan dalam transaksi migrator bawaan. `PRAGMA foreign_keys=OFF` tidak berlaku di tengah transaksi; karena FK lama `tasks.category_id` memakai `ON DELETE CASCADE`, `DROP TABLE categories` dapat menghapus tugas yang memakai kategori. Perilaku ini direproduksi pada SQLite sementara dengan migration dijalankan dalam transaksi.
+
+Migration baru `2026_11_16_000000_fix_tasks_category_fk_on_delete_set_null` membangun ulang tabel `tasks` dengan FK kategori `ON DELETE SET NULL`, mempertahankan data, ID sequence, FK pemilik/status, dan empat indeks tugas. Tes migrasi pada skema lama membuktikan tugas dua pengguna tetap ada, FK valid, dan indeks tetap tersedia. Perbaikan ini mencegah kehilangan data berikutnya; ia tidak dapat memulihkan tugas yang mungkin telah terhapus oleh migration terdahulu.
+
+Untuk menilai dampak historis, bandingkan jumlah dan ID tugas pada backup/snapshot sebelum `make_categories_global` dengan database sesudahnya. Pemeriksaan database saat ini saja tidak dapat membuktikan apakah tugas pernah terhapus. Jangan membuat ulang isi tugas berdasarkan asumsi; pemulihan hanya boleh dari backup terverifikasi.

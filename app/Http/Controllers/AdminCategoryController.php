@@ -11,7 +11,7 @@ class AdminCategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::query()->withCount(['tasks', 'habits'])->orderBy('name')->get();
+        $categories = Category::query()->withCount(['tasks', 'habits', 'goals'])->orderBy('name')->get();
 
         return view('admin.categories.index', compact('categories'));
     }
@@ -33,9 +33,17 @@ class AdminCategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        $usageCount = $category->tasks()->count()
+            + $category->habits()->count()
+            + $category->goals()->count();
+
         $category->delete();
 
-        return Feedback::success(back(), __('ui.feedback.category_deleted'));
+        $message = $usageCount > 0
+            ? __('ui.feedback.category_deleted_with_items', ['count' => $usageCount])
+            : __('ui.feedback.category_deleted');
+
+        return Feedback::success(back(), $message);
     }
 
     private function validated(Request $request): array

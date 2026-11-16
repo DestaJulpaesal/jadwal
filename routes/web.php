@@ -72,9 +72,9 @@ Route::middleware(['auth', 'auth.session', 'active', 'admin'])->prefix('admin')-
     Route::get('/users', [AdminController::class, 'index'])->name('users.index');
     Route::get('/users/{user}', [AdminController::class, 'show'])->name('users.show');
     Route::get('/categories', [AdminCategoryController::class, 'index'])->name('categories.index');
-    Route::post('/categories', [AdminCategoryController::class, 'store'])->name('categories.store');
-    Route::patch('/categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
-    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::post('/categories', [AdminCategoryController::class, 'store'])->middleware('throttle:60,1')->name('categories.store');
+    Route::patch('/categories/{category}', [AdminCategoryController::class, 'update'])->middleware('throttle:60,1')->name('categories.update');
+    Route::delete('/categories/{category}', [AdminCategoryController::class, 'destroy'])->middleware('throttle:60,1')->name('categories.destroy');
     Route::patch('/users/{user}/status', [AdminController::class, 'toggleStatus'])
         ->middleware('password.confirm')
         ->name('users.status');

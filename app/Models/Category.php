@@ -34,4 +34,9 @@ class Category extends Model
     {
         return $this->hasMany(Habit::class);
     }
+
+    public function goals(): HasMany
+    {
+        return $this->hasMany(Goal::class);
+    }
 }

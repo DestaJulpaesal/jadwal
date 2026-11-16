@@ -33,9 +33,10 @@
                                 <x-button type="submit" variant="primary" icon="selesai" loading-text="Menyimpan kategori…">Simpan</x-button>
                             </div>
                         </form>
-                        <span class="text-xs text-muted">{{ $category->tasks_count + $category->habits_count }} dipakai</span>
-                        <x-confirm-action :action="route('admin.categories.destroy', $category)" title="Hapus kategori?"
-                            :message="'Kategori '.$category->name.' akan dihapus dari pilihan. Item yang sudah menggunakannya tidak ikut dihapus.'"
+                        @php($usageCount = $category->tasks_count + $category->habits_count + $category->goals_count)
+                        <span class="text-xs text-muted">{{ __('ui.category.usage_count', ['count' => $usageCount]) }}</span>
+                        <x-confirm-action :action="route('admin.categories.destroy', $category)" :title="__('ui.confirmations.category_delete_title')"
+                            :message="__('ui.confirmations.category_delete_message', ['name' => $category->name, 'count' => $usageCount])"
                             label="Hapus kategori" />
                     </div>
                 @empty
