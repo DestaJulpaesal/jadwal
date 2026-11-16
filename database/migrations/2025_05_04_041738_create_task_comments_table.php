@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('comment');
             $table->timestamps();
         });
-        
+
     }
 
     /**

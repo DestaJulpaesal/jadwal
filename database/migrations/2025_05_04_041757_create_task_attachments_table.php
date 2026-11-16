@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('original_name');
             $table->timestamps();
         });
-        
+
     }
 
     /**

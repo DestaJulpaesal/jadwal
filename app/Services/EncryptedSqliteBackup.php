@@ -284,6 +284,7 @@ class EncryptedSqliteBackup
                     throw new RuntimeException('The backup contains an invalid SQLite snapshot.');
                 }
                 $databaseFound = true;
+
                 continue;
             }
 
@@ -332,6 +333,7 @@ class EncryptedSqliteBackup
         $output = fopen($destination, 'wb');
         if ($output === false) {
             fclose($input);
+
             return false;
         }
 

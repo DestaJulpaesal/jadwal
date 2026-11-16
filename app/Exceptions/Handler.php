@@ -2,10 +2,10 @@
 
 namespace App\Exceptions;
 
+use App\Support\Feedback;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
-use App\Support\Feedback;
 use Throwable;
 
 class Handler extends ExceptionHandler

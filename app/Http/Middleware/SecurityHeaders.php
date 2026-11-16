@@ -3,8 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Vite;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\Response;
 

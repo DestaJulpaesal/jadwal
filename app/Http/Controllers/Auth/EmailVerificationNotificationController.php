@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Support\Feedback;
 use App\Providers\RouteServiceProvider;
+use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 

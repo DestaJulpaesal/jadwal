@@ -198,7 +198,7 @@ class UserNavigationTest extends TestCase
 
     private function assertActiveMobileItem(string $html, string $expected, string $url): void
     {
-        $document = new \DOMDocument();
+        $document = new \DOMDocument;
         $previousLibxmlSetting = libxml_use_internal_errors(true);
         $document->loadHTML($html);
         libxml_clear_errors();
@@ -216,7 +216,7 @@ class UserNavigationTest extends TestCase
 
     private function assertSubnavTabActive(string $html, string $group, string $expected, string $url): void
     {
-        $document = new \DOMDocument();
+        $document = new \DOMDocument;
         $previousLibxmlSetting = libxml_use_internal_errors(true);
         $document->loadHTML($html);
         libxml_clear_errors();
