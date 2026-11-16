@@ -183,7 +183,6 @@ class FeedbackTest extends TestCase
         $checks = [
             ['request' => fn () => $this->patch(route('settings.update'), []), 'bag' => 'default'],
             ['request' => fn () => $this->delete(route('profile.destroy'), []), 'bag' => 'userDeletion'],
-            ['request' => fn () => $this->get(route('user.dashboard', ['year' => 'bukan-tahun'])), 'bag' => 'default'],
             ['request' => fn () => $this->get(route('user.calendar', ['month' => 'bukan-bulan'])), 'bag' => 'default'],
             ['request' => fn () => $this->get(route('user.tasks.index', ['status_id' => 'bukan-status'])), 'bag' => 'default'],
             ['request' => fn () => $this->get(route('user.reports.index', ['month' => 'bukan-bulan'])), 'bag' => 'default'],
@@ -193,6 +192,9 @@ class FeedbackTest extends TestCase
             $response = $check['request']();
             $this->assertIndonesianValidationErrors($response, 'inline form or filter', $check['bag']);
         }
+
+        $this->get(route('user.dashboard', ['year' => 'bukan-tahun']))
+            ->assertOk();
 
         $admin = \App\Models\User::factory()->create(['role' => 'admin']);
         $response = $this->actingAs($admin)->get(route('admin.users.index', ['role' => 'bukan-peran']));

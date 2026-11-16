@@ -42,8 +42,6 @@ class SaveHabitRequest extends FormRequest
                     fn ($query) => $query->whereNull('user_id')->orWhere('user_id', $this->user()->id)
                 ),
             ],
-            'category_name' => ['nullable', 'string', 'max:60'],
-            'category_color' => ['nullable', 'regex:/\A#[0-9a-fA-F]{6}\z/'],
         ];
     }
 
@@ -70,8 +68,6 @@ class SaveHabitRequest extends FormRequest
             'starts_on' => 'tanggal mulai',
             'ends_on' => 'tanggal berakhir',
             'category_id' => 'kategori',
-            'category_name' => 'nama kategori',
-            'category_color' => 'warna kategori',
         ];
     }
 

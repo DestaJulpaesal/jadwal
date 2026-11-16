@@ -2,6 +2,9 @@
     $goalTypes = collect(\App\Enums\GoalType::cases())
         ->mapWithKeys(fn ($type) => [$type->value => $type->label()])
         ->all();
+    $goalDirections = collect(\App\Enums\GoalDirection::cases())
+        ->mapWithKeys(fn ($direction) => [$direction->value => $direction->label()])
+        ->all();
 @endphp
 
 <x-form-section title="Rincian target" description="Tentukan hasil akhir yang ingin kamu capai.">
@@ -15,6 +18,10 @@
     <x-segmented name="type" label="Jenis target" :options="$goalTypes"
         :value="old('type', $goal->type?->value ?? 'number')"
         help="Pilih cara aplikasi menghitung progres." :error="$errors->first('type')" required />
+
+    <x-segmented name="direction" :label="__('ui.goal.direction_label')" :options="$goalDirections"
+        :value="old('direction', $goal->direction?->value ?? 'increase')"
+        :help="__('ui.goal.direction_help')" :error="$errors->first('direction')" required />
 
     <div class="grid gap-4 sm:grid-cols-2">
         <x-field id="target_value" label="Nilai target" help="Tentukan jumlah akhir yang ingin dicapai." :error="$errors->first('target_value')" required>
@@ -38,7 +45,7 @@
     </button>
     <div id="goal-advanced" data-disclosure-content class="space-y-4 border-t border-line pt-4">
     <div class="grid gap-4 pt-4 sm:grid-cols-2">
-        <x-field id="start_value" label="Nilai awal" help="Masukkan posisi kamu sekarang untuk menghitung progres." :error="$errors->first('start_value')" optional>
+        <x-field id="start_value" label="Nilai awal" :help="__('ui.goal.start_value_help')" :error="$errors->first('start_value')" optional>
             <input id="start_value" name="start_value" type="number" min="0" inputmode="numeric" pattern="[0-9]*"
                 value="{{ old('start_value', $goal->start_value ?? 0) }}" class="form-control"
                 aria-invalid="{{ $errors->has('start_value') ? 'true' : 'false' }}"

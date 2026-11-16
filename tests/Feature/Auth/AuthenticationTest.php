@@ -47,6 +47,15 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(RouteServiceProvider::HOME);
     }
 
+    public function test_authenticated_users_are_redirected_to_their_role_dashboard_from_guest_pages(): void
+    {
+        $user = User::factory()->create();
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $this->actingAs($user)->get(route('login'))->assertRedirect(route('user.dashboard'));
+        $this->actingAs($admin)->get(route('login'))->assertRedirect(route('admin.dashboard'));
+    }
+
     public function test_unverified_users_can_access_the_dashboard_when_email_verification_is_disabled(): void
     {
         $user = User::factory()->create([

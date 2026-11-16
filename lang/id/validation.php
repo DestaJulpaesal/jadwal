@@ -277,8 +277,12 @@ return [
         'goal' => [
             'title.required' => 'Nama target belum diisi.',
             'type.required' => 'Jenis target belum dipilih.',
+            'direction.required' => 'Arah target belum dipilih.',
+            'direction.in' => 'Pilih arah target yang tersedia.',
             'target_value.required' => 'Nilai target belum diisi.',
             'target_value.integer' => 'Nilai target harus berupa angka.',
+            'start_value.direction_increase' => 'Untuk target meningkat, nilai awal tidak boleh lebih besar dari nilai target.',
+            'start_value.direction_decrease' => 'Untuk target menurun, nilai awal harus sama dengan atau lebih besar dari nilai target.',
             'category_id.exists' => 'Kategori tidak tersedia.',
             'habit_id.exists' => 'Kebiasaan tidak tersedia.',
             'wallet_id.exists' => 'Dompet tidak tersedia.',

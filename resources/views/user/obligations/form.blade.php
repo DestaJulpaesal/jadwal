@@ -26,7 +26,7 @@
         </div>
     @else
         <div class="grid gap-2 rounded-lg bg-canvas p-3 text-sm text-muted sm:grid-cols-3">
-            <p>Jatuh tempo tanggal {{ $obligation->due_day }} setiap bulan</p>
+            <p>{{ __('ui.agenda.due') }} tanggal {{ $obligation->due_day }} setiap bulan</p>
             <p>Mulai {{ $obligation->starts_on->translatedFormat('j M Y') }}</p>
             @if ($obligation->kind->value === 'installment')
                 <p>{{ $obligation->installments_total }} cicilan</p>
@@ -45,7 +45,7 @@
             @endforeach
         </x-select>
         <x-select id="obligation_category_id" name="money_category_id" label="Kategori pengeluaran" help="Kelompokkan pembayaran pada laporan keuangan." optional>
-            <option value="">Tanpa kategori</option>
+            <option value="">{{ __('ui.money.uncategorized') }}</option>
             @foreach ($categories as $category)
                 <option value="{{ $category->id }}" @selected(old('money_category_id', $obligation->money_category_id) == $category->id)>{{ $category->name }}</option>
             @endforeach

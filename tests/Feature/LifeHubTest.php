@@ -527,6 +527,7 @@ class LifeHubTest extends TestCase
         $this->actingAs($user);
 
         foreach ([
+            'user.tasks.index',
             'user.habits.index',
             'user.money.index',
             'user.obligations.index',
@@ -656,6 +657,7 @@ class LifeHubTest extends TestCase
         ])->assertRedirect();
         $this->assertSame(700_000, app(WalletBalance::class)->forWallet($wallet));
         $this->assertSame(0, app(MonthlySummary::class)->forMonth($user, '2026-11')['income']);
+        $this->get(route('user.loans.index'))->assertOk()->assertSee('300.000');
 
         $this->post(route('user.loans.repay', $loan), [
             'amount' => '400.000',
@@ -779,9 +781,55 @@ class LifeHubTest extends TestCase
         ])->assertRedirect();
         $this->assertSame(GoalStatus::Active, $goal->fresh()->status);
         $this->assertSame(100, app(GoalProgress::class)->percent($goal->fresh()));
+        $this->post(route('user.goals.updates.store', $goal), [
+            'amount' => 1,
+            'recorded_on' => '2026-11-01',
+        ])->assertUnprocessable();
 
         $this->patch(route('user.goals.achieve', $goal))->assertRedirect();
         $this->assertSame(GoalStatus::Achieved, $goal->fresh()->status);
+    }
+
+    public function test_goal_can_be_edited_after_its_due_date_without_moving_the_due_date_backwards(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 03:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $goal = $user->goals()->create([
+            'title' => 'Baca buku',
+            'type' => 'number',
+            'target_value' => 10,
+            'start_value' => 0,
+            'due_on' => '2026-11-02',
+        ]);
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-04 03:00:00', 'UTC'));
+        $this->actingAs($user)->put(route('user.goals.update', $goal), [
+            'title' => 'Baca lebih banyak',
+            'type' => 'number',
+            'target_value' => 10,
+            'start_value' => 0,
+            'due_on' => '2026-11-02',
+        ])->assertRedirect(route('user.goals.index'));
+
+        $this->put(route('user.goals.update', $goal), [
+            'title' => 'Baca lebih banyak',
+            'type' => 'number',
+            'target_value' => 10,
+            'start_value' => 0,
+            'due_on' => '2026-11-03',
+        ])->assertSessionHasErrors('due_on');
+    }
+
+    public function test_goals_cannot_be_linked_to_an_archived_habit(): void
+    {
+        $user = User::factory()->create();
+        $habit = Habit::factory()->for($user)->create(['archived_at' => now()]);
+
+        $this->actingAs($user)->post(route('user.goals.store'), [
+            'title' => 'Konsisten',
+            'type' => 'habit',
+            'target_value' => 10,
+            'habit_id' => $habit->id,
+        ])->assertSessionHasErrors('habit_id');
     }
 
     public function test_daily_digest_sends_once_after_local_seven_and_records_the_business_date(): void

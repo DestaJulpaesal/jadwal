@@ -11,6 +11,7 @@ use App\Models\ObligationPayment;
 use App\Models\Transaction;
 use App\Services\ObligationSchedule;
 use App\Services\ObligationScheduler;
+use App\Support\Db as DatabaseTransaction;
 use App\Support\Feedback;
 use App\Support\Rupiah;
 use App\Support\UserClock;
@@ -23,8 +24,17 @@ class ObligationController extends Controller
     public function index(Request $request, UserClock $clock, ObligationSchedule $obligationSchedule)
     {
         $this->authorize('viewAny', Obligation::class);
+        $statusOptions = [
+            'active' => __('ui.entity_status.active'),
+            'archived' => __('ui.entity_status.archived'),
+        ];
+        $status = $request->validate([
+            'status' => ['nullable', Rule::in(array_keys($statusOptions))],
+        ])['status'] ?? 'active';
         $today = $clock->date($request->user());
-        $obligations = $request->user()->obligations()->whereNull('archived_at')->with('payments')->orderBy('due_day')->get();
+        $obligations = $request->user()->obligations()
+            ->when($status === 'archived', fn ($query) => $query->whereNotNull('archived_at'), fn ($query) => $query->whereNull('archived_at'))
+            ->with('payments')->orderBy('due_day')->get();
         $obligations->each(function (Obligation $obligation) use ($today, $obligationSchedule) {
             $lastDate = \Illuminate\Support\Carbon::parse($today)->addMonths(12)->toDateString();
             $startsOn = $obligation->starts_on->toDateString();
@@ -38,10 +48,12 @@ class ObligationController extends Controller
                     $dateKey = $date->toDateString();
                     $payment = $obligation->payments->first(fn ($item) => $item->due_on->toDateString() === $dateKey);
                     $status = match (true) {
-                        $payment !== null => 'Lunas',
-                        $dateKey < $today => 'Terlambat '.$date->diffInDays(\Illuminate\Support\Carbon::parse($today)).' hari',
-                        $dateKey === $today => 'Jatuh tempo hari ini',
-                        default => 'Belum jatuh tempo',
+                        $payment !== null => __('ui.agenda.paid'),
+                        $dateKey < $today => __('ui.agenda.late_days', [
+                            'days' => $date->diffInDays(\Illuminate\Support\Carbon::parse($today)),
+                        ]),
+                        $dateKey === $today => __('ui.agenda.due_today'),
+                        default => __('ui.agenda.not_due'),
                     };
 
                     return ['date' => $date, 'payment' => $payment, 'status' => $status];
@@ -79,7 +91,38 @@ class ObligationController extends Controller
 
         $obligation = new Obligation;
 
-        return view('user.obligations.index', compact('obligations', 'wallets', 'categories', 'today', 'obligation'));
+        return view('user.obligations.index', compact('obligations', 'wallets', 'categories', 'today', 'obligation', 'status', 'statusOptions'));
+    }
+
+    public function archive(Request $request, Obligation $obligation)
+    {
+        $this->authorize('update', $obligation);
+        abort_if($obligation->user_id !== $request->user()->id || $obligation->archived_at, 404);
+        $obligation->update(['archived_at' => now()]);
+
+        return Feedback::success(back(), __('ui.feedback.obligation_archived'));
+    }
+
+    public function restore(Request $request, Obligation $obligation)
+    {
+        $this->authorize('update', $obligation);
+        abort_if($obligation->user_id !== $request->user()->id || ! $obligation->archived_at, 404);
+        $obligation->update(['archived_at' => null]);
+
+        return Feedback::success(back(), __('ui.feedback.record_restored'));
+    }
+
+    public function destroy(Request $request, Obligation $obligation)
+    {
+        $this->authorize('delete', $obligation);
+        abort_if($obligation->user_id !== $request->user()->id || ! $obligation->archived_at, 404);
+        DatabaseTransaction::immediate(function () use ($request, $obligation) {
+            $locked = $request->user()->obligations()->lockForUpdate()->findOrFail($obligation->id);
+            abort_if($locked->payments()->exists(), 422, __('ui.feedback.obligation_has_payments'));
+            $locked->delete();
+        });
+
+        return Feedback::success(back(), __('ui.feedback.record_deleted'));
     }
 
     public function edit(Request $request, Obligation $obligation)
@@ -108,7 +151,7 @@ class ObligationController extends Controller
             'remind_days_before' => ['required', 'integer', 'between:0,30'],
             'note' => ['nullable', 'string', 'max:255'],
             'wallet_id' => ['nullable', 'integer', Rule::exists('wallets', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
-            'money_category_id' => ['nullable', 'integer', Rule::exists('money_categories', 'id')->where('user_id', $request->user()->id)->where('type', MoneyCategoryType::Expense->value)],
+            'money_category_id' => ['nullable', 'integer', Rule::exists('money_categories', 'id')->where('user_id', $request->user()->id)->where('type', MoneyCategoryType::Expense->value)->whereNull('archived_at')],
         ]);
         if ($data['kind'] === ObligationKind::Installment->value) {
             $request->validate(['installments_total' => ['required', 'integer', 'between:1,120']]);
@@ -179,7 +222,7 @@ class ObligationController extends Controller
         abort_if($data['due_on'] < $obligation->starts_on->toDateString(), 422, __('ui.feedback.obligation_period_before_start'));
         abort_if($data['due_on'] > $clock->date($request->user()), 422, __('ui.feedback.obligation_not_due'));
 
-        DB::transaction(function () use ($data, $obligation, $request, $obligationSchedule, $clock) {
+        DatabaseTransaction::immediate(function () use ($data, $obligation, $request, $obligationSchedule, $clock) {
             $lockedObligation = $request->user()->obligations()->lockForUpdate()->findOrFail($obligation->id);
             $duplicate = $lockedObligation->payments()->where('due_on', $data['due_on'])->lockForUpdate()->exists();
             abort_if($duplicate, 422, __('ui.feedback.obligation_already_paid'));
@@ -192,13 +235,13 @@ class ObligationController extends Controller
             abort_unless(
                 $oldestUnpaid && $oldestUnpaid->toDateString() === $data['due_on'],
                 422,
-                'Bayar periode tertua yang belum lunas terlebih dahulu.'
+                __('ui.feedback.obligation_oldest_first')
             );
             if ($lockedObligation->kind === ObligationKind::Installment) {
                 abort_if(
                     $lockedObligation->payments()->count() >= $lockedObligation->installments_total,
                     422,
-                    'Semua cicilan sudah dicatat.'
+                    __('ui.feedback.installments_complete')
                 );
             }
             $payment = $request->user()->obligationPayments()->create([
@@ -230,6 +273,7 @@ class ObligationController extends Controller
     {
         $this->authorize('update', $obligation);
         abort_if($obligation->user_id !== $request->user()->id
+            || $obligation->archived_at
             || $payment->obligation_id !== $obligation->id
             || $payment->user_id !== $request->user()->id, 404);
         DB::transaction(function () use ($payment) {

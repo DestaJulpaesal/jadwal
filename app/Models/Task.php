@@ -14,6 +14,10 @@ class Task extends Model
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'completed_at' => 'datetime',
+        'recurrence_days' => 'array',
+        'recurrence_until' => 'date',
+        'recurrence_anchor_day' => 'integer',
+        'occurrence_date' => 'date',
     ];
 
     protected $fillable = [
@@ -25,6 +29,12 @@ class Task extends Model
         'starts_at',
         'ends_at',
         'completed_at',
+        'recurrence',
+        'recurrence_days',
+        'recurrence_until',
+        'recurrence_anchor_day',
+        'recurrence_parent_id',
+        'occurrence_date',
     ];
 
     public function user()

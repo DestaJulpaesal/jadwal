@@ -16,6 +16,7 @@
         </section>
         @endif
         @if ($section === 'overview')
+        @include('user.money.budgets')
         <section class="concept-card concept-card-white">
             <div class="concept-card-header">
                 <div><h2 class="text-lg font-semibold">Rencana pengeluaran</h2><p class="text-sm">Tagihan dan cicilan yang belum dibayar pada bulan ini.</p></div>
@@ -48,7 +49,7 @@
                     <li class="concept-item">
                         <div class="min-w-0 flex-1">
                             <p class="font-medium">{{ $loan->direction->label() }} · {{ $loan->counterparty }}</p>
-                            <p class="text-sm">Jatuh tempo {{ $loan->due_on->translatedFormat('j M Y') }}</p>
+                            <p class="text-sm">{{ __('ui.agenda.due') }} {{ $loan->due_on->translatedFormat('j M Y') }}</p>
                         </div>
                         <strong class="shrink-0 {{ $loan->direction === \App\Enums\LoanDirection::Lent ? 'text-success' : 'text-danger' }}" data-private>
                             {{ $loan->direction === \App\Enums\LoanDirection::Lent ? '+' : '−' }}{{ rupiah($loan->planned_amount) }}
@@ -99,14 +100,41 @@
             <div class="concept-card-header">
                 <div class="concept-heading mb-0"><x-concept-icon name="wl" /><div><h2 class="text-lg font-semibold">Dompet</h2><p class="text-sm">Saldo saat ini di setiap tempat penyimpanan uang.</p></div></div>
             </div>
+            <form method="GET" action="{{ route('user.money.index') }}" class="mt-4 surface-card p-4" data-auto-submit>
+                <input type="hidden" name="section" value="wallets">
+                <x-segmented name="status" :label="__('ui.entity_status.active').' / '.__('ui.entity_status.archived')" :options="$statusOptions" :value="$status" />
+                <x-button type="submit" class="sr-only" data-submit-default>{{ __('ui.habit.list_submit') }}</x-button>
+            </form>
             <ul class="concept-list">
                 @forelse ($wallets as $wallet)
                     <li class="concept-item flex-wrap">
                         <span class="min-w-0 flex-1">{{ $wallet->name }} <span class="block text-xs">{{ $wallet->type->label() }}</span></span>
                         <strong class="shrink-0" data-private>{{ rupiah($wallet->calculated_balance) }}</strong>
                         <div class="flex w-full flex-wrap gap-2 sm:w-auto">
-                            <x-button type="button" size="sm" variant="secondary" icon="ubah" x-data x-on:click="$dispatch('open-modal', 'wallet-edit-{{ $wallet->id }}')">Ubah nama</x-button>
-                            <x-button type="button" size="sm" variant="danger" icon="nonaktifkan" x-data x-on:click="$dispatch('open-modal', 'wallet-archive-{{ $wallet->id }}')">Arsipkan</x-button>
+                            @if ($status === 'archived')
+                                <form method="POST" action="{{ route('user.money.wallets.restore', $wallet) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <x-button size="sm" variant="secondary" icon="kembali">Pulihkan</x-button>
+                                </form>
+                                @if ($wallet->transactions_count + $wallet->destination_transactions_count === 0)
+                                    <x-confirm-action :action="route('user.money.wallets.destroy', $wallet)"
+                                        title="Hapus dompet permanen?"
+                                        :message="'Dompet '.$wallet->name.' dan saldo awalnya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.'"
+                                        label="Hapus permanen" />
+                                @else
+                                    <p class="w-full text-xs text-muted">Dompet memiliki transaksi dan tidak dapat dihapus. Riwayat dan saldo tetap tersimpan.</p>
+                                @endif
+                                @if ($wallet->calculated_balance !== 0)
+                                    <p class="w-full text-xs font-medium text-warning-800">Saldo arsip {{ rupiah($wallet->calculated_balance) }} tidak masuk total saldo aktif.</p>
+                                @endif
+                            @else
+                                <x-button type="button" size="sm" variant="secondary" icon="ubah" x-data x-on:click="$dispatch('open-modal', 'wallet-edit-{{ $wallet->id }}')">Ubah nama</x-button>
+                                <x-confirm-action :action="route('user.money.wallets.archive', $wallet)" method="PATCH"
+                                    title="Arsipkan dompet?"
+                                    :message="'Dompet '.$wallet->name.' tidak lagi tersedia untuk transaksi baru. Riwayat dan saldo tetap tersimpan.'"
+                                    label="Arsipkan dompet" tone="secondary" icon="nonaktifkan" />
+                            @endif
                         </div>
                         <x-bottom-sheet name="wallet-edit-{{ $wallet->id }}" title="Ubah nama dompet" :show="old('form_context') === 'wallet-edit-'.$wallet->id && $errors->any()">
                             @if (old('form_context') === 'wallet-edit-'.$wallet->id)
@@ -125,18 +153,6 @@
                                 </div>
                             </form>
                         </x-bottom-sheet>
-                        <x-modal name="wallet-archive-{{ $wallet->id }}" focusable>
-                            <div class="p-5 sm:p-6">
-                                <h2 class="text-lg font-semibold">Arsipkan dompet {{ $wallet->name }}?</h2>
-                                <p class="mt-2 text-sm text-muted">Dompet tidak lagi muncul pada pilihan transaksi baru. Riwayat dan saldonya tetap tersimpan.</p>
-                                <form method="POST" action="{{ route('user.money.wallets.archive', $wallet) }}" class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                                    @csrf
-                                    @method('PATCH')
-                                    <x-button type="button" variant="secondary" icon="kembali" x-on:click="$dispatch('close')">Batal</x-button>
-                                    <x-button type="submit" variant="danger" icon="nonaktifkan" loading-text="Mengarsipkan dompet…">Arsipkan dompet</x-button>
-                                </form>
-                            </div>
-                        </x-modal>
                     </li>
                 @empty
                     <li class="list-none">
@@ -162,6 +178,26 @@
                         <span class="min-w-0 flex-1">{{ $category->name }}</span>
                         <x-badge>{{ $category->type->label() }}</x-badge>
                         <x-button type="button" size="sm" variant="secondary" icon="ubah" x-data x-on:click="$dispatch('open-modal', 'money-category-edit-{{ $category->id }}')">Ubah kategori</x-button>
+                        @if ($status === 'archived')
+                            <form method="POST" action="{{ route('user.money.categories.restore', $category) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-button size="sm" variant="secondary" icon="kembali">Pulihkan</x-button>
+                            </form>
+                            @if ($category->transactions_count + $category->obligations_count + $category->budgets_count === 0)
+                                <x-confirm-action :action="route('user.money.categories.destroy', $category)"
+                                    title="Hapus kategori permanen?"
+                                    :message="'Kategori '.$category->name.' akan dihapus permanen.'"
+                                    label="Hapus permanen" />
+                            @else
+                                <p class="w-full text-xs text-muted">Kategori masih digunakan oleh transaksi, tagihan, atau anggaran dan tidak dapat dihapus. Arsipnya tidak mengubah riwayat.</p>
+                            @endif
+                        @else
+                            <x-confirm-action :action="route('user.money.categories.archive', $category)" method="PATCH"
+                                title="Arsipkan kategori?"
+                                :message="'Kategori '.$category->name.' tidak lagi muncul untuk catatan baru. Riwayat transaksi tetap tersimpan.'"
+                                label="Arsipkan" tone="secondary" icon="nonaktifkan" />
+                        @endif
                         <x-bottom-sheet name="money-category-edit-{{ $category->id }}" title="Ubah kategori" :show="old('form_context') === 'money-category-edit-'.$category->id && $errors->any()">
                             @if (old('form_context') === 'money-category-edit-'.$category->id)
                                 <x-error-summary :errors="$errors->messages()" title="Kategori belum diperbarui. Periksa isian berikut:" />
@@ -210,6 +246,18 @@
                             <strong class="money-transaction-amount shrink-0" data-private>{{ $transaction->type === \App\Enums\TransactionType::Expense ? '−' : '' }}{{ rupiah($transaction->amount) }}</strong>
                             @if ($transaction->source_type === null && ! $transaction->wallet?->archived_at && ! $transaction->destinationWallet?->archived_at && ! $transaction->moneyCategory?->archived_at)
                                 <x-button href="{{ route('user.money.transactions.edit', $transaction) }}" size="sm" variant="secondary" icon="ubah">Ubah transaksi</x-button>
+                            @endif
+                            @if ($transaction->source_type === null)
+                                <x-confirm-action :action="route('user.money.transactions.destroy', $transaction)"
+                                    title="Hapus transaksi?"
+                                    :message="'Transaksi '.$transaction->type->label().' sebesar '.rupiah($transaction->amount).' akan dihapus dan saldo dompet dihitung ulang.'"
+                                    label="Hapus" />
+                            @elseif ($transaction->source_type === 'obligation_payment')
+                                <x-button href="{{ route('user.obligations.index') }}" size="sm" variant="secondary" icon="kembali">Batalkan pembayaran</x-button>
+                            @elseif ($transaction->source_type === 'loan_repayment')
+                                <x-button href="{{ route('user.loans.index') }}" size="sm" variant="secondary" icon="kembali">Batalkan pembayaran</x-button>
+                            @elseif ($transaction->source_type === 'loan')
+                                <x-button href="{{ route('user.loans.index') }}" size="sm" variant="secondary" icon="ubah">Kelola utang/piutang</x-button>
                             @endif
                         </li>
                     @empty
@@ -295,7 +343,7 @@
                     <x-datetime-quick id="transaction_date" name="occurred_on" label="Tanggal transaksi" type="date" :value="old('occurred_on', $today)" :error="$errors->first('occurred_on')" required help="Tanggal ini dipakai untuk laporan bulanan." />
                     <div data-conditional-field data-condition-name="type" data-condition-except="transfer">
                         <x-select id="transaction_category_id" name="money_category_id" label="Kategori" help="Kategori membantu merangkum pemasukan dan pengeluaran." optional data-match-field="type">
-                            <option value="">Tanpa kategori</option>
+                            <option value="">{{ __('ui.money.uncategorized') }}</option>
                             @foreach ($categories as $category)
                                 <option value="{{ $category->id }}" data-match-value="{{ $category->type->value }}" @selected(old('money_category_id') == $category->id)>{{ $category->type->label() }} · {{ $category->name }}</option>
                             @endforeach

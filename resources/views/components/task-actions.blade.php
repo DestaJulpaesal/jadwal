@@ -30,9 +30,18 @@
                 :action="route('user.tasks.destroy', $task)"
                 method="DELETE"
                 title="Hapus tugas ini?"
-                message="Tugas ini akan dihapus permanen dan tidak dapat dipulihkan."
-                label="Hapus"
+                :message="$task->recurrence !== 'none' ? __('ui.task.recurrence.delete_single_message') : 'Tugas ini akan dihapus permanen dan tidak dapat dipulihkan.'"
+                :label="$task->recurrence !== 'none' ? __('ui.task.recurrence.delete_single') : 'Hapus'"
             />
+            @if ($task->recurrence !== 'none')
+                <x-confirm-action
+                    :action="route('user.tasks.destroy-series', $task)"
+                    method="DELETE"
+                    :title="__('ui.task.recurrence.stop_title')"
+                    :message="__('ui.task.recurrence.stop_message')"
+                    :label="__('ui.task.recurrence.stop_action')"
+                />
+            @endif
         @endif
     </div>
 
@@ -49,9 +58,18 @@
                     :action="route('user.tasks.destroy', $task)"
                     method="DELETE"
                     title="Hapus tugas ini?"
-                    message="Tugas ini akan dihapus permanen dan tidak dapat dipulihkan."
-                    label="Hapus"
+                    :message="$task->recurrence !== 'none' ? __('ui.task.recurrence.delete_single_message') : 'Tugas ini akan dihapus permanen dan tidak dapat dipulihkan.'"
+                    :label="$task->recurrence !== 'none' ? __('ui.task.recurrence.delete_single') : 'Hapus'"
                 />
+                @if ($task->recurrence !== 'none')
+                    <x-confirm-action
+                        :action="route('user.tasks.destroy-series', $task)"
+                        method="DELETE"
+                        :title="__('ui.task.recurrence.stop_title')"
+                        :message="__('ui.task.recurrence.stop_message')"
+                        :label="__('ui.task.recurrence.stop_action')"
+                    />
+                @endif
             @endif
         </div>
     </details>

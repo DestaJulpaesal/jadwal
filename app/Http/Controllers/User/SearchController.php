@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Support\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -27,53 +28,63 @@ class SearchController extends Controller
 
         $query = $validator->validated()['q'];
         $user = $request->user();
-        $pattern = "%{$query}%";
+        $pattern = '%'.Like::escape($query).'%';
 
         $sections = collect([
             [
-                'title' => 'Tugas',
+                'title' => __('ui.search.tasks'),
                 'icon' => 'tk',
                 'records' => $user->tasks()
-                    ->where(fn ($builder) => $builder->where('title', 'like', $pattern)->orWhere('description', 'like', $pattern))
+                    ->where(fn ($builder) => $builder->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+                        ->orWhereRaw("description LIKE ? ESCAPE '!'", [$pattern]))
                     ->latest()
                     ->limit(8)
                     ->get()
                     ->map(fn ($task) => [
                         'title' => $task->title,
-                        'description' => $task->description ?: 'Buka daftar tugas untuk melihat detail.',
-                        'url' => route('user.tasks.index'),
+                        'description' => $task->description ?: __('ui.search.task_details'),
+                        'url' => route('user.tasks.edit', $task),
                     ]),
             ],
             [
-                'title' => 'Kebiasaan',
+                'title' => __('ui.search.habits'),
                 'icon' => 'fl',
                 'records' => $user->habits()
-                    ->where(fn ($builder) => $builder->where('title', 'like', $pattern)->orWhere('description', 'like', $pattern))
+                    ->where(fn ($builder) => $builder->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+                        ->orWhereRaw("description LIKE ? ESCAPE '!'", [$pattern]))
                     ->latest()
                     ->limit(8)
                     ->get()
                     ->map(fn ($habit) => [
                         'title' => $habit->title,
-                        'description' => $habit->description ?: 'Buka daftar kebiasaan untuk melihat detail.',
+                        'description' => trim(implode(' · ', array_filter([
+                            $habit->archived_at ? __('ui.entity_status.archived_label') : null,
+                            $habit->description ?: __('ui.search.habit_details'),
+                        ]))),
                         'url' => route('user.habits.index'),
                     ]),
             ],
             [
-                'title' => 'Transaksi',
+                'title' => __('ui.search.transactions'),
                 'icon' => 'wl',
                 'records' => $user->transactions()
-                    ->with(['wallet:id,name', 'moneyCategory:id,name'])
+                    ->with(['wallet:id,name,archived_at', 'destinationWallet:id,name,archived_at', 'moneyCategory:id,name,archived_at'])
                     ->where(function ($builder) use ($pattern, $user) {
-                        $builder->where('note', 'like', $pattern)
-                            ->orWhereHas('wallet', fn ($wallet) => $wallet->where('user_id', $user->id)->where('name', 'like', $pattern))
-                            ->orWhereHas('moneyCategory', fn ($category) => $category->where('user_id', $user->id)->where('name', 'like', $pattern));
+                        $builder->whereRaw("note LIKE ? ESCAPE '!'", [$pattern])
+                            ->orWhereHas('wallet', fn ($wallet) => $wallet->where('user_id', $user->id)
+                                ->whereRaw("name LIKE ? ESCAPE '!'", [$pattern]))
+                            ->orWhereHas('moneyCategory', fn ($category) => $category->where('user_id', $user->id)
+                                ->whereRaw("name LIKE ? ESCAPE '!'", [$pattern]));
                     })
                     ->latest('occurred_on')
                     ->limit(8)
                     ->get()
                     ->map(fn ($transaction) => [
-                        'title' => $transaction->note ?: $transaction->moneyCategory?->name ?: $transaction->wallet?->name ?: 'Transaksi',
+                        'title' => $transaction->note ?: $transaction->moneyCategory?->name ?: $transaction->wallet?->name ?: __('ui.search.transactions'),
                         'description' => trim(implode(' · ', array_filter([
+                            ($transaction->wallet?->archived_at
+                                || $transaction->destinationWallet?->archived_at
+                                || $transaction->moneyCategory?->archived_at) ? __('ui.entity_status.archived_label') : null,
                             $transaction->type->label(),
                             $transaction->occurred_on->format('d M Y'),
                             $transaction->moneyCategory?->name,
@@ -82,44 +93,56 @@ class SearchController extends Controller
                     ]),
             ],
             [
-                'title' => 'Tagihan dan cicilan',
+                'title' => __('ui.search.obligations'),
                 'icon' => 'bl',
                 'records' => $user->obligations()
-                    ->where(fn ($builder) => $builder->where('title', 'like', $pattern)->orWhere('note', 'like', $pattern))
+                    ->where(fn ($builder) => $builder->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+                        ->orWhereRaw("note LIKE ? ESCAPE '!'", [$pattern]))
                     ->latest()
                     ->limit(8)
                     ->get()
                     ->map(fn ($obligation) => [
                         'title' => $obligation->title,
-                        'description' => $obligation->note ?: $obligation->kind->label(),
+                        'description' => trim(implode(' · ', array_filter([
+                            $obligation->archived_at ? __('ui.entity_status.archived_label') : null,
+                            $obligation->note ?: $obligation->kind->label(),
+                        ]))),
                         'url' => route('user.obligations.index'),
                     ]),
             ],
             [
-                'title' => 'Utang dan piutang',
+                'title' => __('ui.search.loans'),
                 'icon' => 'us',
                 'records' => $user->loans()
-                    ->where(fn ($builder) => $builder->where('counterparty', 'like', $pattern)->orWhere('note', 'like', $pattern))
+                    ->where(fn ($builder) => $builder->whereRaw("counterparty LIKE ? ESCAPE '!'", [$pattern])
+                        ->orWhereRaw("note LIKE ? ESCAPE '!'", [$pattern]))
                     ->latest()
                     ->limit(8)
                     ->get()
                     ->map(fn ($loan) => [
                         'title' => $loan->counterparty,
-                        'description' => $loan->note ?: $loan->direction->label(),
+                        'description' => trim(implode(' · ', array_filter([
+                            $loan->archived_at ? __('ui.entity_status.archived_label') : null,
+                            $loan->note ?: $loan->direction->label(),
+                        ]))),
                         'url' => route('user.loans.index'),
                     ]),
             ],
             [
-                'title' => 'Target',
+                'title' => __('ui.search.goals'),
                 'icon' => 'bk',
                 'records' => $user->goals()
-                    ->where(fn ($builder) => $builder->where('title', 'like', $pattern)->orWhere('description', 'like', $pattern))
+                    ->where(fn ($builder) => $builder->whereRaw("title LIKE ? ESCAPE '!'", [$pattern])
+                        ->orWhereRaw("description LIKE ? ESCAPE '!'", [$pattern]))
                     ->latest()
                     ->limit(8)
                     ->get()
                     ->map(fn ($goal) => [
                         'title' => $goal->title,
-                        'description' => $goal->description ?: $goal->status->label(),
+                        'description' => trim(implode(' · ', array_filter([
+                            $goal->status->value === 'archived' ? __('ui.entity_status.archived_label') : null,
+                            $goal->description ?: $goal->status->label(),
+                        ]))),
                         'url' => route('user.goals.index'),
                     ]),
             ],

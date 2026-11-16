@@ -41,7 +41,7 @@
                 </div>
                 <div class="flex flex-wrap gap-2">
                     <x-status-badge status="Selesai" />
-                    <x-status-badge status="Terlambat" />
+                    <x-status-badge :status="__('ui.agenda.overdue')" />
                     <x-status-badge status="Aktif" />
                     <x-status-badge status="Menunggu" />
                 </div>

@@ -74,6 +74,41 @@
 - Gerbang setelah perubahan: 198 tes lulus (1.346 assertions), Pint `--test` lulus untuk 219 file, dan Vite build lulus. Composer audit tetap merah dengan 55 advisory.
 - Butir 1.5 selesai di kode dan tes; butir 1.6–1.12 belum dikerjakan. Fase 1 belum selesai.
 
+### Fase 1 — 1.6–1.12 (perbaikan diterapkan; 1.7 dan gerbang fase masih terbuka)
+
+- **1.6 Kebiasaan:** indeks menyediakan tab Aktif, Akan datang, Berakhir, dan Arsip; aksi check-in hanya tersedia di tab aktif dan server menolak check-in untuk kebiasaan yang belum mulai, berakhir, atau diarsipkan. Dashboard tidak diubah dan tetap hanya menampilkan kebiasaan aktif terjadwal hari ini.
+- **1.7 Target:** tenggat lampau yang tidak berubah tidak lagi menghalangi edit; tenggat lampau baru tetap ditolak. `habit_id` kini menolak kebiasaan yang diarsipkan. Perbaikan target menurun dan tes regresinya diselesaikan bersama butir 2.2.
+- **1.8–1.9 Keuangan/digest:** pesan piutang memakai sisa pokok. Digest mengisolasi kegagalan per pengguna, mencatat hanya `user_id` dan kelas exception, membatasi retry ke tiga kegagalan per tanggal lokal, tidak mengirim email kosong, dan tetap melanjutkan penerima berikutnya.
+- **1.10 Akses/proxy:** `TRUSTED_PROXIES` menerima daftar IP/CIDR, wildcard `*`, atau default kosong; dokumentasi deployment diperbarui. Guest redirect memilih dashboard sesuai peran, redirect usang dihapus, admin dilarang dari policy tugas maupun model privat, dan semua route tugas diberi throttle.
+- **1.11 SQLite:** `App\Support\Db::immediate()` memakai `BEGIN IMMEDIATE` pada SQLite untuk operasi goal, pembayaran utang/piutang/tagihan, dan seeding preset; driver lain memakai transaksi Laravel. Tes batas progres dan sisa pinjaman melengkapi tes transaksi berurutan yang merepresentasikan state sama.
+- **1.12 Pembersihan:** wildcard `%`, `_`, `!`, dan `\` dicari sebagai teks literal; string status/jatuh tempo dan jenis agenda dipusatkan di `lang/id/ui.php`; validasi dashboard yang tidak dipakai dan field kategori habit yang tidak diproses dihapus. `WalletBalance::forWallet()` dipertahankan karena masih dipakai di `MoneyController`, `GoalProgress`, dan tes saldo. Relasi user pada `GoalProgress` memakai eager-loaded relation. `ActivityStreak` hanya membaca 400 hari terbaru; angka rekor di UI menjelaskan batas ini. View dashboard admin sengaja membungkus partial indeks akun.
+- Validasi setelah semua butir fase: `php artisan test` **212 lulus (1.411 assertions)**; Pint **226 file lulus**; `npm run build` lulus (JS gzip **54,76 KB**, CSS terbesar gzip **19,75 KB**); `npm audit --audit-level=high` **0 vulnerability**.
+- **Gerbang belum hijau:** audit Composer yang sudah dijalankan pada baseline melaporkan **55 advisory pada 15 paket**, termasuk severity tinggi/kritis. Composer CLI belum tersedia untuk audit ulang. Atas permintaan pengguna, pekerjaan Fase 2 dilanjutkan tanpa perubahan dependensi dan tanpa menjalankan migration pada database kerja; gerbang audit/upgrade tetap terbuka.
+
+### Fase 2.1 — Siklus hidup entitas (diterapkan; tes terintegrasi lulus)
+
+- Dompet, kategori uang, tagihan/cicilan, utang/piutang, kebiasaan, dan target kini menyediakan arsip/pulihkan. Target memiliki tab Berjalan, Tercapai, dan Arsip; kebiasaan mempertahankan tab aktif/akan datang/berakhir/arsip. Penghapusan permanen entitas lifecycle hanya tersedia dari tab Arsip; penghapusan transaksi manual juga selalu meminta konfirmasi.
+- Transaksi manual dapat dihapus dan saldo dihitung ulang; transaksi turunan tidak dapat dihapus langsung dan mengarahkan pengguna ke pembatalan pembayaran pada entitas asal. Tagihan/pinjaman dengan pembayaran, dompet dengan transaksi, dan kategori yang masih dipakai ditolak saat dihapus. Kategori tetap dapat diubah namanya saat diarsipkan.
+- Mutasi baru di-throttle dan semua aksi owner-scoped melalui policy yang ada serta pemeriksaan pemilik; tes antar-pengguna meliputi setiap jenis entitas. Agenda dan pengingat mengabaikan data terarsip; hasil pencarian yang cocok menampilkan label “Diarsipkan”.
+- Kebijakan saldo: dompet terarsip dikecualikan dari total saldo aktif, tetapi saldo terhitung dan riwayat transaksinya tetap disimpan serta terlihat pada tab Arsip. Penghapusan permanen tanpa transaksi menghapus saldo awal; saldo nonnol ditampilkan sebagai peringatan.
+- Tidak diperlukan migration untuk butir ini. Tes terfokus lifecycle, pencarian, kebiasaan, dan jadwal tagihan lulus; suite penuh pasca Fase 2.3 juga lulus. Pemeriksaan UI viewport masih perlu dilakukan. Composer audit tetap blocker untuk penutupan keseluruhan prompt.
+
+### Fase 2.2 — Target dua arah dan koreksi progres (diterapkan; teruji)
+
+- Migration menambah `goals.direction` dengan default `increase`; `goal_updates.amount` menjadi signed pada MySQL (SQLite menerima nilai negatif pada kolom integer yang ada). Rollback menolak berjalan bila sudah ada progres negatif. Migration hanya dijalankan dalam database tes terisolasi, bukan database kerja.
+- `GoalProgress` menghitung persen, sisa nilai, dan progres harian untuk arah naik maupun turun. Validasi menjaga urutan nilai awal/target dan membatasi progres agar tidak melewati target searah atau kurang dari nol.
+- Catatan progres menerima delta bertanda, dan target menampilkan riwayat; hanya catatan terbaru yang dapat di-undo dengan konfirmasi dan policy `GoalUpdate`. Undo yang membuat target tercapai kembali menjadi status Berjalan.
+- Tes arah turun 80→70, koreksi, batas target, undo terbaru, transisi status, validasi rentang, kepemilikan, dan regresi target naik lulus (`GoalDirectionTest`: 3 tes, 34 assertion).
+
+### Fase 2.3 — Anggaran bulanan per kategori (diterapkan; gerbang UI masih terbuka)
+
+- Tabel `budgets` menyimpan batas per pengguna, kategori pengeluaran, dan bulan unik. `SaveBudgetRequest` membatasi kategori aktif milik pengguna, mencegah duplikat, dan memvalidasi nominal positif.
+- `BudgetProgress::forMonth` menghitung pengeluaran manual termasuk `source_type = NULL`, mengecualikan pinjaman/pembayaran/penyesuaian/transfer, serta membatasi hasil ke pemilik dan rentang bulan. Pemuatan kategori dilakukan sekaligus; tes jumlah query tetap tiga saat kategori bertambah (tanpa N+1).
+- CRUD anggaran tersedia di halaman Keuangan dan Laporan, termasuk indikator progres dengan warna dan label status serta aksi salin bulan sebelumnya yang idempoten dan tidak menimpa nilai yang ada. Kategori yang masih memiliki anggaran tidak dapat dihapus permanen.
+- Dashboard menambahkan peringatan untuk batas ≥80% dan ≥100% tanpa menampilkan nominal pada item perhatian; peringatan mengikuti pilihan bagian Keuangan dashboard.
+- `BudgetProgressTest`: 7 tes, 47 assertion; mencakup batas tanggal awal/akhir bulan, sumber transaksi yang dikecualikan, kategori tanpa anggaran, isolasi pemilik, CRUD, salin idempoten, dashboard, proteksi kategori, dan jumlah query. Migration diuji pada database tes terisolasi oleh suite; database kerja tidak dimigrasikan.
+- Suite penuh pada implementasi backend: **228 lulus (1.567 assertion)**; tes fokus 7/47 diulang dan lulus sesudahnya. Pint untuk PHP terkait, kompilasi Blade, dan Vite build lulus. JS gzip **54,76 KB**, masih melewati target prompt 50 KB. Pemeriksaan manual UI 360/1280px dan mode terang/gelap belum dilakukan; audit Composer tetap blocker.
+
 ### Commit hardening
 
 - `667ed4f` — `fix(ci): isolate feature tests from Vite assets`.
@@ -83,7 +118,7 @@
 - `10b8d70` — `fix(tasks): clear completion timestamp when reopened`.
 - `3e386fc` — `fix(reports): use safe calendar month ranges`.
 - `14de85c` — `fix(obligations): cap completed installment schedules`.
-- Commit perbaikan 1.5 akan dicatat setelah review akhir.
+- `548b57a` — `fix(money): seed category presets once per user`.
 
 ## Status penutupan terakhir — 9 November 2026
 

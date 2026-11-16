@@ -7,6 +7,7 @@ use App\Enums\TransactionType;
 use App\Http\Controllers\Controller;
 use App\Models\Loan;
 use App\Services\LoanBalance;
+use App\Support\Db as DatabaseTransaction;
 use App\Support\Feedback;
 use App\Support\Rupiah;
 use App\Support\UserClock;
@@ -20,23 +21,36 @@ class LoanController extends Controller
     public function index(Request $request, LoanBalance $balances, UserClock $clock)
     {
         $this->authorize('viewAny', Loan::class);
-        $loans = $request->user()->loans()->whereNull('archived_at')->with('repayments')->orderByDesc('loan_date')->get();
+        $statusOptions = [
+            'active' => __('ui.entity_status.active'),
+            'archived' => __('ui.entity_status.archived'),
+        ];
+        $status = $request->validate([
+            'status' => ['nullable', Rule::in(array_keys($statusOptions))],
+        ])['status'] ?? 'active';
+        $loans = $request->user()->loans()
+            ->when($status === 'archived', fn ($query) => $query->whereNotNull('archived_at'), fn ($query) => $query->whereNull('archived_at'))
+            ->with('repayments')->orderByDesc('loan_date')->get();
         $today = $clock->date($request->user());
         $loans->each(function (Loan $loan) use ($balances, $today) {
             $remaining = $balances->remaining($loan);
             $loan->setAttribute('remaining_amount', $remaining);
             $loan->setAttribute('due_label', match (true) {
-                $remaining === 0 => 'Lunas',
-                ! $loan->due_on => 'Berjalan',
-                $loan->due_on->toDateString() < $today => 'Terlambat '.Carbon::parse($loan->due_on->toDateString())->diffInDays(Carbon::parse($today)).' hari',
-                $loan->due_on->toDateString() === $today => 'Jatuh tempo hari ini',
-                $loan->due_on->lte(Carbon::parse($today)->addDays(3)) => 'Jatuh tempo '.$loan->due_on->diffInDays(Carbon::parse($today)).' hari lagi',
-                default => 'Berjalan',
+                $remaining === 0 => __('ui.agenda.loan_paid'),
+                ! $loan->due_on => __('ui.agenda.loan_running'),
+                $loan->due_on->toDateString() < $today => __('ui.agenda.late_days', [
+                    'days' => Carbon::parse($loan->due_on->toDateString())->diffInDays(Carbon::parse($today)),
+                ]),
+                $loan->due_on->toDateString() === $today => __('ui.agenda.due_today'),
+                $loan->due_on->lte(Carbon::parse($today)->addDays(3)) => __('ui.agenda.loan_due_in_days', [
+                    'days' => $loan->due_on->diffInDays(Carbon::parse($today)),
+                ]),
+                default => __('ui.agenda.loan_running'),
             });
             if ($loan->direction === LoanDirection::Lent && $loan->due_on && $remaining > 0) {
                 $loan->setAttribute('reminder_message', __('messages.loan_reminder', [
                     'name' => $loan->counterparty,
-                    'amount' => rupiah($loan->amount),
+                    'amount' => rupiah($remaining),
                     'date' => $loan->due_on->translatedFormat('j F Y'),
                 ]));
             }
@@ -46,7 +60,42 @@ class LoanController extends Controller
         $lent = $loans->where('direction', LoanDirection::Lent)->sum('remaining_amount');
         $borrowed = $loans->where('direction', LoanDirection::Borrowed)->sum('remaining_amount');
 
-        return view('user.loans.index', compact('loans', 'wallets', 'today', 'lent', 'borrowed'));
+        return view('user.loans.index', compact('loans', 'wallets', 'today', 'lent', 'borrowed', 'status', 'statusOptions'));
+    }
+
+    public function archive(Request $request, Loan $loan)
+    {
+        $this->authorize('update', $loan);
+        abort_if($loan->user_id !== $request->user()->id || $loan->archived_at, 404);
+        $loan->update(['archived_at' => now()]);
+
+        return Feedback::success(back(), __('ui.feedback.loan_archived'));
+    }
+
+    public function restore(Request $request, Loan $loan)
+    {
+        $this->authorize('update', $loan);
+        abort_if($loan->user_id !== $request->user()->id || ! $loan->archived_at, 404);
+        $loan->update(['archived_at' => null]);
+
+        return Feedback::success(back(), __('ui.feedback.record_restored'));
+    }
+
+    public function destroy(Request $request, Loan $loan)
+    {
+        $this->authorize('delete', $loan);
+        abort_if($loan->user_id !== $request->user()->id || ! $loan->archived_at, 404);
+        DatabaseTransaction::immediate(function () use ($request, $loan) {
+            $locked = $request->user()->loans()->lockForUpdate()->findOrFail($loan->id);
+            abort_if($locked->repayments()->exists(), 422, __('ui.feedback.loan_has_repayments'));
+            $request->user()->transactions()
+                ->where('source_type', 'loan')
+                ->where('source_id', $locked->id)
+                ->delete();
+            $locked->delete();
+        });
+
+        return Feedback::success(back(), __('ui.feedback.record_deleted'));
     }
 
     public function store(Request $request, UserClock $clock)
@@ -116,7 +165,7 @@ class LoanController extends Controller
         }
 
         $data = $request->validate($rules);
-        DB::transaction(function () use ($request, $loan, $data) {
+        DatabaseTransaction::immediate(function () use ($request, $loan, $data) {
             $lockedLoan = $request->user()->loans()->lockForUpdate()->findOrFail($loan->id);
             $hasRepayments = $lockedLoan->repayments()->lockForUpdate()->exists();
             $lockedFields = ['direction', 'amount', 'loan_date', 'wallet_id'];
@@ -135,7 +184,7 @@ class LoanController extends Controller
                     };
 
                     if ((string) $data[$field] !== $currentValue) {
-                        abort(422, 'Arah, nominal, tanggal pinjaman, dan dompet tidak dapat diubah setelah pembayaran tercatat.');
+                        abort(422, __('ui.agenda.loan_due_locked'));
                     }
                 }
 
@@ -186,7 +235,7 @@ class LoanController extends Controller
             'wallet_id' => ['nullable', 'integer', Rule::exists('wallets', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
-        DB::transaction(function () use ($request, $loan, $data, $balances) {
+        DatabaseTransaction::immediate(function () use ($request, $loan, $data, $balances) {
             $lockedLoan = $request->user()->loans()->lockForUpdate()->findOrFail($loan->id);
             $balance = $balances->remaining($lockedLoan);
             abort_if($data['amount'] > $balance, 422, __('ui.feedback.loan_payment_exceeds_remaining'));
@@ -218,6 +267,7 @@ class LoanController extends Controller
     {
         $this->authorize('update', $loan);
         abort_if($loan->user_id !== $request->user()->id
+            || $loan->archived_at
             || $repayment->loan_id !== $loan->id
             || $repayment->user_id !== $request->user()->id, 404);
         DB::transaction(function () use ($repayment) {

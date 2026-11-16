@@ -6,10 +6,12 @@ use App\Models\Goal;
 use App\Models\Habit;
 use App\Models\User;
 use App\Services\AgendaService;
+use App\Services\BudgetProgress;
 use App\Services\GoalProgress;
 use App\Services\MonthlySummary;
 use App\Services\WalletBalance;
 use App\Support\Feedback;
+use App\Support\MonthRange;
 use App\Support\UserClock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -24,12 +26,9 @@ class UserController extends Controller
         AgendaService $agenda,
         MonthlySummary $summary,
         WalletBalance $balances,
-        GoalProgress $goalProgress
+        GoalProgress $goalProgress,
+        BudgetProgress $budgetProgress
     ) {
-        $validated = $request->validate([
-            'year' => ['nullable', 'integer', 'between:2000,2100'],
-            'month' => ['nullable', 'integer', 'between:1,12'],
-        ]);
         $user = $request->user();
         $today = $clock->date($user);
         $todayStartLocal = Carbon::parse($today, $user->timezone)->startOfDay();
@@ -89,7 +88,27 @@ class UserController extends Controller
                 ));
             });
         $doneHabits = $todayHabits->filter(fn ($habit) => $habit->today_log?->status === \App\Enums\HabitLogStatus::Done)->count();
+        $dashboardSections = $user->dashboard_sections ?? ['attention', 'habits', 'today_tasks', 'upcoming', 'finance'];
         $attentionItems = $agenda->attentionFor($user, $today);
+        if (in_array('finance', $dashboardSections, true)) {
+            $monthRange = MonthRange::fromString(substr($today, 0, 7));
+            foreach ($budgetProgress->forMonth($user, $monthRange) as $budgetItem) {
+                if (! in_array($budgetItem['status'], ['warning', 'over'], true)
+                    || $budgetItem['category'] === null
+                    || $budgetItem['category']->archived_at !== null) {
+                    continue;
+                }
+
+                $attentionItems->push([
+                    'type' => 'budget_attention',
+                    'title' => 'Anggaran: '.$budgetItem['category']->name,
+                    'time' => null,
+                    'status' => __('ui.budget.attention_'.$budgetItem['status']),
+                    'url' => route('user.reports.index', ['month' => $monthRange->key()]),
+                    'quick_action' => null,
+                ]);
+            }
+        }
         $agendaByDay = $agenda->forRange($user, $today, Carbon::parse($today, $user->timezone)->addDays(7)->toDateString());
         $monthlySummary = $summary->forMonth($user, substr($today, 0, 7));
         $wallets = $balances->forUser($user);
@@ -125,8 +144,6 @@ class UserController extends Controller
         ];
         $showOnboarding = ! $user->onboarding_dismissed_at
             && collect($onboardingSteps)->contains(fn (array $step) => ! $step['completed']);
-
-        $dashboardSections = $user->dashboard_sections ?? ['attention', 'habits', 'today_tasks', 'upcoming', 'finance'];
 
         return view('user.dashboard', compact(
             'todayTasks',

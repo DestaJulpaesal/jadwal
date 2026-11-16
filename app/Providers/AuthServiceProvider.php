@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Models\Budget;
 use App\Models\Goal;
 use App\Models\GoalUpdate;
 use App\Models\Habit;
@@ -30,6 +31,7 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         Task::class => TaskPolicy::class,
         Category::class => CategoryPolicy::class,
+        Budget::class => OwnedModelPolicy::class,
         Habit::class => OwnedModelPolicy::class,
         HabitLog::class => OwnedModelPolicy::class,
         Goal::class => OwnedModelPolicy::class,

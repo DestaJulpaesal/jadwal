@@ -8,6 +8,10 @@
             <x-button type="button" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'obligation-create')">Tambah pengingat</x-button>
         </x-page-header>
         @include('user.partials.finance-subnav')
+        <form method="GET" action="{{ route('user.obligations.index') }}" class="surface-card p-4" data-auto-submit>
+            <x-segmented name="status" :label="__('ui.entity_status.active').' / '.__('ui.entity_status.archived')" :options="$statusOptions" :value="$status" />
+            <x-button type="submit" class="sr-only" data-submit-default>{{ __('ui.habit.list_submit') }}</x-button>
+        </form>
         <x-bottom-sheet name="obligation-create" title="Tambah pengingat" :show="request('create') === 'obligation' || (old('form_context') === 'obligation-create' && $errors->any())">
             @if (old('form_context') === 'obligation-create')
                 <x-error-summary :errors="$errors->messages()" title="Pengingat belum tersimpan. Periksa isian berikut:" />
@@ -29,8 +33,28 @@
                         <div><h2 class="font-semibold">{{ $obligation->title }}</h2><p class="text-sm text-muted">{{ $obligation->kind->label() }} · {{ rupiah($obligation->amount) }} · tanggal {{ $obligation->due_day }} setiap bulan</p>
                             @if($obligation->kind->value === 'installment')<p class="mt-1 text-sm text-muted">{{ $obligation->paid_installments }} dari {{ $obligation->installments_total }} · sisa {{ max(0, $obligation->installments_total - $obligation->paid_installments) }}</p>@endif
                         </div>
-                        <x-button href="{{ route('user.obligations.edit', $obligation) }}" variant="secondary" icon="ubah">Ubah pengingat</x-button>
-                        @if ($obligation->next_due)
+                        @if ($status === 'active')
+                            <x-button href="{{ route('user.obligations.edit', $obligation) }}" variant="secondary" icon="ubah">Ubah pengingat</x-button>
+                            <x-confirm-action :action="route('user.obligations.archive', $obligation)" method="PATCH"
+                                title="Arsipkan pengingat?"
+                                :message="'Pengingat '.$obligation->title.' tidak lagi muncul di agenda. Riwayat pembayarannya tetap tersimpan.'"
+                                label="Arsipkan" tone="secondary" icon="nonaktifkan" />
+                        @else
+                            <form method="POST" action="{{ route('user.obligations.restore', $obligation) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-button variant="secondary" icon="kembali">Pulihkan</x-button>
+                            </form>
+                            @if ($obligation->payments->isEmpty())
+                                <x-confirm-action :action="route('user.obligations.destroy', $obligation)"
+                                    title="Hapus pengingat permanen?"
+                                    :message="'Pengingat '.$obligation->title.' akan dihapus permanen.'"
+                                    label="Hapus permanen" />
+                            @else
+                                <p class="text-xs text-muted">Pengingat memiliki riwayat pembayaran dan tidak dapat dihapus.</p>
+                            @endif
+                        @endif
+                        @if ($status === 'active' && $obligation->next_due)
                             <form method="POST" action="{{ route('user.obligations.pay', $obligation) }}" class="flex flex-wrap items-end gap-2">
                                 @csrf
                                 <input type="hidden" name="due_on" value="{{ $obligation->next_due->toDateString() }}">
@@ -47,27 +71,20 @@
                     <ul class="mt-4 divide-y divide-line border-t border-line">
                         @foreach ($obligation->periods as $period)
                             <li class="flex min-h-11 items-center justify-between gap-3 py-2 text-sm">
-                                <span>Jatuh tempo {{ $period['date']->translatedFormat('j M Y') }}</span>
-                                <span class="text-right {{ str_starts_with($period['status'], 'Terlambat') ? 'font-medium text-danger' : 'text-muted' }}">{{ $period['status'] }}</span>
+                                <span>{{ __('ui.agenda.due') }} {{ $period['date']->translatedFormat('j M Y') }}</span>
+                                <span class="text-right {{ str_starts_with($period['status'], __('ui.agenda.overdue')) ? 'font-medium text-danger' : 'text-muted' }}">{{ $period['status'] }}</span>
                             </li>
                         @endforeach
                     </ul>
                     @if ($obligation->payments->isNotEmpty())<p class="mt-2 text-xs text-muted">{{ $obligation->payments->count() }} pembayaran tercatat.</p>@endif
                     @foreach ($obligation->payments as $payment)
-                        <div class="mt-2 flex items-center justify-between border-t border-line pt-2 text-sm"><span>Jatuh tempo {{ $payment->due_on->translatedFormat('j M Y') }} · dibayar {{ rupiah($payment->amount_paid) }}</span>
-                            <x-button type="button" size="sm" variant="danger" icon="kembali" x-data x-on:click="$dispatch('open-modal', 'cancel-obligation-payment-{{ $payment->id }}')">Batalkan pembayaran</x-button>
-                            <x-modal name="cancel-obligation-payment-{{ $payment->id }}" focusable>
-                                <div class="p-5 sm:p-6">
-                                    <h2 class="text-lg font-semibold">Batalkan pembayaran ini?</h2>
-                                    <p class="mt-2 text-sm text-muted">Pembayaran {{ rupiah($payment->amount_paid) }} untuk periode {{ $payment->due_on->translatedFormat('j F Y') }} akan dihapus dari catatan dan saldo dompet dihitung ulang.</p>
-                                    <form method="POST" action="{{ route('user.obligations.payments.cancel', [$obligation, $payment]) }}" class="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-button type="button" variant="secondary" icon="kembali" x-on:click="$dispatch('close')">Kembali</x-button>
-                                        <x-button type="submit" variant="danger" icon="kembali" loading-text="Membatalkan pembayaran…">Batalkan pembayaran</x-button>
-                                    </form>
-                                </div>
-                            </x-modal>
+                        <div class="mt-2 flex items-center justify-between border-t border-line pt-2 text-sm"><span>{{ __('ui.agenda.due') }} {{ $payment->due_on->translatedFormat('j M Y') }} · dibayar {{ rupiah($payment->amount_paid) }}</span>
+                            @if ($status === 'active')
+                                <x-confirm-action :action="route('user.obligations.payments.cancel', [$obligation, $payment])"
+                                    title="Batalkan pembayaran?"
+                                    :message="'Pembayaran '.rupiah($payment->amount_paid).' untuk periode '.$payment->due_on->translatedFormat('j F Y').' akan dihapus dan saldo dompet dihitung ulang.'"
+                                    label="Batalkan pembayaran" icon="kembali" />
+                            @endif
                         </div>
                     @endforeach
                 </article>

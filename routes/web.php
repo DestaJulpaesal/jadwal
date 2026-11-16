@@ -3,8 +3,10 @@
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CspReportController;
+use App\Http\Controllers\DataExportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\User\BudgetController;
 use App\Http\Controllers\User\GoalController;
 use App\Http\Controllers\User\HabitController;
 use App\Http\Controllers\User\LoanController;
@@ -104,30 +106,50 @@ Route::middleware($dashboardMiddleware)->group(function () {
         Route::view('/application', 'user.application')->name('application');
         Route::get('/more', fn () => redirect()->route('profile.edit'))->name('more');
         Route::get('/search', SearchController::class)->name('search');
-        Route::patch('tasks/{task}/complete', [UserTaskController::class, 'complete'])->name('tasks.complete');
+        Route::patch('tasks/{task}/complete', [UserTaskController::class, 'complete'])->middleware('throttle:60,1')->name('tasks.complete');
+        Route::patch('tasks/bulk', [UserTaskController::class, 'bulk'])->middleware('throttle:60,1')->name('tasks.bulk');
+        Route::delete('tasks/{task}/series', [UserTaskController::class, 'destroySeries'])->middleware('throttle:60,1')->name('tasks.destroy-series');
         Route::resource('tasks', UserTaskController::class)->except(['show']);
         Route::post('habits/{habit}/check-in', [HabitController::class, 'checkIn'])->middleware('throttle:60,1')->name('habits.check-in');
         Route::delete('habits/{habit}/check-in', [HabitController::class, 'cancelCheckIn'])->middleware('throttle:60,1')->name('habits.check-in.cancel');
         Route::patch('habits/{habit}/archive', [HabitController::class, 'archive'])->middleware('throttle:60,1')->name('habits.archive');
+        Route::patch('habits/{habit}/restore', [HabitController::class, 'restore'])->middleware('throttle:60,1')->name('habits.restore');
+        Route::delete('habits/{habit}', [HabitController::class, 'destroy'])->middleware('throttle:60,1')->name('habits.destroy');
         Route::resource('habits', HabitController::class)->except(['show', 'destroy'])->middleware('throttle:60,1');
         Route::get('/money', [MoneyController::class, 'index'])->name('money.index');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::post('/budgets/copy-previous', [BudgetController::class, 'copyPrevious'])->middleware('throttle:30,1')->name('budgets.copy-previous');
+        Route::post('/budgets', [BudgetController::class, 'store'])->middleware('throttle:60,1')->name('budgets.store');
+        Route::patch('/budgets/{budget}', [BudgetController::class, 'update'])->middleware('throttle:60,1')->name('budgets.update');
+        Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->middleware('throttle:60,1')->name('budgets.destroy');
         Route::post('/money/wallets', [MoneyController::class, 'storeWallet'])->middleware('throttle:60,1')->name('money.wallets.store');
         Route::patch('/money/wallets/{wallet}', [MoneyController::class, 'updateWallet'])->middleware('throttle:60,1')->name('money.wallets.update');
         Route::patch('/money/wallets/{wallet}/archive', [MoneyController::class, 'archiveWallet'])->middleware('throttle:60,1')->name('money.wallets.archive');
+        Route::patch('/money/wallets/{wallet}/restore', [MoneyController::class, 'restoreWallet'])->middleware('throttle:60,1')->name('money.wallets.restore');
+        Route::delete('/money/wallets/{wallet}', [MoneyController::class, 'destroyWallet'])->middleware('throttle:60,1')->name('money.wallets.destroy');
         Route::post('/money/transactions', [MoneyController::class, 'storeTransaction'])->middleware('throttle:60,1')->name('money.transactions.store');
         Route::get('/money/transactions/{transaction}/edit', [MoneyController::class, 'editTransaction'])->name('money.transactions.edit');
         Route::patch('/money/transactions/{transaction}', [MoneyController::class, 'updateTransaction'])->middleware('throttle:60,1')->name('money.transactions.update');
+        Route::delete('/money/transactions/{transaction}', [MoneyController::class, 'destroyTransaction'])->middleware('throttle:60,1')->name('money.transactions.destroy');
         Route::post('/money/categories', [MoneyController::class, 'storeCategory'])->middleware('throttle:60,1')->name('money.categories.store');
         Route::patch('/money/categories/{moneyCategory}', [MoneyController::class, 'updateCategory'])->middleware('throttle:60,1')->name('money.categories.update');
+        Route::patch('/money/categories/{moneyCategory}/archive', [MoneyController::class, 'archiveCategory'])->middleware('throttle:60,1')->name('money.categories.archive');
+        Route::patch('/money/categories/{moneyCategory}/restore', [MoneyController::class, 'restoreCategory'])->middleware('throttle:60,1')->name('money.categories.restore');
+        Route::delete('/money/categories/{moneyCategory}', [MoneyController::class, 'destroyCategory'])->middleware('throttle:60,1')->name('money.categories.destroy');
         Route::get('/obligations', [ObligationController::class, 'index'])->name('obligations.index');
         Route::post('/obligations', [ObligationController::class, 'store'])->middleware('throttle:60,1')->name('obligations.store');
+        Route::patch('/obligations/{obligation}/archive', [ObligationController::class, 'archive'])->middleware('throttle:60,1')->name('obligations.archive');
+        Route::patch('/obligations/{obligation}/restore', [ObligationController::class, 'restore'])->middleware('throttle:60,1')->name('obligations.restore');
+        Route::delete('/obligations/{obligation}', [ObligationController::class, 'destroy'])->middleware('throttle:60,1')->name('obligations.destroy');
         Route::get('/obligations/{obligation}/edit', [ObligationController::class, 'edit'])->name('obligations.edit');
         Route::patch('/obligations/{obligation}', [ObligationController::class, 'update'])->middleware('throttle:60,1')->name('obligations.update');
         Route::post('/obligations/{obligation}/payments', [ObligationController::class, 'pay'])->middleware('throttle:60,1')->name('obligations.pay');
         Route::delete('/obligations/{obligation}/payments/{payment}', [ObligationController::class, 'cancelPayment'])->middleware('throttle:60,1')->name('obligations.payments.cancel');
         Route::get('/loans', [LoanController::class, 'index'])->name('loans.index');
         Route::post('/loans', [LoanController::class, 'store'])->middleware('throttle:60,1')->name('loans.store');
+        Route::patch('/loans/{loan}/archive', [LoanController::class, 'archive'])->middleware('throttle:60,1')->name('loans.archive');
+        Route::patch('/loans/{loan}/restore', [LoanController::class, 'restore'])->middleware('throttle:60,1')->name('loans.restore');
+        Route::delete('/loans/{loan}', [LoanController::class, 'destroy'])->middleware('throttle:60,1')->name('loans.destroy');
         Route::get('/loans/{loan}/edit', [LoanController::class, 'edit'])->name('loans.edit');
         Route::patch('/loans/{loan}', [LoanController::class, 'update'])->middleware('throttle:60,1')->name('loans.update');
         Route::post('/loans/{loan}/repayments', [LoanController::class, 'repay'])->middleware('throttle:60,1')->name('loans.repay');
@@ -138,7 +160,10 @@ Route::middleware($dashboardMiddleware)->group(function () {
         Route::post('/goals', [GoalController::class, 'store'])->middleware('throttle:60,1')->name('goals.store');
         Route::put('/goals/{goal}', [GoalController::class, 'update'])->middleware('throttle:60,1')->name('goals.update');
         Route::post('/goals/{goal}/updates', [GoalController::class, 'updateProgress'])->middleware('throttle:60,1')->name('goals.updates.store');
+        Route::delete('/goals/{goal}/updates/{goalUpdate}', [GoalController::class, 'destroyUpdate'])->middleware('throttle:60,1')->name('goals.updates.destroy');
         Route::patch('/goals/{goal}/archive', [GoalController::class, 'archive'])->middleware('throttle:60,1')->name('goals.archive');
+        Route::patch('/goals/{goal}/restore', [GoalController::class, 'restore'])->middleware('throttle:60,1')->name('goals.restore');
+        Route::delete('/goals/{goal}', [GoalController::class, 'destroy'])->middleware('throttle:60,1')->name('goals.destroy');
         Route::patch('/goals/{goal}/achieve', [GoalController::class, 'markAchieved'])->middleware('throttle:60,1')->name('goals.achieve');
     });
 });
@@ -146,6 +171,10 @@ Route::middleware($dashboardMiddleware)->group(function () {
 Route::middleware(['auth', 'auth.session', 'active'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::get('/settings/exports/{type}', [DataExportController::class, 'export'])
+        ->whereIn('type', ['transactions', 'tasks', 'habits', 'habit-logs'])
+        ->middleware('throttle:5,1')
+        ->name('settings.exports');
     Route::get('/profile/photo', [ProfileController::class, 'photo'])->name('profile.photo');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

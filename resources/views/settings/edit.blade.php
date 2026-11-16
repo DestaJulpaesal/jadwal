@@ -157,5 +157,39 @@
 
             <x-form-actions :cancel-url="route('settings.edit')" submit-label="Simpan pengaturan" loading-label="Menyimpan pengaturan…" />
         </form>
+
+        <section class="surface-card space-y-5 p-5 sm:p-7" aria-labelledby="data-export-heading">
+            <div>
+                <h2 id="data-export-heading" class="text-xl font-semibold">{{ __('ui.export.title') }}</h2>
+                <p class="mt-1 text-sm text-muted">{{ __('ui.export.description') }}</p>
+            </div>
+            <form method="GET" action="{{ route('settings.exports', 'transactions') }}" class="grid gap-4 sm:grid-cols-2" data-dirty-guard>
+                <div>
+                    <label class="field-label" for="export-start-date">{{ __('ui.export.start_date') }}</label>
+                    <input id="export-start-date" name="start_date" type="date" value="{{ old('start_date', $exportStartDate) }}" class="form-control" required>
+                    @error('start_date')
+                        <p class="field-error" role="alert">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div>
+                    <label class="field-label" for="export-end-date">{{ __('ui.export.end_date') }}</label>
+                    <input id="export-end-date" name="end_date" type="date" value="{{ old('end_date', $exportEndDate) }}" class="form-control" required>
+                    @error('end_date')
+                        <p class="field-error" role="alert">{{ $message }}</p>
+                    @enderror
+                </div>
+                <p class="text-sm text-muted sm:col-span-2">{{ __('ui.export.range_help') }}</p>
+                <div class="sm:col-span-2">
+                    <x-button type="submit" variant="secondary">{{ __('ui.export.download') }} · {{ __('ui.export.transactions') }}</x-button>
+                </div>
+            </form>
+            <div class="flex flex-wrap gap-2">
+                @foreach (['tasks' => __('ui.export.tasks'), 'habits' => __('ui.export.habits'), 'habit-logs' => __('ui.export.habit_logs')] as $type => $label)
+                    <form method="GET" action="{{ route('settings.exports', $type) }}">
+                        <x-button type="submit" variant="secondary">{{ __('ui.export.download') }} · {{ $label }}</x-button>
+                    </form>
+                @endforeach
+            </div>
+        </section>
     </div>
 @endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AdminAuditLog;
 use App\Models\User;
 use App\Support\Feedback;
+use App\Support\Like;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 
@@ -17,12 +18,13 @@ class AdminController extends Controller
             'status' => ['nullable', 'in:active,inactive'],
             'role' => ['nullable', 'in:admin,user'],
         ]);
+        $searchPattern = isset($filters['search']) ? '%'.Like::escape($filters['search']).'%' : null;
         $query = User::query()
             ->select(['id', 'name', 'email', 'role', 'is_active', 'created_at'])
-            ->when($filters['search'] ?? null, function ($query, $search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('name', 'like', '%'.$search.'%')
-                        ->orWhere('email', 'like', '%'.$search.'%');
+            ->when($searchPattern, function ($query, $pattern) {
+                $query->where(function ($query) use ($pattern) {
+                    $query->whereRaw("name LIKE ? ESCAPE '!'", [$pattern])
+                        ->orWhereRaw("email LIKE ? ESCAPE '!'", [$pattern]);
                 });
             })
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('is_active', $status === 'active'))
@@ -34,6 +36,7 @@ class AdminController extends Controller
             'inactive' => User::where('is_active', false)->count(),
         ];
 
+        // The dashboard intentionally wraps the shared user-management index with account totals.
         return view('admin.dashboard', compact('users', 'accountTotals', 'filters'));
     }
 

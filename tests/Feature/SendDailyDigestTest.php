@@ -6,6 +6,8 @@ use App\Enums\ObligationKind;
 use App\Mail\DailyDigestMail;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -22,6 +24,7 @@ class SendDailyDigestTest extends TestCase
             'digest_days' => [1, 3, 5],
             'timezone' => 'Asia/Jakarta',
         ]);
+        $user->tasks()->create(['title' => 'Agenda', 'starts_at' => '2026-11-02 09:00:00']);
 
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-02 00:00:00', 'UTC'));
         $this->artisan('app:send-daily-digest')->assertSuccessful();
@@ -70,6 +73,7 @@ class SendDailyDigestTest extends TestCase
             'installments_total' => 3,
             'remind_days_before' => 3,
         ]);
+        $user->tasks()->create(['title' => 'Agenda', 'starts_at' => '2026-11-02 09:00:00']);
 
         foreach (['2026-08-02', '2026-09-02', '2026-10-02'] as $date) {
             $user->obligationPayments()->create([
@@ -87,5 +91,61 @@ class SendDailyDigestTest extends TestCase
             DailyDigestMail::class,
             fn (DailyDigestMail $mail) => $mail->hasTo($user->email) && $mail->attentionItems === []
         );
+    }
+
+    public function test_digest_mail_failure_does_not_block_other_users_and_retries_are_capped(): void
+    {
+        Cache::flush();
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-02 08:00:00', 'UTC'));
+        $first = User::factory()->create(['digest_enabled' => true, 'timezone' => 'UTC']);
+        $second = User::factory()->create(['digest_enabled' => true, 'timezone' => 'UTC']);
+        foreach ([$first, $second] as $user) {
+            $user->tasks()->create([
+                'title' => 'Agenda',
+                'starts_at' => '2026-11-02 09:00:00',
+            ]);
+        }
+
+        $failingRecipient = new class
+        {
+            public function send($message): void
+            {
+                throw new \RuntimeException('SMTP unavailable');
+            }
+        };
+        $successfulRecipient = new class
+        {
+            public int $sent = 0;
+
+            public function send($message): void
+            {
+                $this->sent++;
+            }
+        };
+        Mail::shouldReceive('to')->times(3)->with($first->email)->andReturn($failingRecipient);
+        Mail::shouldReceive('to')->once()->with($second->email)->andReturn($successfulRecipient);
+        Log::shouldReceive('warning')->times(3)->with('Digest gagal', \Mockery::on(
+            fn (array $context) => $context['user_id'] === $first->id && $context['exception'] === \RuntimeException::class
+        ));
+
+        for ($attempt = 0; $attempt < 4; $attempt++) {
+            $this->artisan('app:send-daily-digest')->assertSuccessful();
+        }
+
+        $this->assertSame(1, $successfulRecipient->sent);
+        $this->assertNull($first->fresh()->digest_last_sent_on);
+        $this->assertSame('2026-11-02', $second->fresh()->digest_last_sent_on->toDateString());
+    }
+
+    public function test_digest_is_not_sent_when_there_are_no_items(): void
+    {
+        Mail::fake();
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-02 08:00:00', 'UTC'));
+        $user = User::factory()->create(['digest_enabled' => true, 'timezone' => 'UTC']);
+
+        $this->artisan('app:send-daily-digest')->assertSuccessful();
+
+        Mail::assertNothingSent();
+        $this->assertSame('2026-11-02', $user->fresh()->digest_last_sent_on->toDateString());
     }
 }

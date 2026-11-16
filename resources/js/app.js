@@ -6,6 +6,7 @@ import '@fontsource/figtree/500.css';
 import '@fontsource/figtree/600.css';
 import '@fontsource/figtree/700.css';
 import './forms';
+import { initializeTaskBulkActions } from './task-bulk-actions';
 import { initializeMotion } from './motion';
 import { initializeNetworkUi } from './network';
 import { initializeNavigation } from './nav';
@@ -18,6 +19,7 @@ import './components';
 
 const initializeApplicationUi = () => {
     initializeNavigation();
+    initializeTaskBulkActions();
     initializeMotion();
     initializeNetworkUi();
     initializeToastQueue();

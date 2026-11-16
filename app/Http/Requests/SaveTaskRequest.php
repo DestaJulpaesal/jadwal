@@ -33,6 +33,10 @@ class SaveTaskRequest extends FormRequest
             'due_date' => ['nullable', 'date'],
             'starts_at' => ['nullable', 'date', 'required_with:ends_at'],
             'ends_at' => ['nullable', 'date', 'required_with:starts_at', 'after_or_equal:starts_at'],
+            'recurrence' => ['sometimes', 'required', Rule::in(['none', 'daily', 'weekly', 'monthly'])],
+            'recurrence_days' => ['nullable', 'array', 'required_if:recurrence,weekly', 'min:1', 'max:7'],
+            'recurrence_days.*' => ['required', 'integer', 'distinct', 'between:1,7'],
+            'recurrence_until' => ['nullable', 'date'],
         ];
     }
 
@@ -51,6 +55,9 @@ class SaveTaskRequest extends FormRequest
             'due_date' => 'tanggal jatuh tempo',
             'starts_at' => 'waktu mulai',
             'ends_at' => 'waktu selesai',
+            'recurrence' => 'pengulangan',
+            'recurrence_days' => 'hari pengulangan',
+            'recurrence_until' => 'batas pengulangan',
         ];
     }
 }

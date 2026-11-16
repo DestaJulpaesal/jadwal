@@ -17,6 +17,11 @@
             <x-button href="{{ route('user.habits.create') }}" variant="primary" class="habit-add-button"><x-concept-icon name="spark" class="h-5 w-5" />Tambah kebiasaan</x-button>
         </header>
         @include('user.partials.habits-subnav')
+        <form method="GET" class="surface-card p-4" data-auto-submit>
+            <x-segmented name="status" :label="__('ui.habit.list_label')" :options="$statusOptions" :value="$status" />
+            <x-button type="submit" class="sr-only" data-submit-default>{{ __('ui.habit.list_submit') }}</x-button>
+        </form>
+        @if ($status === 'active')
         <div class="habit-stats habit-overview">
             <article class="habit-stat habit-stat-blue">
                 <span class="habit-stat-icon" aria-hidden="true"><x-concept-icon name="fl" class="h-5 w-5" /></span>
@@ -27,10 +32,11 @@
                 <div class="habit-stat-content"><b>{{ $habits->filter(fn ($habit) => $habit->today_log?->status->value === 'done')->count() }}</b><span>Selesai hari ini</span></div>
             </article>
         </div>
+        @endif
         <div class="habit-list-heading">
             <div>
                 <p class="k">Jaga konsistensi</p>
-                <h2>Rutinitasmu</h2>
+                <h2>{{ __('ui.habit.status_title', ['status' => strtolower($statusOptions[$status])]) }}</h2>
             </div>
             <span class="habit-count-pill">{{ $habits->count() }} kebiasaan</span>
         </div>
@@ -78,9 +84,10 @@
                     <div class="habit-card-actions" aria-label="Aksi {{ $habit->title }}">
                         <div class="habit-actions-heading">
                             <strong>Aksi kebiasaan</strong>
-                            <span>Catat aktivitas hari ini atau kelola kebiasaan.</span>
+                            <span>{{ $status === 'active' ? __('ui.habit.actions_active') : __('ui.habit.actions_other') }}</span>
                         </div>
                         <x-button href="{{ route('user.habits.edit', $habit) }}" variant="secondary" class="habit-edit-button">Ubah kebiasaan</x-button>
+                        @if ($status === 'active')
                         @if ($habit->today_log?->status->value === 'done')
                             <form method="POST" action="{{ route('user.habits.check-in.cancel', $habit) }}" data-optimistic-action="cancel-habit-checkin">
                                 @csrf
@@ -111,10 +118,23 @@
                                 <x-button name="status" value="skipped" variant="secondary">Lewati hari ini</x-button>
                             </form>
                         @endif
-                        <x-confirm-action :action="route('user.habits.archive', $habit)" method="PATCH"
-                            title="Arsipkan kebiasaan?"
-                            :message="'Kebiasaan '.$habit->title.' akan disembunyikan dari daftar aktif. Riwayat aktivitasnya tetap tersimpan.'"
-                            label="Arsipkan kebiasaan" tone="secondary" icon="nonaktifkan" />
+                        @endif
+                        @if ($status === 'archived')
+                            <form method="POST" action="{{ route('user.habits.restore', $habit) }}">
+                                @csrf
+                                @method('PATCH')
+                                <x-button variant="secondary" class="habit-main-action" icon="kembali">Pulihkan kebiasaan</x-button>
+                            </form>
+                            <x-confirm-action :action="route('user.habits.destroy', $habit)"
+                                title="Hapus kebiasaan permanen?"
+                                :message="'Kebiasaan '.$habit->title.' dan seluruh riwayat catatannya akan dihapus permanen.'"
+                                label="Hapus permanen" />
+                        @else
+                            <x-confirm-action :action="route('user.habits.archive', $habit)" method="PATCH"
+                                title="Arsipkan kebiasaan?"
+                                :message="'Kebiasaan '.$habit->title.' akan disembunyikan dari daftar aktif. Riwayat aktivitasnya tetap tersimpan.'"
+                                label="Arsipkan kebiasaan" tone="secondary" icon="nonaktifkan" />
+                        @endif
                     </div>
                     <details class="habit-history">
                         <summary class="min-h-11 cursor-pointer font-medium text-primary-800"><span>Catatan 7 hari terakhir</span><span class="habit-history-chevron" aria-hidden="true">+</span></summary>
@@ -129,7 +149,9 @@
                                 @if ($logDate >= $habit->starts_on->toDateString() && $scheduled)
                                     <div class="habit-day rounded-xl border-2 border-ink bg-white p-2 text-sm shadow-[2px_2px_0_var(--ink)]">
                                         <p class="font-medium">{{ \Illuminate\Support\Carbon::parse($logDate)->translatedFormat('D, j M') }}</p>
-                                        @if ($log)
+                                        @if ($status !== 'active')
+                                            <p class="mt-1 text-muted">{{ $log?->status->label() ?? __('ui.habit.outside_active_period') }}</p>
+                                        @elseif ($log)
                                             <p class="mt-1 text-muted">{{ $log->status->label() }}</p>
                                             @if ($log->duration_minutes || $log->performed_at)
                                                 <p class="mt-1 text-xs text-muted">@if ($log->duration_minutes){{ $log->duration_minutes }} menit @endif @if ($log->performed_at)· {{ $log->performed_at }}@endif</p>
@@ -156,6 +178,15 @@
                     </details>
                 </article>
             @empty
+                @if ($status !== 'active')
+                    <x-empty-state
+                        class="concept-card"
+                        :title="__('ui.habit.empty_status', ['status' => strtolower($statusOptions[$status])])"
+                        :description="__('ui.habit.empty_status_description')"
+                    >
+                        <x-slot:icon><x-concept-icon name="fl" class="h-7 w-7" /></x-slot:icon>
+                    </x-empty-state>
+                @else
                 <section class="concept-card concept-card-yellow px-5 py-12 text-center">
                     <span class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-white"><x-concept-icon name="fl" class="h-7 w-7" /></span>
                     <h2 class="text-lg font-semibold">Belum ada kebiasaan</h2>
@@ -167,6 +198,7 @@
                         @endforeach
                     </div>
                 </section>
+                @endif
             @endforelse
         </div>
     </div>

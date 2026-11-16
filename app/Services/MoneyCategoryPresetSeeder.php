@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use App\Support\Db;
 
 class MoneyCategoryPresetSeeder
 {
@@ -13,7 +13,7 @@ class MoneyCategoryPresetSeeder
             return;
         }
 
-        DB::transaction(function () use ($user) {
+        Db::immediate(function () use ($user) {
             $lockedUser = User::query()->lockForUpdate()->findOrFail($user->getKey());
 
             if ($lockedUser->money_presets_seeded_at !== null) {

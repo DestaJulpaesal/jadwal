@@ -16,7 +16,7 @@
             <x-datetime-quick id="loan_date" name="loan_date" label="Tanggal transaksi" type="date"
                 :value="$loan?->loan_date?->toDateString() ?? $today" help="Tanggal saat pinjaman diberikan atau diterima."
                 :shortcuts="['Hari ini']" required :error="$errors->first('loan_date')" max="{{ $today }}" />
-            <x-datetime-quick id="loan_due_on" name="due_on" label="Jatuh tempo" type="date"
+            <x-datetime-quick id="loan_due_on" name="due_on" :label="__('ui.agenda.due')" type="date"
                 :value="$loan?->due_on?->toDateString()" help="Tanggal yang disepakati untuk pelunasan; boleh dikosongkan."
                 :shortcuts="['Hari ini', 'Besok']" optional :error="$errors->first('due_on')" />
         </div>
@@ -40,7 +40,7 @@
             <p><strong>Dompet:</strong> {{ $loan->wallet?->name ?? 'Tidak mengubah saldo' }}</p>
             <p class="mt-1">Rincian transaksi awal dikunci karena pembayaran sudah tercatat.</p>
         </div>
-        <x-datetime-quick id="loan_due_on" name="due_on" label="Jatuh tempo" type="date"
+        <x-datetime-quick id="loan_due_on" name="due_on" :label="__('ui.agenda.due')" type="date"
             :value="$loan->due_on?->toDateString()" help="Tanggal yang disepakati untuk pelunasan; boleh dikosongkan."
             :shortcuts="['Hari ini', 'Besok']" optional :error="$errors->first('due_on')" min="{{ $loan->loan_date->toDateString() }}" />
     @endif

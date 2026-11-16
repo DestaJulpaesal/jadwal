@@ -10,21 +10,24 @@ class ActivityStreak
 {
     public function summary(User $user, string $today): array
     {
+        $todayDate = CarbonImmutable::parse($today, $user->timezone)->startOfDay();
+        $from = $todayDate->subDays(399);
+        $through = $todayDate->addDay();
         $dates = $user->habitLogs()
             ->where('status', HabitLogStatus::Done->value)
-            ->where('log_date', '<=', $today)
+            ->whereBetween('log_date', [$from->toDateString(), $todayDate->toDateString()])
+            ->distinct()
             ->pluck('log_date')
             ->map(fn ($date) => $date instanceof \DateTimeInterface ? $date->format('Y-m-d') : (string) $date)
             ->merge(
                 $user->tasks()
                     ->whereNotNull('completed_at')
-                    ->where(
-                        'completed_at',
-                        '<',
-                        CarbonImmutable::parse($today, $user->timezone)->addDay()->startOfDay()->utc()
-                    )
-                    ->get(['completed_at'])
-                    ->map(fn ($task) => $task->completed_at->timezone($user->timezone)->toDateString())
+                    ->where('completed_at', '>=', $from->copy()->utc())
+                    ->where('completed_at', '<', $through->copy()->utc())
+                    ->pluck('completed_at')
+                    ->map(fn ($completedAt) => CarbonImmutable::parse($completedAt, 'UTC')
+                        ->timezone($user->timezone)
+                        ->toDateString())
             )
             ->unique()
             ->sort()
@@ -32,7 +35,6 @@ class ActivityStreak
             ->all();
 
         $activeDates = array_fill_keys($dates, true);
-        $todayDate = CarbonImmutable::parse($today);
         $anchor = isset($activeDates[$today])
             ? $todayDate
             : $todayDate->subDay();

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveHabitRequest;
 use App\Models\Category;
 use App\Models\Habit;
+use App\Support\Db as DatabaseTransaction;
 use App\Support\Feedback;
 use App\Support\UserClock;
 use Illuminate\Http\Request;
@@ -19,13 +20,33 @@ class HabitController extends Controller
     {
         $this->authorize('viewAny', Habit::class);
         $today = $clock->date($request->user());
-        $habits = $request->user()->habits()
-            ->whereNull('archived_at')
-            ->where('starts_on', '<=', $today)
-            ->where(fn ($query) => $query->whereNull('ends_on')->orWhere('ends_on', '>=', $today))
-            ->with('logs')
-            ->orderBy('title')
-            ->get()
+        $statusOptions = [
+            'active' => __('ui.habit.status.active'),
+            'upcoming' => __('ui.habit.status.upcoming'),
+            'ended' => __('ui.habit.status.ended'),
+            'archived' => __('ui.habit.status.archived'),
+        ];
+        $status = $request->validate([
+            'status' => ['nullable', Rule::in(array_keys($statusOptions))],
+        ])['status'] ?? 'active';
+        $query = $request->user()->habits()->with('logs')->orderBy('title');
+
+        match ($status) {
+            'active' => $query
+                ->whereNull('archived_at')
+                ->where('starts_on', '<=', $today)
+                ->where(fn ($query) => $query->whereNull('ends_on')->orWhere('ends_on', '>=', $today)),
+            'upcoming' => $query
+                ->whereNull('archived_at')
+                ->where('starts_on', '>', $today),
+            'ended' => $query
+                ->whereNull('archived_at')
+                ->whereNotNull('ends_on')
+                ->where('ends_on', '<', $today),
+            'archived' => $query->whereNotNull('archived_at'),
+        };
+
+        $habits = $query->get()
             ->map(function (Habit $habit) use ($today, $request) {
                 $logs = $habit->logs->mapWithKeys(fn ($log) => [
                     $log->log_date->toDateString() => $log->status->value,
@@ -48,7 +69,7 @@ class HabitController extends Controller
                 return $habit;
             });
 
-        return view('user.habits.index', compact('habits', 'today'));
+        return view('user.habits.index', compact('habits', 'today', 'status', 'statusOptions'));
     }
 
     public function create(Request $request, UserClock $clock)
@@ -108,6 +129,13 @@ class HabitController extends Controller
             'note' => ['nullable', 'string', 'max:255'],
         ]);
         $today = $clock->date($request->user());
+        abort_if(
+            $habit->archived_at
+                || $habit->starts_on->toDateString() > $today
+                || ($habit->ends_on && $habit->ends_on->toDateString() < $today),
+            422,
+            __('ui.feedback.habit_not_active')
+        );
         $date = $data['log_date'] ?? $today;
         abort_if($date > $today, 422, __('ui.feedback.habit_date_future'));
         abort_if($date < \Illuminate\Support\Carbon::parse($today)->subDays(7)->toDateString(), 422, __('ui.feedback.habit_date_too_old'));
@@ -141,6 +169,7 @@ class HabitController extends Controller
     public function cancelCheckIn(Request $request, Habit $habit, UserClock $clock)
     {
         $this->authorize('update', $habit);
+        abort_if($habit->archived_at, 404);
         $date = $request->validate(['log_date' => ['required', 'date_format:Y-m-d']])['log_date'];
         $today = $clock->date($request->user());
         abort_if(
@@ -165,9 +194,28 @@ class HabitController extends Controller
     public function archive(Habit $habit)
     {
         $this->authorize('update', $habit);
+        abort_if($habit->archived_at, 404);
         $habit->update(['archived_at' => now()]);
 
         return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.habit_archived'));
+    }
+
+    public function restore(Habit $habit)
+    {
+        $this->authorize('update', $habit);
+        abort_unless($habit->archived_at, 404);
+        $habit->update(['archived_at' => null]);
+
+        return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.record_restored'));
+    }
+
+    public function destroy(Habit $habit)
+    {
+        $this->authorize('delete', $habit);
+        abort_unless($habit->archived_at, 404);
+        DatabaseTransaction::immediate(fn () => $habit->delete());
+
+        return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.record_deleted'));
     }
 
     private function normalizeFrequencyData(array $data): array

@@ -19,6 +19,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://example.com
 APP_KEY=<persistent generated Laravel key>
+TRUSTED_PROXIES=10.0.0.10,10.0.0.0/24
 
 DB_CONNECTION=sqlite
 DB_DATABASE=/srv/jadwal/database/database.sqlite
@@ -34,6 +35,8 @@ LOG_LEVEL=warning
 BACKUP_DIRECTORY=/srv/jadwal-private/backups
 BACKUP_ENCRYPTION_KEY=<separate base64 32-byte key>
 ```
+
+`TRUSTED_PROXIES` must contain the reverse-proxy IP addresses/CIDRs that connect directly to the app, separated by commas. Leave it empty when the app is reached directly. Use `*` only when the network boundary guarantees every request reaches the app through a trusted proxy.
 
 Buat `APP_KEY` satu kali (`php artisan key:generate`) dan pertahankan lintas rilis; jangan pernah membagikannya atau memasukkannya ke repository. Buat kunci cadangan terpisah sesuai [panduan backup](./BACKUP.md). Konfigurasikan SMTP produksi untuk email/verifikasi bila digunakan. Jadwal dan `onOneServer()` perlu cache lock yang sesuai jika aplikasi berjalan di lebih dari satu instance.
 

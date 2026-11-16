@@ -67,7 +67,7 @@
                                         @if ($startsAt)
                                             {{ $startsAt->format('H:i') }}@if ($endsAt)–{{ $endsAt->format('H:i') }}@endif
                                         @elseif ($dueDate)
-                                            {{ $dueDate->format('H:i') }} · Jatuh tempo
+                                            {{ $dueDate->format('H:i') }} · {{ __('ui.agenda.due') }}
                                         @endif
                                         {{ $task->title }}
                                     </a>
@@ -76,7 +76,7 @@
                                     <p class="px-2 text-xs text-muted">+{{ $day['tasks']->count() - 3 }} tugas lainnya</p>
                                 @endif
                                 @foreach ($calendarAgendaByDay->get($dayKey, collect())->where('type', '!=', 'task')->take(2) as $agendaItem)
-                                    <a href="{{ $agendaItem['url'] }}" class="block truncate rounded-md border border-line bg-white px-2 py-1 text-xs text-ink" title="{{ $agendaItem['status'] }}">{{ $agendaItem['type'] === 'habit' ? 'Kebiasaan' : ucfirst($agendaItem['type']) }} · {{ $agendaItem['title'] }}</a>
+                                    <a href="{{ $agendaItem['url'] }}" class="block truncate rounded-md border border-line bg-white px-2 py-1 text-xs text-ink" title="{{ $agendaItem['status'] }}">{{ __('ui.agenda.types.'.$agendaItem['type']) }} · {{ $agendaItem['title'] }}</a>
                                 @endforeach
                             </div>
 
@@ -120,7 +120,7 @@
                                         @if ($startsAt)
                                             {{ $startsAt->format('H:i') }}@if ($endsAt)–{{ $endsAt->format('H:i') }}@endif
                                         @elseif ($dueDate)
-                                            Jatuh tempo {{ $dueDate->format('H:i') }}
+                                            {{ __('ui.agenda.due') }} {{ $dueDate->format('H:i') }}
                                         @endif
                                     </span>
                                 </span>
@@ -134,7 +134,7 @@
                         @endforelse
                         @foreach ($calendarAgendaByDay->get($dayKey, collect())->where('type', '!=', 'task') as $agendaItem)
                             <a href="{{ $agendaItem['url'] }}" class="mt-2 flex min-h-12 items-center justify-between gap-3 border-t border-line py-2">
-                                <span class="min-w-0"><span class="block break-words font-medium">{{ $agendaItem['title'] }}</span><span class="text-sm text-muted">{{ $agendaItem['type'] === 'habit' ? 'Kebiasaan' : ucfirst($agendaItem['type']) }} · {{ $agendaItem['status'] }}</span></span>
+                                <span class="min-w-0"><span class="block break-words font-medium">{{ $agendaItem['title'] }}</span><span class="text-sm text-muted">{{ __('ui.agenda.types.'.$agendaItem['type']) }} · {{ $agendaItem['status'] }}</span></span>
                             </a>
                         @endforeach
                     </div>

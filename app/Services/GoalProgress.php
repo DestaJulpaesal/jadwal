@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\GoalDirection;
 use App\Enums\GoalType;
 use App\Models\Goal;
 use App\Support\UserClock;
@@ -29,12 +30,27 @@ class GoalProgress
     public function percent(Goal $goal, ?int $current = null): int
     {
         $current ??= $this->current($goal);
-        $range = $goal->target_value - $goal->start_value;
+        $range = $goal->direction === GoalDirection::Increase
+            ? $goal->target_value - $goal->start_value
+            : $goal->start_value - $goal->target_value;
         if ($range <= 0) {
-            return $current >= $goal->target_value ? 100 : 0;
+            return $goal->direction === GoalDirection::Increase
+                ? ($current >= $goal->target_value ? 100 : 0)
+                : ($current <= $goal->target_value ? 100 : 0);
         }
 
-        return max(0, min(100, (int) round(($current - $goal->start_value) * 100 / $range)));
+        $progress = $goal->direction === GoalDirection::Increase
+            ? $current - $goal->start_value
+            : $goal->start_value - $current;
+
+        return max(0, min(100, (int) round($progress * 100 / $range)));
+    }
+
+    public function remaining(Goal $goal, int $current): int
+    {
+        return max(0, $goal->direction === GoalDirection::Increase
+            ? $goal->target_value - $current
+            : $current - $goal->target_value);
     }
 
     public function remainingPerDay(Goal $goal, int $current): ?int
@@ -42,8 +58,8 @@ class GoalProgress
         if (! $goal->due_on) {
             return null;
         }
-        $remaining = max(0, $goal->target_value - $current);
-        $user = $goal->user()->firstOrFail();
+        $remaining = $this->remaining($goal, $current);
+        $user = $goal->relationLoaded('user') ? $goal->user : $goal->user()->firstOrFail();
         $days = $this->clock->today($user)->startOfDay()->diffInDays($goal->due_on->startOfDay(), false);
 
         return $days < 0 ? null : (int) ceil($remaining / max(1, $days));

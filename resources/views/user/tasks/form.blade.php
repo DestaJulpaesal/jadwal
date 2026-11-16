@@ -13,17 +13,46 @@
 
     <div class="grid gap-4 sm:grid-cols-2">
         <x-select id="category_id" label="Kategori" help="Kategori membantu mengelompokkan tugas." :error="$errors->first('category_id')" optional name="category_id">
-            <option value="">Tanpa kategori</option>
+            <option value="">{{ __('ui.money.uncategorized') }}</option>
             @foreach ($categories as $category)
                 <option value="{{ $category->id }}" @selected(old('category_id', $task->category_id ?? '') == $category->id)>{{ $category->name }}</option>
             @endforeach
         </x-select>
         <x-select id="task_status_id" label="Status" help="Pilih status yang paling sesuai saat ini." :error="$errors->first('task_status_id')" optional name="task_status_id">
-            <option value="">Belum berstatus</option>
+            <option value="">{{ __('ui.task_status.no_status') }}</option>
             @foreach ($statuses as $status)
                 <option value="{{ $status->id }}" @selected(old('task_status_id', $task->task_status_id ?? '') == $status->id)>{{ $status->name }}</option>
             @endforeach
         </x-select>
+    </div>
+</x-form-section>
+
+<x-form-section :title="__('ui.task.recurrence.section_title')" :description="__('ui.task.recurrence.section_description')">
+    <x-segmented
+        name="recurrence"
+        :label="__('ui.task.recurrence.label')"
+        :options="$recurrenceOptions"
+        :value="old('recurrence', $task->recurrence ?? 'none')"
+        :help="__('ui.task.recurrence.help')"
+    />
+
+    <x-day-pills name="recurrence_days" :days="$weekdays" :selected="$task->recurrence_days ?? []">
+        {{ __('ui.task.recurrence.weekdays') }}
+    </x-day-pills>
+
+    @error('recurrence_days')
+        <p class="field-error" role="alert">{{ $message }}</p>
+    @enderror
+
+    <div>
+        <label for="recurrence_until" class="field-label">{{ __('ui.task.recurrence.until') }}</label>
+        <input id="recurrence_until" name="recurrence_until" type="date"
+            value="{{ old('recurrence_until', isset($task) && $task->recurrence_until ? $task->recurrence_until->toDateString() : '') }}"
+            class="form-control">
+        <p class="field-help">{{ __('ui.task.recurrence.until_help') }}</p>
+        @error('recurrence_until')
+            <p class="field-error" role="alert">{{ $message }}</p>
+        @enderror
     </div>
 </x-form-section>
 
@@ -41,7 +70,7 @@
             :error="$errors->first('ends_at')" optional
             duration-start="starts_at" duration-end="ends_at" autocomplete="off" />
         <div class="sm:col-span-2">
-            <x-datetime-quick id="due_date" name="due_date" label="Jatuh tempo" type="datetime-local"
+            <x-datetime-quick id="due_date" name="due_date" :label="__('ui.agenda.due')" type="datetime-local"
                 :value="isset($task) && $task->due_date ? $task->due_date->timezone(auth()->user()->timezone)->format('Y-m-d\TH:i') : ''"
                 help="Pilih batas waktu jika tugas perlu selesai sebelum waktu tertentu."
                 :error="$errors->first('due_date')" optional autocomplete="off" />

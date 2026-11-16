@@ -64,6 +64,19 @@ class AdminUserManagementTest extends TestCase
             ->assertDontSee('Other Admin');
     }
 
+    public function test_admin_account_search_treats_like_wildcards_literally(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        User::factory()->create(['name' => 'Person %_ literal']);
+        User::factory()->create(['name' => 'Person any literal']);
+
+        $this->actingAs($admin)
+            ->get(route('admin.users.index', ['search' => '%_']))
+            ->assertOk()
+            ->assertSee('Person %_ literal')
+            ->assertDontSee('Person any literal');
+    }
+
     public function test_admin_can_view_account_details_without_schedule_contents(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

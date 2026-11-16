@@ -26,8 +26,9 @@
                     </p>
                 </div>
                 <div class="rounded-xl border-2 border-ink bg-primary-50 px-5 py-4 text-center shadow-card">
-                    <p class="text-sm font-semibold text-muted">Api tertinggi sepanjang waktu</p>
+                    <p class="text-sm font-semibold text-muted">Api tertinggi {{ __('ui.streak.best_period') }}</p>
                     <p class="mt-1 text-2xl font-bold">{{ $bestStreak }} hari</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('ui.streak.period_note') }}</p>
                 </div>
             </div>
             <div class="mt-5 flex flex-wrap gap-3">
@@ -43,7 +44,7 @@
         </section>
 
         <section class="surface-card p-5 sm:p-7" aria-labelledby="streak-records-heading">
-            <h2 id="streak-records-heading" class="text-lg font-semibold">Riwayat api terpanjang</h2>
+            <h2 id="streak-records-heading" class="text-lg font-semibold">{{ __('ui.streak.history_period') }}</h2>
             <p class="mt-1 text-sm text-muted">Diurutkan dari streak paling panjang, bukan berdasarkan kapan api terakhir padam.</p>
             @if ($streakHistory)
                 <ol class="mt-4 space-y-3">

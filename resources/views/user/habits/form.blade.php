@@ -111,7 +111,7 @@
         </div>
         <div class="habit-form-field">
             <label for="category_id" class="field-label">Kategori <span class="habit-optional">(opsional)</span></label>
-            <select id="category_id" name="category_id" class="form-control"><option value="">Tanpa kategori</option>@foreach ($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $habit->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select>
+            <select id="category_id" name="category_id" class="form-control"><option value="">{{ __('ui.money.uncategorized') }}</option>@foreach ($categories as $category)<option value="{{ $category->id }}" @selected(old('category_id', $habit->category_id) == $category->id)>{{ $category->name }}</option>@endforeach</select>
             <p class="field-help">Kategori dikelola admin agar pilihan tetap rapi dan konsisten.</p>
         </div>
     </div>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Support\Feedback;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -21,11 +22,14 @@ class SettingsController extends Controller
     public function edit(Request $request): View
     {
         $user = $request->user();
+        $today = CarbonImmutable::now($user->timezone);
 
         return view('settings.edit', [
             'user' => $user,
             'dashboardSections' => $user->dashboard_sections ?? array_keys(self::DASHBOARD_SECTIONS),
             'dashboardSectionLabels' => self::DASHBOARD_SECTIONS,
+            'exportStartDate' => $today->subMonthNoOverflow()->toDateString(),
+            'exportEndDate' => $today->toDateString(),
         ]);
     }
 

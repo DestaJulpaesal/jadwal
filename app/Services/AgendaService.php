@@ -65,7 +65,7 @@ class AgendaService
                 'task',
                 $task->title,
                 $task->starts_at ? $local->format('H:i') : null,
-                $task->status?->name ?? 'Belum berstatus',
+                $task->status?->name ?? __('ui.task_status.no_status'),
                 route('user.tasks.edit', $task),
                 null
             ));
@@ -93,7 +93,7 @@ class AgendaService
                 if (! $scheduled) {
                     continue;
                 }
-                $status = $logs->get($date->toDateString())?->status->label() ?? 'Belum ditandai';
+                $status = $logs->get($date->toDateString())?->status->label() ?? __('ui.agenda.habit_not_marked');
                 $dates->get($date->toDateString())->push($this->item(
                     'habit',
                     $habit->title,
@@ -119,9 +119,9 @@ class AgendaService
                 $daysUntil = CarbonImmutable::parse($this->clock->date($user), $timezone)
                     ->diffInDays(CarbonImmutable::parse($key, $timezone), false);
                 $status = match (true) {
-                    $daysUntil < 0 => 'Terlambat '.abs($daysUntil).' hari',
-                    $daysUntil === 0 => 'Jatuh tempo hari ini',
-                    default => 'Jatuh tempo '.$daysUntil.' hari lagi',
+                    $daysUntil < 0 => __('ui.agenda.late_days', ['days' => abs($daysUntil)]),
+                    $daysUntil === 0 => __('ui.agenda.due_today'),
+                    default => __('ui.agenda.due_in_days', ['days' => $daysUntil]),
                 };
                 $dates->get($key)->push($this->item(
                     $obligation->kind->value,
@@ -146,7 +146,7 @@ class AgendaService
                 'loan_due',
                 $loan->direction === LoanDirection::Lent ? 'Piutang · '.$loan->counterparty : 'Utang · '.$loan->counterparty,
                 null,
-                'Jatuh tempo',
+                __('ui.agenda.due'),
                 route('user.loans.index'),
                 null
             ));
@@ -160,7 +160,7 @@ class AgendaService
                 'goal_due',
                 $goal->title,
                 null,
-                'Target tanggal',
+                __('ui.agenda.target_date'),
                 route('user.goals.index'),
                 null
             ));
@@ -189,11 +189,13 @@ class AgendaService
 
             $dueDate = CarbonImmutable::parse($loan->due_on->toDateString(), $user->timezone);
             $status = $dueDate->lt($todayDate)
-                ? 'Terlambat '.$dueDate->diffInDays($todayDate).' hari'
-                : 'Jatuh tempo';
+                ? __('ui.agenda.late_days', ['days' => $dueDate->diffInDays($todayDate)])
+                : __('ui.agenda.due');
             $items->push($this->item(
                 'loan_due',
-                ($loan->direction === LoanDirection::Lent ? 'Piutang · ' : 'Utang · ').$loan->counterparty,
+                __($loan->direction === LoanDirection::Lent ? 'ui.agenda.loan_lent_title' : 'ui.agenda.loan_borrowed_title', [
+                    'name' => $loan->counterparty,
+                ]),
                 null,
                 $status,
                 route('user.loans.index'),
@@ -221,7 +223,7 @@ class AgendaService
                     $obligation->kind->value,
                     $obligation->title,
                     null,
-                    'Terlambat '.$periodLabel.' periode',
+                    __('ui.agenda.late_periods', ['periods' => $periodLabel]),
                     route('user.obligations.index'),
                     route('user.obligations.index')
                 ));
@@ -239,7 +241,9 @@ class AgendaService
             }
 
             $daysUntil = $todayDate->diffInDays($due, false);
-            $status = $daysUntil === 0 ? 'Jatuh tempo hari ini' : 'Jatuh tempo '.$daysUntil.' hari lagi';
+            $status = $daysUntil === 0
+                ? __('ui.agenda.due_today')
+                : __('ui.agenda.due_in_days', ['days' => $daysUntil]);
             $items->push($this->item(
                 $obligation->kind->value,
                 $obligation->title,

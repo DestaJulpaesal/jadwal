@@ -8,7 +8,10 @@ use App\Services\AgendaService;
 use App\Support\UserClock;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 class SendDailyDigest extends Command
 {
@@ -30,17 +33,42 @@ class SendDailyDigest extends Command
                     continue;
                 }
 
-                $items = $agenda->forDate($user, $today);
-                $attention = $agenda->attentionFor($user, $today, 3)->all();
-                Mail::to($user->email)->send(new DailyDigestMail(
-                    $user->name,
-                    $localNow->translatedFormat('l, j F Y'),
-                    $items->where('type', 'task')->all(),
-                    $items->where('type', 'habit')->all(),
-                    $attention
-                ));
-                $user->forceFill(['digest_last_sent_on' => $today])->save();
-                $this->info("Ringkasan harian dikirim ke {$user->email}.");
+                $retryKey = "daily-digest:failures:{$user->id}:{$today}";
+                if (Cache::get($retryKey, 0) >= 3) {
+                    continue;
+                }
+
+                try {
+                    $items = $agenda->forDate($user, $today);
+                    $attention = $agenda->attentionFor($user, $today, 3)->all();
+                    $tasks = $items->where('type', 'task')->all();
+                    $habits = $items->where('type', 'habit')->all();
+
+                    if ($tasks === [] && $habits === [] && $attention === []) {
+                        $user->forceFill(['digest_last_sent_on' => $today])->save();
+                        Cache::forget($retryKey);
+
+                        continue;
+                    }
+
+                    Mail::to($user->email)->send(new DailyDigestMail(
+                        $user->name,
+                        $localNow->translatedFormat('l, j F Y'),
+                        $tasks,
+                        $habits,
+                        $attention
+                    ));
+                    $user->forceFill(['digest_last_sent_on' => $today])->save();
+                    Cache::forget($retryKey);
+                    $this->info('Ringkasan harian berhasil dikirim.');
+                } catch (Throwable $exception) {
+                    Cache::add($retryKey, 0, $localNow->copy()->endOfDay()->utc());
+                    Cache::increment($retryKey);
+                    Log::warning('Digest gagal', [
+                        'user_id' => $user->id,
+                        'exception' => $exception::class,
+                    ]);
+                }
             }
         });
 

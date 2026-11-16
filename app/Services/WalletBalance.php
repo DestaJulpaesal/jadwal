@@ -27,7 +27,7 @@ class WalletBalance
         return $wallet->opening_balance + $incoming + $transfersIn - $outgoing;
     }
 
-    public function forUser(User $user): Collection
+    public function forUser(User $user, bool $includeArchived = false): Collection
     {
         $rows = DB::table('transactions')
             ->selectRaw(
@@ -44,7 +44,11 @@ class WalletBalance
             ->where('user_id', $user->id)
             ->groupBy('wallet_id', 'to_wallet_id')
             ->get();
-        $wallets = $user->wallets()->whereNull('archived_at')->orderBy('name')->get();
+        $wallets = $user->wallets()
+            ->when($includeArchived, fn ($query) => $query->whereNotNull('archived_at'), fn ($query) => $query->whereNull('archived_at'))
+            ->withCount(['transactions', 'destinationTransactions'])
+            ->orderBy('name')
+            ->get();
 
         return $wallets->map(function (Wallet $wallet) use ($rows) {
             $wallet->setAttribute('calculated_balance', $wallet->opening_balance

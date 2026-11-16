@@ -35,7 +35,7 @@
                 <x-datetime-quick id="transaction_date" name="occurred_on" label="Tanggal transaksi" type="date" :value="$transaction->occurred_on->toDateString()" required :error="$errors->first('occurred_on')" help="Tanggal ini menentukan bulan laporan transaksi." />
                 <div data-conditional-field data-condition-name="type" data-condition-except="transfer">
                     <x-select id="transaction_category_id" name="money_category_id" label="Kategori" help="Kategori membantu merangkum pemasukan dan pengeluaran." optional data-match-field="type">
-                        <option value="">Tanpa kategori</option>
+                        <option value="">{{ __('ui.money.uncategorized') }}</option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}" data-match-value="{{ $category->type->value }}" @selected(old('money_category_id', $transaction->money_category_id) == $category->id)>{{ $category->type->label() }} · {{ $category->name }}</option>
                         @endforeach

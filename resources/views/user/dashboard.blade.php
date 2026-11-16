@@ -134,14 +134,14 @@
                             @if ($task->category)
                                 <span class="inline-flex items-center gap-1.5"><span class="h-2.5 w-2.5 rounded-full" style="background-color: {{ $task->category->displayColor() }}" aria-hidden="true"></span>{{ $task->category->name }}</span>
                             @else
-                                <span>Tanpa kategori</span>
+                                <span>{{ __('ui.money.uncategorized') }}</span>
                             @endif
-                            <span>{{ $task->status->name ?? 'Belum berstatus' }}</span>
+                            <span>{{ $task->status->name ?? __('ui.task_status.no_status') }}</span>
                             <span>
                                 @if ($startsAt)
                                     {{ $startsAt->format('H:i') }}@if ($endsAt)–{{ $endsAt->format('H:i') }}@endif
                                 @elseif ($dueDate)
-                                    Jatuh tempo {{ $dueDate->format('H:i') }}
+                                    {{ __('ui.agenda.due') }} {{ $dueDate->format('H:i') }}
                                 @endif
                             </span>
                         </div>
@@ -165,7 +165,7 @@
                 <p class="mt-1 text-sm text-muted">Kamu masih bisa mengatur ulang waktunya atau menandainya selesai.</p>
                 @forelse ($overdueTasks as $task)
                     <article class="concept-item flex-col items-start sm:flex-row sm:items-center">
-                        <div class="min-w-0"><h3 class="break-words font-medium">{{ $task->title }}</h3><p class="mt-1 inline-flex items-center gap-1.5 text-sm text-warning">Terlambat · {{ ($task->due_date ?? $task->ends_at)?->timezone(auth()->user()->timezone)->translatedFormat('j M Y, H:i') }}</p></div>
+                        <div class="min-w-0"><h3 class="break-words font-medium">{{ $task->title }}</h3><p class="mt-1 inline-flex items-center gap-1.5 text-sm text-warning">{{ __('ui.agenda.overdue') }} · {{ ($task->due_date ?? $task->ends_at)?->timezone(auth()->user()->timezone)->translatedFormat('j M Y, H:i') }}</p></div>
                         <x-task-actions :task="$task" />
                     </article>
                 @empty
@@ -192,7 +192,7 @@
                                 @if ($startsAt)
                                     · {{ $startsAt->format('H:i') }}@if ($endsAt)–{{ $endsAt->format('H:i') }}@endif
                                 @elseif ($dueDate)
-                                    · Jatuh tempo {{ $dueDate->format('H:i') }}
+                                    · {{ __('ui.agenda.due') }} {{ $dueDate->format('H:i') }}
                                 @endif
                             </p>
                         </div>

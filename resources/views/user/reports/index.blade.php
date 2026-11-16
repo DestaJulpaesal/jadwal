@@ -44,5 +44,6 @@
                 <x-button href="{{ route('user.money.index', ['section' => 'transactions', 'month' => $month, 'create' => 'transaction']) }}" variant="secondary" icon="tambah" class="mt-4">Catat pengeluaran pertama</x-button>
             @endforelse
         </section>
+        @include('user.money.budgets')
     </div>
 @endsection
