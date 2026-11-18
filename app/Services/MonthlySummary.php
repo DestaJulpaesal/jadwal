@@ -16,7 +16,8 @@ class MonthlySummary
             ->where('user_id', $user->id)
             ->whereBetween('occurred_on', [$start, $end])
             ->where(function ($query) {
-                $query->whereNull('source_type')->orWhereNotIn('source_type', ['loan', 'loan_repayment']);
+                $query->whereNull('source_type')
+                    ->orWhereNotIn('source_type', ['loan', 'loan_repayment', 'adjustment']);
             })
             ->selectRaw(
                 'SUM(CASE WHEN type = ? THEN amount ELSE 0 END) AS income,

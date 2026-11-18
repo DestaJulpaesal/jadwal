@@ -109,6 +109,39 @@
 - `BudgetProgressTest`: 7 tes, 47 assertion; mencakup batas tanggal awal/akhir bulan, sumber transaksi yang dikecualikan, kategori tanpa anggaran, isolasi pemilik, CRUD, salin idempoten, dashboard, proteksi kategori, dan jumlah query. Migration diuji pada database tes terisolasi oleh suite; database kerja tidak dimigrasikan.
 - Suite penuh pada implementasi backend: **228 lulus (1.567 assertion)**; tes fokus 7/47 diulang dan lulus sesudahnya. Pint untuk PHP terkait, kompilasi Blade, dan Vite build lulus. JS gzip **54,76 KB**, masih melewati target prompt 50 KB. Pemeriksaan manual UI 360/1280px dan mode terang/gelap belum dilakukan; audit Composer tetap blocker.
 
+### Fase 2.4 — Ekspor data CSV (sudah tersedia dan diverifikasi)
+
+- Implementasi yang sudah ada menyediakan ekspor transaksi dengan rentang maksimal lima tahun, tugas, kebiasaan, dan log kebiasaan melalui stream; berkas memakai BOM UTF-8 dan header Indonesia.
+- Query dibatasi ke pengguna aktif, transaksi bersumber user lain disaring dari relasi, teks CSV dengan prefix formula dinetralkan, route dibatasi lima permintaan per menit, dan log hanya menyimpan ID pengguna serta jenis ekspor.
+- Verifikasi fokus: `DataExportTest` lulus (6 tes), termasuk isi kolom, injeksi CSV, rentang tanggal, rate limit, dan akses.
+
+### Fase 2.5 — Tugas berulang (sudah tersedia dan diverifikasi)
+
+- Implementasi yang sudah ada membuat kejadian berikutnya secara idempoten ketika tugas diselesaikan lewat aksi cepat maupun edit, mempertahankan waktu lokal dan durasi, serta menangani beberapa hari mingguan dan jangkar tanggal bulanan tanpa overflow.
+- Verifikasi fokus: `TaskRecurrenceTest` lulus (7 tes). Tambahan tes di checkpoint ini membuktikan jam lokal tetap 09.30 pada `America/New_York` saat transisi DST; tes yang ada mencakup `Asia/Jakarta` dan `Asia/Jayapura`, akhir bulan, batas pengulangan, dan idempotensi.
+
+### Fase 2.6 — Penyempurnaan tugas (sudah tersedia dan diverifikasi)
+
+- Implementasi yang sudah ada menyediakan pengurutan default, sort pilihan, filter kategori, aksi massal yang atomik dan terotorisasi per tugas, serta tautan hasil pencarian tugas langsung ke edit.
+- Verifikasi fokus: `TaskManagementTest` dan `GlobalSearchTest` lulus (9 tes), termasuk isolasi kepemilikan dan penolakan aksi massal campuran.
+
+### Fase 2.7 — Penyesuaian saldo dompet (diterapkan)
+
+- Aksi pada dompet aktif membandingkan saldo aktual dengan saldo hitung di dalam `Db::immediate`; selisih positif/negatif dicatat sebagai transaksi pemasukan/pengeluaran bertipe `adjustment`. Nominal tetap Rupiah integer, selisih nol tidak membuat transaksi, dan selisih di atas batas satu transaksi ditolak.
+- Penyesuaian ditampilkan dengan label khusus, tidak dapat diedit, tetapi dapat dihapus dengan konfirmasi seperti transaksi manual. Nilainya tetap memengaruhi saldo dompet, tetapi dikecualikan dari ringkasan bulanan, laporan kategori, dan anggaran. Saldo pada formulir menghormati mode privasi.
+- Tidak ada migration. `WalletAdjustmentTest` lulus (6 tes, 42 assertion), mencakup hitung saldo dua arah, nol, laporan, edit/hapus, validasi batas, dan akses dompet lain/arsip.
+- Cek terfokus untuk ekspor, tugas berulang, penyempurnaan tugas, pencarian, serta penyesuaian saldo seluruhnya lulus. Pint file terkait dan Vite build lulus; bundle JS gzip **55,00 KB**, tetap di atas anggaran 50 KB.
+- Gate penuh Fase 2 belum lulus. Pemeriksaan UI manual mobile/desktop mode terang/gelap belum dilakukan; audit dependency dan satu temuan format tetap blocker.
+
+### Pemeriksaan menyeluruh checkpoint 18 November 2026
+
+- `php artisan test`: **253 lulus (1.737 assertion)**.
+- Build Vite lulus dengan JS gzip **55,00 KB**, masih melewati target 50 KB.
+- Pint pada seluruh repo menemukan satu masalah urutan import di `app/Providers/AuthServiceProvider.php`; file tersebut tidak diubah dalam pekerjaan penyesuaian saldo.
+- `npm audit fix` memperbarui dependency yang kompatibel di lockfile, tetapi `npm audit --audit-level=high` masih gagal dengan 12 high dan 3 moderate. Advisory Picomatch yang memicu temuan high menyatakan belum ada versi patched; tidak melakukan downgrade `--force` yang berisiko.
+- `composer audit` tidak dapat dijalankan karena Composer CLI tidak tersedia pada sesi ini. Catatan baseline hardening sebelumnya melaporkan 55 advisory dan upgrade framework tetap terbuka.
+- Uji tampilan manual 360/1280px serta mode terang/gelap belum dilakukan; jangan anggap pemeriksaan browser sebagai selesai.
+
 ### Commit hardening
 
 - `667ed4f` — `fix(ci): isolate feature tests from Vite assets`.

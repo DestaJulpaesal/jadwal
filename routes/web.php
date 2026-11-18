@@ -124,6 +124,7 @@ Route::middleware($dashboardMiddleware)->group(function () {
         Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->middleware('throttle:60,1')->name('budgets.destroy');
         Route::post('/money/wallets', [MoneyController::class, 'storeWallet'])->middleware('throttle:60,1')->name('money.wallets.store');
         Route::patch('/money/wallets/{wallet}', [MoneyController::class, 'updateWallet'])->middleware('throttle:60,1')->name('money.wallets.update');
+        Route::post('/money/wallets/{wallet}/adjustments', [MoneyController::class, 'adjustWalletBalance'])->middleware('throttle:60,1')->name('money.wallets.adjustments.store');
         Route::patch('/money/wallets/{wallet}/archive', [MoneyController::class, 'archiveWallet'])->middleware('throttle:60,1')->name('money.wallets.archive');
         Route::patch('/money/wallets/{wallet}/restore', [MoneyController::class, 'restoreWallet'])->middleware('throttle:60,1')->name('money.wallets.restore');
         Route::delete('/money/wallets/{wallet}', [MoneyController::class, 'destroyWallet'])->middleware('throttle:60,1')->name('money.wallets.destroy');

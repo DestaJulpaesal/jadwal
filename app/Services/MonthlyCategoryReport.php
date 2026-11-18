@@ -24,7 +24,7 @@ class MonthlyCategoryReport
             ])
             ->where(function ($query) {
                 $query->whereNull('transactions.source_type')
-                    ->orWhereNotIn('transactions.source_type', ['loan', 'loan_repayment']);
+                    ->orWhereNotIn('transactions.source_type', ['loan', 'loan_repayment', 'adjustment']);
             })
             ->select('transactions.money_category_id')
             ->selectRaw(

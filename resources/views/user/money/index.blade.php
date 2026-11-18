@@ -129,6 +129,7 @@
                                     <p class="w-full text-xs font-medium text-warning-800">Saldo arsip {{ rupiah($wallet->calculated_balance) }} tidak masuk total saldo aktif.</p>
                                 @endif
                             @else
+                                <x-button type="button" size="sm" variant="secondary" icon="ubah" x-data x-on:click="$dispatch('open-modal', 'wallet-adjust-{{ $wallet->id }}')">{{ __('ui.wallet.adjustment.action') }}</x-button>
                                 <x-button type="button" size="sm" variant="secondary" icon="ubah" x-data x-on:click="$dispatch('open-modal', 'wallet-edit-{{ $wallet->id }}')">Ubah nama</x-button>
                                 <x-confirm-action :action="route('user.money.wallets.archive', $wallet)" method="PATCH"
                                     title="Arsipkan dompet?"
@@ -136,6 +137,40 @@
                                     label="Arsipkan dompet" tone="secondary" icon="nonaktifkan" />
                             @endif
                         </div>
+                        @if ($status !== 'archived')
+                            <x-bottom-sheet name="wallet-adjust-{{ $wallet->id }}"
+                                :title="__('ui.wallet.adjustment.title', ['wallet' => $wallet->name])"
+                                :show="old('form_context') === 'wallet-adjust-'.$wallet->id && $errors->any()">
+                                @if (old('form_context') === 'wallet-adjust-'.$wallet->id)
+                                    <x-error-summary :errors="$errors->messages()" :title="__('ui.wallet.adjustment.error_summary')" />
+                                @endif
+                                <form method="POST" action="{{ route('user.money.wallets.adjustments.store', $wallet) }}" class="space-y-4" data-dirty-guard>
+                                    @csrf
+                                    <input type="hidden" name="form_context" value="wallet-adjust-{{ $wallet->id }}">
+                                    <p class="text-sm text-muted">{{ __('ui.wallet.adjustment.current_balance') }} <strong data-private>{{ rupiah($wallet->calculated_balance) }}</strong></p>
+                                    <x-field id="wallet-actual-balance-{{ $wallet->id }}"
+                                        :label="__('ui.wallet.adjustment.actual_balance')"
+                                        :help="__('ui.wallet.adjustment.help')"
+                                        :error="$errors->first('actual_balance')"
+                                        required>
+                                        <input id="wallet-actual-balance-{{ $wallet->id }}"
+                                            name="actual_balance"
+                                            type="number"
+                                            inputmode="numeric"
+                                            step="1"
+                                            min="-{{ \App\Support\Rupiah::MAX_AMOUNT }}"
+                                            max="{{ \App\Support\Rupiah::MAX_AMOUNT }}"
+                                            value="{{ old('actual_balance', $wallet->calculated_balance) }}"
+                                            required
+                                            class="form-control">
+                                    </x-field>
+                                    <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                                        <x-button type="button" variant="secondary" icon="kembali" x-on:click="$dispatch('close')">{{ __('ui.wallet.adjustment.cancel') }}</x-button>
+                                        <x-button type="submit" variant="primary" icon="ubah" loading-text="{{ __('ui.wallet.adjustment.saving') }}">{{ __('ui.wallet.adjustment.submit') }}</x-button>
+                                    </div>
+                                </form>
+                            </x-bottom-sheet>
+                        @endif
                         <x-bottom-sheet name="wallet-edit-{{ $wallet->id }}" title="Ubah nama dompet" :show="old('form_context') === 'wallet-edit-'.$wallet->id && $errors->any()">
                             @if (old('form_context') === 'wallet-edit-'.$wallet->id)
                                 <x-error-summary :errors="$errors->messages()" title="Nama dompet belum diperbarui. Periksa isian berikut:" />
@@ -242,12 +277,12 @@
                 <ul class="concept-list">
                     @forelse ($transactions as $transaction)
                         <li class="concept-item items-start">
-                            <div class="min-w-0 flex-1"><p class="font-medium">{{ $transaction->moneyCategory?->name ?? $transaction->type->label() }}</p><p class="text-sm">{{ $transaction->occurred_on->translatedFormat('j M Y') }} · {{ $transaction->wallet->name }}@if($transaction->destinationWallet) → {{ $transaction->destinationWallet->name }}@endif</p>@if($transaction->note)<p class="text-sm">{{ $transaction->note }}</p>@endif</div>
+                            <div class="min-w-0 flex-1"><p class="font-medium">{{ $transaction->source_type === 'adjustment' ? __('ui.money.adjustment_label') : ($transaction->moneyCategory?->name ?? $transaction->type->label()) }}</p><p class="text-sm">{{ $transaction->occurred_on->translatedFormat('j M Y') }} · {{ $transaction->wallet->name }}@if($transaction->destinationWallet) → {{ $transaction->destinationWallet->name }}@endif</p>@if($transaction->note && $transaction->source_type !== 'adjustment')<p class="text-sm">{{ $transaction->note }}</p>@endif</div>
                             <strong class="money-transaction-amount shrink-0" data-private>{{ $transaction->type === \App\Enums\TransactionType::Expense ? '−' : '' }}{{ rupiah($transaction->amount) }}</strong>
                             @if ($transaction->source_type === null && ! $transaction->wallet?->archived_at && ! $transaction->destinationWallet?->archived_at && ! $transaction->moneyCategory?->archived_at)
                                 <x-button href="{{ route('user.money.transactions.edit', $transaction) }}" size="sm" variant="secondary" icon="ubah">Ubah transaksi</x-button>
                             @endif
-                            @if ($transaction->source_type === null)
+                            @if ($transaction->source_type === null || $transaction->source_type === 'adjustment')
                                 <x-confirm-action :action="route('user.money.transactions.destroy', $transaction)"
                                     title="Hapus transaksi?"
                                     :message="'Transaksi '.$transaction->type->label().' sebesar '.rupiah($transaction->amount).' akan dihapus dan saldo dompet dihitung ulang.'"

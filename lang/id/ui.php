@@ -54,6 +54,9 @@ return [
         'budget_copied' => 'Anggaran bulan lalu disalin tanpa menimpa anggaran yang sudah ada.',
         'wallet_deleted' => 'Dompet berhasil dihapus permanen.',
         'wallet_updated' => 'Nama dompet berhasil diperbarui.',
+        'wallet_balance_adjusted' => 'Saldo dompet berhasil disesuaikan.',
+        'wallet_balance_unchanged' => 'Saldo dompet sudah sesuai. Tidak ada transaksi penyesuaian yang dibuat.',
+        'wallet_adjustment_too_large' => 'Selisih saldo terlalu besar untuk dicatat sebagai satu transaksi.',
         'money_category_created' => 'Kategori berhasil disimpan.',
         'money_category_updated' => 'Nama kategori berhasil diperbarui.',
         'money_category_archived' => 'Kategori uang diarsipkan.',
@@ -123,6 +126,21 @@ return [
     ],
     'money' => [
         'uncategorized' => 'Tanpa kategori',
+        'adjustment_label' => 'Penyesuaian saldo',
+        'adjustment_note' => 'Penyesuaian saldo',
+    ],
+    'wallet' => [
+        'adjustment' => [
+            'action' => 'Sesuaikan saldo',
+            'title' => 'Sesuaikan saldo :wallet',
+            'current_balance' => 'Saldo tercatat saat ini:',
+            'actual_balance' => 'Saldo aktual dalam Rupiah',
+            'help' => 'Masukkan saldo yang benar-benar tersedia. Nilai negatif diperbolehkan.',
+            'error_summary' => 'Saldo belum disesuaikan. Periksa isian berikut:',
+            'cancel' => 'Batal',
+            'saving' => 'Menyimpan penyesuaian…',
+            'submit' => 'Simpan penyesuaian',
+        ],
     ],
     'budget' => [
         'title' => 'Anggaran bulanan',

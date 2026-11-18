@@ -25,6 +25,7 @@ use App\Support\UserClock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class MoneyController extends Controller
 {
@@ -227,6 +228,58 @@ class MoneyController extends Controller
         return Feedback::success(back(), __('ui.feedback.wallet_updated'));
     }
 
+    public function adjustWalletBalance(
+        Request $request,
+        Wallet $wallet,
+        WalletBalance $balances,
+        UserClock $clock
+    ) {
+        $this->authorize('update', $wallet);
+        abort_if($wallet->user_id !== $request->user()->id || $wallet->archived_at, 404);
+        $request->merge(['actual_balance' => Rupiah::normalize($request->input('actual_balance'))]);
+        $data = $request->validate([
+            'actual_balance' => [
+                'required',
+                'integer',
+                'between:-'.Rupiah::MAX_AMOUNT.','.Rupiah::MAX_AMOUNT,
+            ],
+        ], [], ['actual_balance' => __('ui.wallet.adjustment.actual_balance')]);
+
+        $adjusted = DatabaseTransaction::immediate(function () use ($request, $wallet, $data, $balances, $clock): bool {
+            $lockedWallet = $request->user()->wallets()
+                ->whereNull('archived_at')
+                ->lockForUpdate()
+                ->findOrFail($wallet->id);
+            $difference = $data['actual_balance'] - $balances->forWallet($lockedWallet);
+
+            if ($difference === 0) {
+                return false;
+            }
+
+            if (abs($difference) > Rupiah::MAX_AMOUNT) {
+                throw ValidationException::withMessages([
+                    'actual_balance' => __('ui.feedback.wallet_adjustment_too_large'),
+                ]);
+            }
+
+            $request->user()->transactions()->create([
+                'wallet_id' => $lockedWallet->id,
+                'type' => $difference > 0 ? TransactionType::Income : TransactionType::Expense,
+                'amount' => abs($difference),
+                'occurred_on' => $clock->date($request->user()),
+                'note' => __('ui.money.adjustment_note'),
+                'source_type' => 'adjustment',
+                'source_id' => $lockedWallet->id,
+            ]);
+
+            return true;
+        });
+
+        return $adjusted
+            ? Feedback::success(back(), __('ui.feedback.wallet_balance_adjusted'))
+            : Feedback::info(back(), __('ui.feedback.wallet_balance_unchanged'));
+    }
+
     public function storeCategory(Request $request)
     {
         $this->authorize('create', MoneyCategory::class);
@@ -348,10 +401,14 @@ class MoneyController extends Controller
     public function destroyTransaction(Request $request, Transaction $transaction)
     {
         $this->authorize('delete', $transaction);
-        abort_if($transaction->user_id !== $request->user()->id || $transaction->source_type !== null, 404);
+        abort_if(
+            $transaction->user_id !== $request->user()->id
+                || ! in_array($transaction->source_type, [null, 'adjustment'], true),
+            404
+        );
         DatabaseTransaction::immediate(function () use ($request, $transaction) {
             $locked = $request->user()->transactions()->lockForUpdate()->findOrFail($transaction->id);
-            abort_if($locked->source_type !== null, 404);
+            abort_if(! in_array($locked->source_type, [null, 'adjustment'], true), 404);
             $locked->delete();
         });
 

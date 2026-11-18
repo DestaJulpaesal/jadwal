@@ -8,7 +8,7 @@ Aplikasi jadwal multi-user berbasis Laravel. Pengguna hanya dapat mengelola tuga
 - Kalender bulanan, jam mulai/selesai, serta peringatan jadwal bentrok.
 - Dashboard dan kalender terpadu untuk tugas, kebiasaan, target, serta agenda harian.
 - Catatan kebiasaan dengan jadwal, check-in yang bisa dibatalkan, dan statistik beruntun.
-- Keuangan pribadi: dompet, kategori, transaksi, transfer, tagihan, cicilan, utang, dan piutang.
+- Keuangan pribadi: dompet, kategori, transaksi, transfer, penyesuaian saldo, tagihan, cicilan, utang, dan piutang.
 - Laporan keuangan bulanan dengan kategori pengeluaran terbesar dan perbandingan bulan sebelumnya.
 - Target angka/tabungan/kebiasaan, mode privasi nominal, dan ringkasan harian email opsional.
 - Pengaturan zona waktu, awal minggu, tema, jadwal ringkasan email, privasi nominal, dan kartu dashboard.
