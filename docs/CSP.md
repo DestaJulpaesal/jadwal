@@ -2,15 +2,15 @@
 
 ## Status
 
-Fase 7 has a nonce-based CSP with three reversible modes. The application defaults to `CSP_MODE=off`; this is intentional until the full page and interaction inventory has been exercised in report mode. No claim is made that every route is violation-free or ready for enforcement.
+Fase 7 has a nonce-based CSP with three reversible modes. `.env.example` starts new environments in `CSP_MODE=report`, so violations can be observed without blocking resources. The `config/security.php` fallback remains `off` when the variable is omitted, which is the immediate rollback mode. No claim is made that every route is violation-free or ready for enforcement.
 
 | Mode | Response header | Use |
 |---|---|---|
-| `off` | No CSP header | Default and immediate rollback |
+| `off` | No CSP header | Immediate rollback |
 | `report` | `Content-Security-Policy-Report-Only` | Observe violations without blocking resources |
 | `enforce` | `Content-Security-Policy` | Block resources that do not match the policy |
 
-Set `CSP_MODE=report` in the environment to begin observation. Return to `off` or `report` by changing the environment value if a rollout breaks a page. Do not switch production to `enforce` until the principal authenticated, public, admin, auth, error, and styleguide pages and their interactions have been checked with no unexplained violations.
+Set `CSP_MODE=report` in the environment to begin observation. Review the sanitized `csp` logging channel at `storage/logs/csp-YYYY-MM-DD.log` and explain every violation. Return to `off` or `report` by changing the environment value if a rollout breaks a page. Do not switch production to `enforce` until the principal authenticated, public, admin, auth, error, and styleguide pages and their interactions have been checked with no unexplained violations.
 
 Every response receives a fresh Vite nonce. Vite-generated script/style tags and the retained theme bootstrap script use that nonce. The policy does not allow `unsafe-eval` or `unsafe-inline` for scripts. `style-src-attr 'unsafe-inline'` remains as a documented compromise because the views use inline presentation styles; reduce these uses before considering removal.
 

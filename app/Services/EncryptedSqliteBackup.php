@@ -95,7 +95,9 @@ class EncryptedSqliteBackup
             $this->assertIntegrity($databaseStage);
 
             $automaticBackup = $this->create();
+            $this->checkpointSqliteWal();
             DB::purge('sqlite');
+            $this->removeSqliteSidecars($databasePath);
 
             if (! rename($databasePath, $oldDatabasePath)) {
                 throw new RuntimeException('Unable to move the current SQLite database before restore.');
@@ -120,6 +122,7 @@ class EncryptedSqliteBackup
             $newPhotosInstalled = true;
 
             DB::purge('sqlite');
+            $this->assertNoSqliteSidecars($databasePath);
             File::delete($oldDatabasePath);
             if ($photosMoved) {
                 File::deleteDirectory($oldPhotosPath);
@@ -159,6 +162,86 @@ class EncryptedSqliteBackup
             throw $exception;
         } finally {
             File::deleteDirectory($workDirectory);
+        }
+    }
+
+    /**
+     * @return array{count: int, bytes: int, latest: ?string, latest_modified_at: ?int, age_seconds: ?int}
+     */
+    public function status(): array
+    {
+        $directory = config('backup.directory');
+        if (! is_string($directory) || $directory === '') {
+            throw new RuntimeException('BACKUP_DIRECTORY must be configured.');
+        }
+
+        if (! is_dir($directory)) {
+            return [
+                'count' => 0,
+                'bytes' => 0,
+                'latest' => null,
+                'latest_modified_at' => null,
+                'age_seconds' => null,
+            ];
+        }
+
+        $backups = [];
+        foreach (File::files($directory) as $file) {
+            if ($file->isLink()
+                || ! preg_match('/\Ajadwal-\d{8}-\d{6}-[a-f0-9]{8}\.sqlite\.gz\.enc\z/i', $file->getFilename())) {
+                continue;
+            }
+
+            $backups[] = [
+                'name' => $file->getFilename(),
+                'bytes' => $file->getSize(),
+                'modified_at' => $file->getMTime(),
+            ];
+        }
+
+        usort($backups, fn (array $left, array $right) => $right['modified_at'] <=> $left['modified_at']);
+        $latest = $backups[0] ?? null;
+        $modifiedAt = $latest['modified_at'] ?? null;
+
+        return [
+            'count' => count($backups),
+            'bytes' => array_sum(array_column($backups, 'bytes')),
+            'latest' => $latest['name'] ?? null,
+            'latest_modified_at' => $modifiedAt,
+            'age_seconds' => $modifiedAt === null ? null : max(0, now()->timestamp - $modifiedAt),
+        ];
+    }
+
+    private function checkpointSqliteWal(): void
+    {
+        $checkpoint = DB::connection('sqlite')->selectOne('PRAGMA wal_checkpoint(TRUNCATE)');
+        if (! $checkpoint
+            || ! isset($checkpoint->busy, $checkpoint->log, $checkpoint->checkpointed)
+            || (int) $checkpoint->busy !== 0
+            || ((int) $checkpoint->log >= 0 && (int) $checkpoint->checkpointed < (int) $checkpoint->log)) {
+            throw new RuntimeException('Unable to checkpoint the SQLite WAL before restore.');
+        }
+    }
+
+    private function removeSqliteSidecars(string $databasePath): void
+    {
+        foreach ([$databasePath.'-wal', $databasePath.'-shm'] as $sidecarPath) {
+            if (is_link($sidecarPath) || (file_exists($sidecarPath) && ! is_file($sidecarPath))) {
+                throw new RuntimeException('SQLite restore sidecars must be regular files.');
+            }
+
+            if (is_file($sidecarPath) && ! unlink($sidecarPath)) {
+                throw new RuntimeException('Unable to remove a SQLite restore sidecar.');
+            }
+        }
+    }
+
+    private function assertNoSqliteSidecars(string $databasePath): void
+    {
+        foreach ([$databasePath.'-wal', $databasePath.'-shm'] as $sidecarPath) {
+            if (file_exists($sidecarPath) || is_link($sidecarPath)) {
+                throw new RuntimeException('Unexpected SQLite WAL or SHM sidecar exists after restore.');
+            }
         }
     }
 

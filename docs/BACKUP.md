@@ -23,13 +23,14 @@ Koneksi SQLite mengaktifkan foreign keys melalui konfigurasi Laravel serta `jour
 
 ```powershell
 php artisan app:backup-database
+php artisan app:backup-status
 ```
 
-Penjadwal menjalankannya setiap hari pukul 02:30. Rotasi mempertahankan 14 cadangan harian terbaru dan satu cadangan per minggu untuk delapan minggu terakhir. Kegagalan dicatat pada level `critical` dan perintah berakhir dengan status gagal. Cadangan lokal bukan pengganti salinan di luar server: salin arsip terenkripsi ke lokasi terpisah (misalnya bucket S3 privat, penyimpanan Google Drive privat, atau server cadangan melalui rclone) dan jangan pernah menyalin kunci enkripsi bersama arsip.
+Penjadwal membuat cadangan setiap hari pukul 02:30 dan memeriksa statusnya pukul 03:30. `app:backup-status` menampilkan usia cadangan terbaru, jumlah arsip terenkripsi, dan total ukurannya; perintah berakhir gagal dan mencatat `critical` bila tidak ada cadangan atau cadangan terbaru berusia lebih dari 36 jam. Rotasi mempertahankan 14 cadangan harian terbaru dan satu cadangan per minggu untuk delapan minggu terakhir. Kegagalan backup juga dicatat pada level `critical`. Cadangan lokal bukan pengganti salinan di luar server: salin arsip terenkripsi ke lokasi terpisah (misalnya bucket S3 privat, penyimpanan Google Drive privat, atau server cadangan melalui rclone) dan jangan pernah menyalin kunci enkripsi bersama arsip.
 
 ## Memulihkan cadangan
 
-Pemulihan mengganti seluruh database SQLite dan direktori foto profil. Perintah memverifikasi autentikasi GCM, struktur arsip, dan `PRAGMA integrity_check`, lalu membuat cadangan terenkripsi otomatis sebelum mengganti data. Jalankan pada maintenance window, hentikan scheduler/worker dan tulis aplikasi:
+Pemulihan mengganti seluruh database SQLite dan direktori foto profil. Perintah memverifikasi autentikasi GCM, struktur arsip, dan `PRAGMA integrity_check`, lalu membuat cadangan terenkripsi otomatis sebelum mengganti data. Sebelum mengganti file, restore menjalankan `wal_checkpoint(TRUNCATE)`, memvalidasi sidecar `database.sqlite-wal`/`-shm` sebagai file biasa, dan menghapusnya secara eksplisit; proses berhenti sebelum mengganti database jika checkpoint atau pembersihan gagal. Jalankan pada maintenance window, hentikan scheduler/worker dan tulis aplikasi:
 
 ```powershell
 php artisan down --secret="<temporary-secret>"

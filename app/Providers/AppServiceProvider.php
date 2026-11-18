@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -29,6 +30,12 @@ class AppServiceProvider extends ServiceProvider
         }
 
         if (app()->isProduction()) {
+            $host = parse_url((string) config('app.url'), PHP_URL_HOST);
+            $host = is_string($host) ? strtolower(trim($host, '[]')) : '';
+            if (in_array($host, ['localhost', '127.0.0.1', '::1'], true) || str_ends_with($host, '.localhost')) {
+                Log::warning('APP_URL points to a loopback host in production.');
+            }
+
             URL::forceScheme('https');
         }
 

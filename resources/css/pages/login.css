@@ -529,7 +529,7 @@ h2 {
 .password-toggle:focus-visible,
 .lnk a:focus-visible,
 .auth-home-link:focus-visible {
-    outline: 3px solid var(--ink);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
 }
 
@@ -594,7 +594,7 @@ h2 {
 }
 
 .q:focus-visible {
-    outline: 3px solid var(--ink);
+    outline: 3px solid var(--color-focus);
     outline-offset: 3px;
 }
 

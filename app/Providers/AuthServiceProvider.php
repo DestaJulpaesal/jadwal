@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Models\Category;
 use App\Models\Budget;
+use App\Models\Category;
 use App\Models\Goal;
 use App\Models\GoalUpdate;
 use App\Models\Habit;

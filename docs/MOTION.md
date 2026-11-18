@@ -24,7 +24,8 @@ View Transitions API digunakan lintas navigasi dengan crossfade singkat; browser
 
 ## Bukti dan batas pengukuran
 
-- Build terakhir menghasilkan JavaScript 54,15 KB gzip, CSS bersama 19,15 KB, CSS halaman masuk 3,06 KB, dan CSS beranda 3,79 KB; masing-masing di bawah batas Fase 5.
+- Build terbaru setelah penghapusan Axios menghasilkan JavaScript 33,49 KB gzip dan halaman CSS terberat 19,86 KB gzip; `npm run check:bundle` mengukur variant aplikasi dan publik secara eksplisit dengan batas 50.000/20.000 byte.
 - Browser login diuji pada 360×640, 390×844, 768×1024, dan 1280×800. Tidak ditemukan overflow horizontal. Pada 360×640, form berakhir sebelum bagian bawah viewport.
+- Screenshot lanjutan setelah pemisahan CSS publik: beranda pada 360px dan login pada 360/1280px; ini tidak menggantikan audit dark mode autentikasi atau seluruh halaman aplikasi.
 - Emulasi reduced motion menghasilkan durasi animasi 0,001 s.
 - Tidak ada pengukuran Lighthouse sebelum/sesudah atau profil CPU throttling yang dapat diverifikasi. Jangan menyimpulkan target LCP/CLS/INP tercapai hanya dari ukuran bundle atau uji viewport.

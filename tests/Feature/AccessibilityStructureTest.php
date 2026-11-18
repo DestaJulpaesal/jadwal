@@ -24,6 +24,30 @@ class AccessibilityStructureTest extends TestCase
         $this->assertSkipLinkTarget($this->actingAs($admin)->get(route('admin.dashboard')));
     }
 
+    public function test_global_focus_and_scroll_styles_respect_theme_and_reduced_motion(): void
+    {
+        $baseStyles = (string) file_get_contents(resource_path('css/base.css'));
+        $tokens = (string) file_get_contents(resource_path('css/tokens.css'));
+
+        $this->assertStringContainsString('outline: 3px solid var(--color-focus);', $baseStyles);
+        $this->assertStringContainsString('@media (prefers-reduced-motion: reduce)', $baseStyles);
+        $this->assertStringContainsString('scroll-behavior: auto;', $baseStyles);
+        $this->assertStringContainsString('--color-focus: #226b50;', $tokens);
+        $this->assertStringContainsString('--color-focus: #b7d4c2;', $tokens);
+
+        foreach ([
+            'components/buttons.css',
+            'components/legacy.css',
+            'pages/home.css',
+            'pages/login.css',
+        ] as $stylesheet) {
+            $this->assertStringContainsString(
+                'outline: 3px solid var(--color-focus);',
+                (string) file_get_contents(resource_path('css/'.$stylesheet))
+            );
+        }
+    }
+
     private function assertSkipLinkTarget(TestResponse $response): TestResponse
     {
         $response->assertOk()

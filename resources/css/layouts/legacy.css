@@ -10,12 +10,6 @@
         animation: concept-blink var(--dur-decoration-blink) infinite;
     }
 
-    .user-app .swing {
-        transform-box: view-box;
-        transform-origin: 24px 5px;
-        animation: concept-swing var(--dur-decoration-slower) infinite;
-    }
-
     .user-app .wig {
         transform-box: view-box;
         transform-origin: 24px 44px;
@@ -39,14 +33,6 @@
     @keyframes concept-blink {
         0%, 93%, 100% { transform: scaleY(1); }
         96.5% { transform: scaleY(.1); }
-    }
-
-    @keyframes concept-swing {
-        0%, 80%, 100% { transform: rotate(0); }
-        84% { transform: rotate(9deg); }
-        88% { transform: rotate(-8deg); }
-        92% { transform: rotate(5deg); }
-        96% { transform: rotate(-3deg); }
     }
 
     @keyframes concept-wig {
@@ -73,7 +59,6 @@
 
     @media (update: slow), (prefers-reduced-motion: reduce) {
         .user-app .eye,
-        .user-app .swing,
         .user-app .wig,
         .user-app .flick,
         .user-app .hop,
@@ -83,7 +68,6 @@
     }
 
     html.motion-paused .user-app .eye,
-    html.motion-paused .user-app .swing,
     html.motion-paused .user-app .wig,
     html.motion-paused .user-app .flick,
     html.motion-paused .user-app .hop,
@@ -396,10 +380,6 @@
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
-        .user-app .habit-form-submit {
-            width: 100%;
-        }
-
         .user-app .habit-hero {
             min-height: 0;
         }
@@ -501,9 +481,6 @@
             font-size: 17px;
         }
 
-        .user-app .logout-button {
-            min-width: 0;
-        }
     }
 
     @media (min-width: 481px) and (max-width: 1023px) {
@@ -583,7 +560,6 @@ html[data-color-scheme="dark"] body:not(.user-app) textarea {
     color: var(--color-ink);
 }
 
-html[data-color-scheme="dark"] body:not(.user-app) .text-gray-500,
 html[data-color-scheme="dark"] body:not(.user-app) .text-gray-600 {
     color: var(--color-muted);
 }
@@ -637,7 +613,6 @@ html[data-color-scheme="dark"] .user-app .settings-toggle,
 html[data-color-scheme="dark"] .user-app .user-header,
 html[data-color-scheme="dark"] .user-app .user-sidebar,
 html[data-color-scheme="dark"] .user-app .btn-secondary,
-html[data-color-scheme="dark"] .user-app .logout-button,
 html[data-color-scheme="dark"] .user-app .global-search-input,
 html[data-color-scheme="dark"] .user-app .mobile-nav-shape::after,
 html[data-color-scheme="dark"] .user-app .form-control,
@@ -657,7 +632,6 @@ html[data-color-scheme="dark"] .user-app .nav-link:hover {
     background-color: #303b42;
 }
 
-html[data-color-scheme="dark"] .user-app .sidebar-section-label,
 html[data-color-scheme="dark"] .user-app .nav-link,
 html[data-color-scheme="dark"] .user-app .mobile-nav-link,
 html[data-color-scheme="dark"] .user-app .concept-hero > .k,
@@ -676,7 +650,7 @@ html[data-color-scheme="dark"] .user-app .concept-card-orange {
 }
 
 html[data-color-scheme="dark"] .user-app .text-gray-600,
-html[data-color-scheme="dark"] .user-app .text-gray-500 {
+html[data-color-scheme="dark"] .user-app .text-gray-600 {
     color: var(--color-muted);
 }
 

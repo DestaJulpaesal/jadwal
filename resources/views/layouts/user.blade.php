@@ -2,7 +2,18 @@
 
 @section('body-class', 'user-app min-h-screen bg-canvas pt-[calc(4rem+env(safe-area-inset-top))] text-ink antialiased')
 @section('body-attributes')
-    data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}"
+    data-offline-message="{{ __('ui.feedback.offline') }}"
+    data-session-expired-message="{{ __('ui.login.session_expired') }}"
+    data-login-again-label="{{ __('ui.feedback.login_again') }}"
+    data-login-url="{{ route('login') }}"
+    data-validation-message="{{ __('ui.feedback.validation_retry') }}"
+    data-not-saved-message="{{ __('ui.feedback.not_saved_retry') }}"
+    data-action-saved-label="{{ __('ui.feedback.action_saved') }}"
+    data-action-cancelled-label="{{ __('ui.feedback.action_cancelled') }}"
+    data-action-skipped-label="{{ __('ui.feedback.action_skipped') }}"
+    data-habit-not-recorded-label="{{ __('ui.feedback.habit_not_recorded') }}"
+    data-habit-done-label="{{ __('ui.feedback.habit_done_today') }}"
+    data-habit-skipped-label="{{ __('ui.feedback.habit_skipped_today') }}"
 @endsection
 
 @section('body')

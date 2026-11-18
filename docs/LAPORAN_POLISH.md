@@ -2,7 +2,23 @@
 
 ## Ringkasan
 
-Fase 0–2 tercatat selesai. Pekerjaan fase 3–9 yang dapat diterapkan dan diverifikasi secara lokal telah dilanjutkan, tetapi fase-fase tersebut **belum seluruhnya selesai** karena masih ada pemeriksaan menyeluruh serta verifikasi yang membutuhkan server produksi, browser audit, atau perangkat nyata. Fase 10 bersifat opsional dan tidak dikerjakan. Laporan ini menjadi keluaran Fase 99 dan tidak menyatakan seluruh fase selesai tanpa bukti.
+Fase 0–2 tercatat selesai pada checkpoint historis; catatan progres terbaru menyatakan gate penuh Fase 2 masih terbuka. Pekerjaan fase 3–9 yang dapat diterapkan dan diverifikasi secara lokal telah dilanjutkan, tetapi fase-fase tersebut **belum seluruhnya selesai** karena masih ada pemeriksaan menyeluruh serta verifikasi yang membutuhkan server produksi, browser audit, atau perangkat nyata. Fase 10 bersifat opsional dan tidak dikerjakan. Laporan ini tidak menyatakan seluruh fase selesai tanpa bukti.
+
+## Update hardening — 18 November 2026
+
+- Axios/bootstrap dihapus; pemeriksaan ukuran bundle dijalankan pada CI. Build terakhir: JS **33,49 KB gzip**, CSS halaman terberat **19,86 KB gzip**, keduanya di bawah budget desimal 50.000/20.000 byte.
+- Service worker menggunakan SHA-256 manifest untuk cache aset, menghapus cache statis lama saat aktivasi, dan tidak menyimpan halaman navigasi, termasuk halaman terautentikasi.
+- Optimistic actions membedakan 401/419 dan 422, menggunakan pesan dari atribut terlokalisasi, memulihkan fokus, mengumumkan status lewat `aria-live`, dan memperbarui hitungan habit dashboard.
+- Preferensi privasi nominal menggunakan `sessionStorage` dan CSS menyembunyikan angka sebelum JS siap. Selector CSS tanpa referensi runtime dibersihkan secara terbatas.
+- Tindak lanjut aksesibilitas terarah mematikan smooth scrolling pada reduced motion dan memakai warna fokus berbeda per tema (kontras 6,39:1 terang, 8,34:1 gelap); audit WCAG seluruh halaman tetap belum selesai.
+- Layout error kini tetap render saat nonce CSP belum dibagikan; tes mode report yang ada tetap menjaga nonce request normal.
+- Pemeriksaan backup kini melaporkan umur/jumlah/ukuran dan menulis `critical` jika tidak ada backup atau umurnya lebih dari 36 jam; restore checkpoint WAL serta memvalidasi/menghapus sidecar secara eksplisit. Latihan restore production dan salinan offsite belum dibuktikan.
+- `robots.txt`, cache immutable untuk aset Vite ber-hash, dan warning boot untuk `APP_URL` loopback production telah ditambahkan; aturan Apache belum diverifikasi di server Apache production.
+- Verifikasi terbaru: suite penuh **263 lulus (1.793 assertion; 340,80 detik)**; Pint **248 file lulus**; `php artisan view:cache`, `git diff --check`, serta parse YAML CI lulus. Migrasi fresh + seeding lulus pada SQLite sementara dan `PRAGMA integrity_check` menghasilkan `ok`; database kerja tidak disentuh.
+- Build terbaru dan pemeriksaan budget lulus: JavaScript **33,49 KB gzip**, CSS aplikasi terberat **19,86 KB gzip**, di bawah batas 50/20 KB. Health endpoint lokal merespons HTTP 200.
+- Workflow CI kini mencakup migrasi fresh/seed dan job fixture migrasi berisi data. Larastan level 5, run CI remote pada checkout bersih, dan hasil deployment Apache masih belum tersedia.
+- Screenshot beranda 360px dan login 360/1280px diperiksa. Tes mode gelap terautentikasi dan aksi optimistic melalui sesi browser belum dilakukan.
+- Dependency audit tetap memblokir gate: `npm audit fix` non-forced menghilangkan advisori moderat, tetapi audit kini melaporkan **13 high/0 moderate**. Advisori Picomatch belum memiliki versi patched menurut [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf); `--force` mengusulkan downgrade Vite dan tidak diterapkan. Composer audit terakhir melaporkan **55 advisory pada 15 paket**. Upgrade framework Fase 3 dan Fase 4.5–4.7 masih terbuka. Rincian terbaru ada di [PROGRESS.md](./PROGRESS.md).
 
 ## Status per fase
 
@@ -33,7 +49,7 @@ Rincian progres historis dan checklist per fase ada di [PROGRESS.md](./PROGRESS.
 - Restore backup SQLite serta foto profil diuji otomatis pada Windows.
 - Dependency npm dibersihkan melalui update non-major. Peringatan kebijakan install-script `esbuild` belum disetujui; jangan mengaktifkannya tanpa keputusan kebijakan.
 
-## Hasil verifikasi final
+## Hasil verifikasi historis — Fase 0–2
 
 - `php artisan test`: **177 lulus, 1.107 assertion**.
 - `npm run build`: lulus.
@@ -46,7 +62,7 @@ Pengujian browser hanya mencakup halaman login untuk pengukuran viewport tersebu
 
 ## Belum terverifikasi / keputusan deployment
 
-- Composer CLI tidak tersedia, sehingga `composer audit` belum dijalankan.
+- Composer CLI tidak tersedia; audit terakhir dijalankan dengan Composer 2.11.2 PHAR yang checksum installernya diverifikasi dan melaporkan **55 advisory pada 15 paket**, termasuk severity tinggi/kritis. Audit belum bersih.
 - Belum ada Lighthouse, profiling CPU, atau audit N+1 pada seluruh route terautentikasi.
 - Belum ada sweep keyboard/screen reader, kontras menyeluruh, atau pengujian tema seluruh halaman.
 - CSP report lintas halaman/interaksi belum dipantau; mode tetap `off`.

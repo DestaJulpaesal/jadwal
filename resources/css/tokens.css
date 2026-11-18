@@ -16,6 +16,7 @@
     --color-line: #dce4df;
     --color-primary: #226b50;
     --color-primary-dark: #174e3a;
+    --color-focus: #226b50;
     --color-primary-50: #eff6f1;
     --color-primary-100: #dcebe1;
     --color-primary-200: #b7d4c2;
@@ -91,7 +92,6 @@
     --dur-decoration-long: 3000ms;
     --dur-decoration-swing: 4000ms;
     --dur-decoration-blink: 4600ms;
-    --dur-decoration-slower: 5000ms;
     --dur-decoration-slowest: 6000ms;
     --dur-autofill: 9999s;
     --distance-page: 6px;
@@ -150,6 +150,7 @@ html[data-color-scheme="dark"] {
     --color-line: #44515a;
     --color-primary: #8ecfae;
     --color-primary-dark: #b7d4c2;
+    --color-focus: #b7d4c2;
     --color-primary-50: #20392c;
     --color-primary-100: #294536;
     --color-primary-200: #395c48;

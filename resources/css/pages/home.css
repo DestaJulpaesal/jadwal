@@ -813,7 +813,7 @@
 }
 
 .concept-home a:focus-visible {
-    outline: 3px solid #315d4d;
+    outline: 3px solid var(--color-focus);
     outline-offset: 4px;
 }
 

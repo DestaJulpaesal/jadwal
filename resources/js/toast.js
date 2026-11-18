@@ -130,7 +130,7 @@ export function initializeToastQueue() {
     toastObserver.observe(document.body, { childList: true, subtree: true });
 }
 
-export function showErrorToast(message) {
+export function showErrorToast(message, action = null) {
     const region = document.querySelector('[data-toast-region]');
     if (!region) {
         console.error('Unable to display error notification: toast region is missing.', message);
@@ -154,6 +154,13 @@ export function showErrorToast(message) {
     const text = document.createElement('p');
     text.className = 'flex-1';
     text.textContent = message;
+    if (action) {
+        const link = document.createElement('a');
+        link.href = action.href;
+        link.className = 'ml-2 font-semibold underline';
+        link.textContent = action.label;
+        text.append(' ', link);
+    }
 
     const dismiss = document.createElement('button');
     dismiss.type = 'button';

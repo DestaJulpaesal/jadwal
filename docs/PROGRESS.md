@@ -72,9 +72,9 @@
 - Tes membuktikan preset tersedia setelah registrasi, nama preset yang diubah tidak muncul lagi saat halaman uang dibuka, GET tidak menulis ke `money_categories`, dan backfill dapat dijalankan ulang tanpa duplikasi atau kehilangan kategori.
 - Migration diuji pada SQLite memory terisolasi, termasuk hitungan baris, `foreign_key_check`, dan `integrity_check`; `migrate:fresh --seed` serta status migration juga lolos pada berkas SQLite sementara. Database kerja tidak dimigrasikan.
 - Gerbang setelah perubahan: 198 tes lulus (1.346 assertions), Pint `--test` lulus untuk 219 file, dan Vite build lulus. Composer audit tetap merah dengan 55 advisory.
-- Butir 1.5 selesai di kode dan tes; butir 1.6–1.12 belum dikerjakan. Fase 1 belum selesai.
+- Butir 1.5–1.12 sudah diterapkan dan memiliki tes cakupan terkait; Fase 1 tetap belum boleh dinyatakan selesai sebelum gerbang dependency dan cakupan audit/test menyeluruh terpenuhi.
 
-### Fase 1 — 1.6–1.12 (perbaikan diterapkan; 1.7 dan gerbang fase masih terbuka)
+### Fase 1 — 1.6–1.12 (perbaikan diterapkan; gerbang fase masih terbuka)
 
 - **1.6 Kebiasaan:** indeks menyediakan tab Aktif, Akan datang, Berakhir, dan Arsip; aksi check-in hanya tersedia di tab aktif dan server menolak check-in untuk kebiasaan yang belum mulai, berakhir, atau diarsipkan. Dashboard tidak diubah dan tetap hanya menampilkan kebiasaan aktif terjadwal hari ini.
 - **1.7 Target:** tenggat lampau yang tidak berubah tidak lagi menghalangi edit; tenggat lampau baru tetap ditolak. `habit_id` kini menolak kebiasaan yang diarsipkan. Perbaikan target menurun dan tes regresinya diselesaikan bersama butir 2.2.
@@ -133,10 +133,10 @@
 - Cek terfokus untuk ekspor, tugas berulang, penyempurnaan tugas, pencarian, serta penyesuaian saldo seluruhnya lulus. Pint file terkait dan Vite build lulus; bundle JS gzip **55,00 KB**, tetap di atas anggaran 50 KB.
 - Gate penuh Fase 2 belum lulus. Pemeriksaan UI manual mobile/desktop mode terang/gelap belum dilakukan; audit dependency dan satu temuan format tetap blocker.
 
-### Pemeriksaan menyeluruh checkpoint 18 November 2026
+### Pemeriksaan menyeluruh checkpoint awal — 18 November 2026 (sebelum hardening frontend)
 
-- `php artisan test`: **253 lulus (1.737 assertion)**.
-- Build Vite lulus dengan JS gzip **55,00 KB**, masih melewati target 50 KB.
+- `php artisan test`: **253 lulus (1.737 assertion)** pada checkpoint ini; hasil final sesudah hardening dicatat pada bagian Fase 4.1–4.4 di bawah.
+- Build Vite lulus dengan JS gzip **55,00 KB**, masih melewati target 50 KB pada checkpoint ini; ukuran terbaru dicatat pada bagian Fase 4.1–4.4.
 - Pint pada seluruh repo menemukan satu masalah urutan import di `app/Providers/AuthServiceProvider.php`; file tersebut tidak diubah dalam pekerjaan penyesuaian saldo.
 - `npm audit fix` memperbarui dependency yang kompatibel di lockfile, tetapi `npm audit --audit-level=high` masih gagal dengan 12 high dan 3 moderate. Advisory Picomatch yang memicu temuan high menyatakan belum ada versi patched; tidak melakukan downgrade `--force` yang berisiko.
 - Composer CLI tidak tersedia; audit dijalankan dengan Composer 2.11.2 PHAR sementara yang checksum installer-nya diverifikasi. Hasilnya **55 advisory pada 15 paket**, termasuk high/kritis; upgrade framework tetap terbuka.
@@ -480,10 +480,56 @@ Selesaikan sisa verifikasi Fase 8 yang dapat dijalankan di environment ini; Ligh
 
 ## Fase 9 — PWA, backup, dan operasi (sebagian terverifikasi)
 
-- Metadata/ikon PWA, offline fallback, cache aset statis berhash, request navigasi tanpa penyimpanan HTML, halaman `/up`, dan pembersihan cache dinamis saat logout tersedia.
+- Metadata/ikon PWA, offline fallback, cache aset statis berhash, request navigasi tanpa penyimpanan HTML, dan halaman `/up` tersedia. Tidak ada cache dinamis yang dibuat atau perlu dihapus saat logout.
 - SQLite memakai WAL, `busy_timeout`, foreign keys, dan synchronous NORMAL. Backup terkompresi/terenkripsi, retensi, scheduler 02:30, restore dengan validasi integrity, dan cadangan otomatis sebelum restore tersedia.
 - `EncryptedSqliteBackupTest` lulus pada Windows setelah fixture menutup PDO eksternal sebelum penggantian file; tes membuktikan data SQLite dan foto kembali ke snapshot.
 - Belum diuji install nyata di Android/iOS, kondisi offline pada perangkat, transfer salinan backup ke storage luar server, atau simulasi restore produksi. Fase 9 belum ditandai selesai operasional.
+
+## Hardening lanjutan — Fase 4.1–4.4 (diterapkan; gerbang keseluruhan masih terbuka)
+
+- **4.1 Bundle:** Axios dihapus dari dependency dan bootstrap; aplikasi tetap memakai `fetch`. CSS publik dipisah dari CSS legacy aplikasi; komponen tombol dipakai bersama agar tampilan login tetap konsisten. CSS legacy yang tidak direferensikan dihapus setelah inventaris source. `npm run check:bundle` memeriksa ukuran gzip halaman publik dan aplikasi dalam byte, dan dijalankan di CI. Build terakhir: JS **33,49 KB**, CSS halaman terberat **19,86 KB**.
+- **4.2 Service worker:** versi cache berasal dari SHA-256 byte `manifest.json`; versi kandidat dicatat saat install, lalu activate memilih cache tersebut dan menghapus cache aset versi lama. Hanya aset berhash serta fallback offline disimpan; halaman navigasi tetap network-only. Pesan `CLEAR_DYNAMIC_CACHES` dihapus karena cache dinamis tidak pernah dibuat.
+- **4.3 Aksi optimistik:** respons 401/419 menampilkan pesan sesi berakhir beserta tautan masuk; 422 menampilkan kesalahan validasi pertama atau instruksi pemeriksaan data. Pesan/status memakai data-atribut terlokalisasi, kegagalan jaringan memakai pesan lokal, fokus tombol dipulihkan, status sukses memakai `aria-live`, dan hitungan kebiasaan dashboard diperbarui.
+- **4.4 Privasi:** preferensi server ditetapkan pada elemen `<html>` sebelum stylesheet; CSS menyembunyikan nominal sampai inisialisasi JS selesai. Pilihan pengguna dibaca/disimpan pada `sessionStorage` dalam `try/catch` dan kegagalan storage dicatat secara eksplisit.
+- Tes penuh terbaru setelah perbaikan aksesibilitas: **256 lulus (1.761 assertion)**; tes terarah terbaru `AccessibilityStructureTest`: **2 lulus (27 assertion)**; Pint **247 file lulus**; build Vite dan pemeriksaan budget lulus. Screenshot beranda dicek pada 360px dan login pada 360/1280px.
+- **Gate tetap merah:** setelah `npm audit fix` non-forced, audit npm melaporkan **13 high dan 0 moderate**. Advisori Picomatch yang tersisa belum memiliki versi patched menurut [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf); `--force` mengusulkan downgrade Vite dan tidak diterapkan. Audit Composer terakhir tetap **55 advisory pada 15 paket**. Uji mode gelap terautentikasi dan interaksi optimistic di browser belum dilakukan.
+- CSS 4.7 baru mencakup inventaris awal dan penghapusan selector yang tidak muncul di source runtime; verifikasi visual per halaman dan migrasi CSS legacy lanjutan belum selesai.
+- Masih terbuka: upgrade Laravel/dependensi Fase 3, Fase 4.5–4.7, verifikasi perangkat PWA dan seluruh matriks UI/aksesibilitas, serta blocker audit dependency. Prompt keseluruhan belum selesai.
+
+## Fase 4.5 — Fokus dan reduced motion (perbaikan terarah; audit menyeluruh terbuka)
+
+- Browser check pada halaman login mengonfirmasi `scroll-behavior: smooth` tetap aktif saat `prefers-reduced-motion: reduce`. Aturan kini mengubahnya menjadi `auto`.
+- Fokus keyboard memakai token tema: `#226b50` pada terang dan `#b7d4c2` pada gelap. Rasio kontras terhadap surface masing-masing **6,39:1** dan **8,34:1**. Token juga dipakai oleh tombol, halaman publik, dan aksi dashboard yang sebelumnya menetapkan warna fokus sendiri.
+- `AccessibilityStructureTest` diperluas untuk mengunci aturan fokus/reduced-motion; tes terarah **2 lulus (27 assertion)**. Browser memverifikasi skip link menerima fokus, scroll otomatis nonaktif di reduced motion, dan warna fokus aktual sesuai kedua tema.
+- Ini hanya perbaikan fondasi yang dapat diverifikasi lokal; audit kontras seluruh komponen/halaman, keyboard dan screen reader lintas route, label/form, target sentuh, serta modal focus trap tetap terbuka.
+
+## Fase 3.2 — Fallback error tanpa nonce CSP (perbaikan terarah)
+
+- Layout dasar sekarang menambahkan atribut `nonce` hanya bila middleware sudah membagikan `$cspNonce`. Halaman error tetap dapat dirender ketika `SecurityHeaders` gagal sebelum nonce tersedia.
+- Tes regresi menggunakan mode CSP invalid, memastikan nonce memang belum dibagikan, respons 500 memakai halaman error aplikasi, dan inline script tidak memperoleh atribut nonce kosong. Tes CSP report yang sudah ada tetap memastikan nonce hadir pada request normal.
+- `.env.example` kini memulai CSP pada `report`; `docs/CSP.md` menjelaskan review channel `csp` dan syarat sebelum `enforce`. Observasi CSP lintas-halaman di deployment dan keputusan beralih ke `enforce` tetap terbuka.
+- Verifikasi terbaru: suite penuh **263 lulus (1.793 assertion; 340,80 detik)**, Pint **248 file lulus**, `php artisan view:cache`, `git diff --check`, dan parse YAML workflow CI berhasil. Build dan budget gzip lulus (**JS 33,49 KB; CSS aplikasi terberat 19,86 KB**).
+
+## Fase 3.3 — Backup, status, dan restore (diterapkan; latihan produksi masih terbuka)
+
+- `EncryptedSqliteBackup::status()` melaporkan jumlah arsip terenkripsi, total byte, nama/umur arsip terbaru, dan tidak membuat direktori yang belum ada.
+- `app:backup-status` berakhir gagal dan mencatat `critical` bila arsip tidak ada atau lebih tua dari 36 jam; dijadwalkan setiap hari pukul 03:30 setelah backup pukul 02:30. Dokumen backup/deploy diperbarui.
+- Restore kini checkpoint WAL, menolak sidecar yang bukan file biasa, menghapus `-wal`/`-shm` sebelum pertukaran database, dan memastikan tidak ada sidecar tersisa setelah install. Tes integrasi membuktikan data/foto dipulihkan dan sidecar lama dibersihkan di database sementara.
+- Tes terarah terbaru: `EncryptedSqliteBackupTest` **4 lulus (24 assertion)**. Latihan restore produksi/kuartalan, transfer arsip ke lokasi offsite, dan bukti backup production >36 jam masih menjadi pekerjaan operasional.
+
+## Fase 3.5 — Robots, cache aset, dan konfigurasi host (diterapkan; Apache produksi belum diverifikasi)
+
+- `robots.txt` sekarang melarang `/dashboard`, `/admin`, `/profile`, dan `/settings`.
+- `public/.htaccess` menetapkan cache immutable satu tahun hanya untuk nama aset Vite ber-hash di `/build/assets/`; panduan deploy mencantumkan modul Apache yang dibutuhkan dan aturan yang sama.
+- Boot production menulis warning tanpa membocorkan URL bila `APP_URL` menunjuk ke `localhost`, alamat loopback IPv4/IPv6, atau subdomain `.localhost`. Tes mencakup kasus localhost.
+- Tes terarah: `PwaAndHealthTest` **3 lulus (41 assertion)**; `SecurityHeadersTest` **9 lulus (45 assertion)**. Konfigurasi Apache belum dijalankan pada server Apache production.
+
+## Fase 3.6 — CI (sebagian diterapkan; Larastan dan CI remote terbuka)
+
+- Workflow PHP kini menjalankan `migrate:fresh --seed --force` pada SQLite setelah menyiapkan database.
+- Job terpisah menjalankan `TaskCategoryForeignKeyMigrationTest` untuk fixture skema/data lama. Cache Composer, cache npm, dan pemeriksaan budget bundle tetap tersedia.
+- YAML workflow berhasil diparse lokal. Migrasi fresh dan seeding juga berhasil pada berkas SQLite sementara, dengan `PRAGMA integrity_check` menghasilkan `ok`; database kerja tidak disentuh.
+- Belum ada job Larastan level 5/baseline dan belum ada hasil run GitHub Actions pada checkout bersih. Gate keseluruhan juga tetap merah sampai audit dependensi lulus.
 
 ## Serah-terima akhir
 

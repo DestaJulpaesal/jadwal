@@ -1,0 +1,114 @@
+.button {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed;
+    opacity: 1;
+    border-radius: var(--radius-button);
+    font-family: var(--font-sans);
+    transition-duration: var(--dur-fast);
+    transition-timing-function: var(--ease-standard);
+}
+
+.button--primary {
+    background-color: var(--color-primary-700);
+    color: var(--color-primary-foreground);
+}
+
+.button--secondary {
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+}
+
+.button--ghost {
+    background-color: transparent;
+    color: var(--color-ink);
+}
+
+.button--danger {
+    background-color: var(--color-danger);
+    color: var(--color-danger-foreground);
+}
+
+.button--sm {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: var(--text-sm);
+}
+
+.button--md {
+    min-height: 44px;
+}
+
+.button--lg {
+    min-height: 52px;
+    padding-inline: 20px;
+    font-size: var(--text-base);
+}
+
+.button--icon-only {
+    width: 44px;
+    min-width: 44px;
+    padding: 0;
+}
+
+.button:disabled {
+    cursor: not-allowed;
+    opacity: .55;
+}
+
+.button:active:not(:disabled) {
+    transform: scale(.97);
+    transition-duration: var(--dur-instant);
+}
+
+.button:focus-visible {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+}
+
+.button[aria-busy="true"] {
+    min-width: var(--button-loading-width, 9rem);
+    pointer-events: none;
+}
+
+.button[aria-busy="true"]::after {
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: var(--radius-full);
+    animation: button-spin var(--dur-spin) linear infinite;
+    content: "";
+}
+
+.button.is-success {
+    background-color: var(--color-success);
+    color: var(--color-success-foreground);
+}
+
+@keyframes button-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (hover: hover) {
+    .button--primary:hover:not(:disabled) {
+        background-color: var(--color-primary-800);
+    }
+
+    .button--secondary:hover:not(:disabled) {
+        background-color: var(--color-primary-50);
+    }
+
+    .button--ghost:hover:not(:disabled) {
+        background-color: var(--color-primary-50);
+    }
+
+    .button--danger:hover:not(:disabled) {
+        filter: brightness(.9);
+    }
+}
+
+@media (max-width: 639px) {
+    .button--sm {
+        min-height: 44px;
+    }
+}

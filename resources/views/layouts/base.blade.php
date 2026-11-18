@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @auth data-theme="{{ auth()->user()->theme ?? 'light' }}" @endauth>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @auth data-theme="{{ auth()->user()->theme ?? 'light' }}" data-private-default="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}" data-privacy-hidden="{{ auth()->user()->hide_financial_amounts ? 'true' : 'false' }}" @endauth>
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -12,10 +12,11 @@
     <link rel="apple-touch-icon" href="{{ asset('icons/apple-touch-icon.png') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <script nonce="{{ $cspNonce }}">
+    <script @isset($cspNonce) nonce="{{ $cspNonce }}" @endisset>
         (() => {
             const root = document.documentElement;
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            const privacyStorageKey = 'jadwal:hide-financial-amounts';
             const applyTheme = () => {
                 root.dataset.colorScheme = root.dataset.theme === 'system'
                     ? (prefersDark.matches ? 'dark' : 'light')
@@ -24,9 +25,22 @@
 
             applyTheme();
             prefersDark.addEventListener('change', applyTheme);
+
+            try {
+                const savedPrivacyPreference = sessionStorage.getItem(privacyStorageKey);
+                if (savedPrivacyPreference === 'true' || savedPrivacyPreference === 'false') {
+                    root.dataset.privacyHidden = savedPrivacyPreference;
+                }
+            } catch (error) {
+                console.error('Could not read the financial privacy preference.', error);
+            }
         })();
     </script>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @if (request()->routeIs('home', 'login', 'register'))
+        @vite(['resources/css/public.css', 'resources/js/app.js'])
+    @else
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @endif
     @yield('extra-assets')
 </head>
 <body class="@yield('body-class')" @yield('body-attributes')>

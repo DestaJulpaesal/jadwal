@@ -36,11 +36,15 @@ class PwaAndHealthTest extends TestCase
 
         $serviceWorker = file_get_contents(public_path('sw.js'));
         $this->assertIsString($serviceWorker);
-        $this->assertStringContainsString("const CACHE_VERSION = 'v1'", $serviceWorker);
+        $this->assertStringContainsString("crypto.subtle.digest('SHA-256'", $serviceWorker);
+        $this->assertStringContainsString("const CACHE_METADATA_NAME = 'jadwal-cache-metadata'", $serviceWorker);
+        $this->assertStringNotContainsString("const CACHE_VERSION = 'v1'", $serviceWorker);
+        $this->assertStringNotContainsString('CLEAR_DYNAMIC_CACHES', $serviceWorker);
         $this->assertStringContainsString("request.method !== 'GET'", $serviceWorker);
         $this->assertStringContainsString("request.mode === 'navigate'", $serviceWorker);
         $this->assertStringContainsString('HASHED_ASSET.test(url.pathname)', $serviceWorker);
         $this->assertStringNotContainsString('cache.put(request,', $serviceWorker);
+        $this->assertStringNotContainsString('CLEAR_DYNAMIC_CACHES', (string) file_get_contents(resource_path('js/pwa.js')));
 
         $this->actingAs(User::factory()->create())
             ->get(route('user.more'))
@@ -60,5 +64,20 @@ class PwaAndHealthTest extends TestCase
             ->assertOk()
             ->assertExactJson(['status' => 'ok'])
             ->assertHeader('X-Request-Id');
+    }
+
+    public function test_private_areas_are_disallowed_and_hashed_assets_are_cacheable(): void
+    {
+        $robots = (string) file_get_contents(public_path('robots.txt'));
+        foreach (['/dashboard', '/admin', '/profile', '/settings'] as $path) {
+            $this->assertStringContainsString('Disallow: '.$path, $robots);
+        }
+
+        $htaccess = (string) file_get_contents(public_path('.htaccess'));
+        $this->assertStringContainsString('^/build/assets/[^/]+-[A-Za-z0-9_-]{8}', $htaccess);
+        $this->assertStringContainsString(
+            'Header set Cache-Control "public, max-age=31536000, immutable" env=immutable_vite_asset',
+            $htaccess
+        );
     }
 }

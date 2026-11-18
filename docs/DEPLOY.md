@@ -70,18 +70,21 @@ Jalankan scheduler Laravel setiap menit:
 * * * * * cd /srv/jadwal && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Pada Windows Server, buat Scheduled Task per menit dengan direktori kerja proyek dan PHP CLI yang benar. Scheduler menjalankan backup harian, housekeeping, dan ringkasan email sesuai preferensi pengguna. Bila `QUEUE_CONNECTION` diubah dari `sync`, jalankan worker persisten di bawah Supervisor/systemd atau Windows Service, dan atur restart setelah deployment.
+Pada Windows Server, buat Scheduled Task per menit dengan direktori kerja proyek dan PHP CLI yang benar. Scheduler menjalankan backup harian, pemeriksaan umur/ukuran backup, housekeeping, dan ringkasan email sesuai preferensi pengguna. `app:backup-status` mencatat kejadian `critical` jika tidak ada backup atau backup terbaru berumur lebih dari 36 jam; pantau channel log aplikasi. Bila `QUEUE_CONNECTION` diubah dari `sync`, jalankan worker persisten di bawah Supervisor/systemd atau Windows Service, dan atur restart setelah deployment.
 
 ## Web server dan aset statis
 
-Apache harus mengaktifkan `mod_rewrite`, `mod_headers`, dan `mod_mime`; aturan `public/.htaccess` mengirim MIME manifest dan `Service-Worker-Allowed: /`. Aset hasil Vite di `/build/assets/` memiliki nama berhash dan dapat disajikan immutable:
+Apache harus mengaktifkan `mod_rewrite`, `mod_headers`, `mod_mime`, dan `mod_setenvif`; aturan `public/.htaccess` mengirim MIME manifest dan `Service-Worker-Allowed: /`. Hanya aset Vite di `/build/assets/` dengan hash 8 karakter yang mendapat cache immutable:
 
 ```apache
-<IfModule mod_headers.c>
-    <FilesMatch "^.+-[A-Za-z0-9_-]{8,}\.(css|js|woff2?|png|svg)$">
-        Header set Cache-Control "public, max-age=31536000, immutable"
-    </FilesMatch>
+<IfModule mod_setenvif.c>
+    SetEnvIf Request_URI "^/build/assets/[^/]+-[A-Za-z0-9_-]{8}\.[^/]+$" immutable_vite_asset
 </IfModule>
+
+<IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable" env=immutable_vite_asset
+</IfModule>
+```
 
 Aktifkan kompresi gzip/Brotli di web server atau proxy untuk CSS, JavaScript, JSON, SVG, dan font. Contoh Apache gzip:
 

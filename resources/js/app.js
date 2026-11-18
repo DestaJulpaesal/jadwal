@@ -1,4 +1,3 @@
-import './bootstrap';
 import './calendar';
 import './habit-form';
 import '@fontsource/figtree/400.css';

@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('app:send-daily-digest')->everyMinute()->withoutOverlapping();
         $schedule->command('app:backup-database')->dailyAt('02:30')->onOneServer()->withoutOverlapping();
+        $schedule->command('app:backup-status')->dailyAt('03:30')->onOneServer()->withoutOverlapping();
         $schedule->command('app:prune-stale-data')->dailyAt('03:00')->withoutOverlapping();
     }
 

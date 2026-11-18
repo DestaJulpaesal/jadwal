@@ -72,15 +72,6 @@ export const initializePwa = () => {
         }
     });
 
-    document.addEventListener('submit', (event) => {
-        const form = event.target;
-        if (!(form instanceof HTMLFormElement) || !/\/logout\/?$/.test(new URL(form.action).pathname)) {
-            return;
-        }
-
-        navigator.serviceWorker?.controller?.postMessage({ type: 'CLEAR_DYNAMIC_CACHES' });
-    });
-
     if (!canRegisterServiceWorker()) {
         return;
     }

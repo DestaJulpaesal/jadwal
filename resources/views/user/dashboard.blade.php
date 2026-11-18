@@ -82,7 +82,7 @@
         @if (in_array('habits', $dashboardSections, true))
         <section class="concept-card concept-card-green dashboard-panel" aria-labelledby="habits-heading">
             <div class="concept-card-header">
-                <div class="concept-heading mb-0"><x-concept-icon name="fl" /><div><h2 id="habits-heading" class="text-lg font-semibold">Kebiasaan hari ini</h2><p class="mt-1 text-sm">{{ $doneHabits }} dari {{ $todayHabits->count() }} selesai</p></div></div>
+                <div class="concept-heading mb-0"><x-concept-icon name="fl" /><div><h2 id="habits-heading" class="text-lg font-semibold">Kebiasaan hari ini</h2><p class="mt-1 text-sm" data-habit-completion-progress data-completed="{{ $doneHabits }}" data-total="{{ $todayHabits->count() }}" aria-live="polite"><span data-habit-completion-count>{{ $doneHabits }}</span> dari {{ $todayHabits->count() }} selesai</p></div></div>
                 <a href="{{ route('user.habits.index') }}" class="dashboard-action dashboard-action-secondary"><x-concept-icon name="fl" class="h-4 w-4" />Lihat semua</a>
             </div>
             @forelse ($todayHabits as $habit)
