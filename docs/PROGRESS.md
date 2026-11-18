@@ -152,6 +152,9 @@
 - `3e386fc` — `fix(reports): use safe calendar month ranges`.
 - `14de85c` — `fix(obligations): cap completed installment schedules`.
 - `548b57a` — `fix(money): seed category presets once per user`.
+- `a96c2d8` — `test(tasks): cover recurrence across DST`.
+- `bff1b38` — `feat(money): add wallet balance adjustments`.
+- `69890ac` — `chore(deps): refresh npm lockfile` (audit masih terblokir advisory upstream).
 
 ## Status penutupan terakhir — 9 November 2026
 
