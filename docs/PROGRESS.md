@@ -139,7 +139,7 @@
 - Build Vite lulus dengan JS gzip **55,00 KB**, masih melewati target 50 KB.
 - Pint pada seluruh repo menemukan satu masalah urutan import di `app/Providers/AuthServiceProvider.php`; file tersebut tidak diubah dalam pekerjaan penyesuaian saldo.
 - `npm audit fix` memperbarui dependency yang kompatibel di lockfile, tetapi `npm audit --audit-level=high` masih gagal dengan 12 high dan 3 moderate. Advisory Picomatch yang memicu temuan high menyatakan belum ada versi patched; tidak melakukan downgrade `--force` yang berisiko.
-- `composer audit` tidak dapat dijalankan karena Composer CLI tidak tersedia pada sesi ini. Catatan baseline hardening sebelumnya melaporkan 55 advisory dan upgrade framework tetap terbuka.
+- Composer CLI tidak tersedia; audit dijalankan dengan Composer 2.11.2 PHAR sementara yang checksum installer-nya diverifikasi. Hasilnya **55 advisory pada 15 paket**, termasuk high/kritis; upgrade framework tetap terbuka.
 - Uji tampilan manual 360/1280px serta mode terang/gelap belum dilakukan; jangan anggap pemeriksaan browser sebagai selesai.
 
 ### Commit hardening
