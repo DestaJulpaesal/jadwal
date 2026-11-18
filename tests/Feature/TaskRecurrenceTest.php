@@ -102,6 +102,26 @@ class TaskRecurrenceTest extends TestCase
         $this->assertSame('2026-03-31', $march->occurrence_date->toDateString());
     }
 
+    public function test_daily_recurrence_preserves_local_wall_time_across_new_york_dst(): void
+    {
+        $this->travelTo(Carbon::parse('2026-03-07 17:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'America/New_York']);
+        TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $task = $user->tasks()->create([
+            'title' => 'Pengingat pagi',
+            'starts_at' => '2026-03-07 14:30:00',
+            'ends_at' => '2026-03-07 15:30:00',
+            'recurrence' => 'daily',
+        ]);
+
+        $this->actingAs($user)->patch(route('user.tasks.complete', $task));
+
+        $next = $user->tasks()->where('recurrence_parent_id', $task->id)->firstOrFail();
+        $this->assertSame('2026-03-08 13:30:00', $next->starts_at->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-03-08 09:30:00', $next->starts_at->timezone('America/New_York')->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-03-08 10:30:00', $next->ends_at->timezone('America/New_York')->format('Y-m-d H:i:s'));
+    }
+
     public function test_weekly_recurrence_requires_at_least_one_valid_day(): void
     {
         $user = User::factory()->create();
