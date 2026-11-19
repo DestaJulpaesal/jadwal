@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.2', '8.3', '8.4']
+        php: ['8.3', '8.4']
     steps:
       - uses: actions/checkout@v4
 
@@ -62,7 +62,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          php-version: '8.3'
           extensions: mbstring, pdo_sqlite
           coverage: none
           tools: composer:v2
@@ -71,8 +71,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vendor
-          key: composer-${{ runner.os }}-8.2-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-${{ runner.os }}-8.2-
+          key: composer-${{ runner.os }}-8.3-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-8.3-
 
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
