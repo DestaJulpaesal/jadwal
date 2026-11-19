@@ -535,11 +535,18 @@ Selesaikan sisa verifikasi Fase 8 yang dapat dijalankan di environment ini; Ligh
 
 Laporan ringkas per fase, bukti yang tersedia, batas pengukuran, perubahan, dan keputusan terbuka ada di `docs/LAPORAN_POLISH.md`. Jangan mengubah status "sebagian" menjadi "selesai" tanpa bukti tambahan dari production/browser/perangkat yang disebutkan di laporan.
 
-## Fase 3.1 — Lompatan Laravel 10 ke 11 (checkpoint sementara; jangan rilis)
+## Fase 3.1 — Lompatan Laravel 10 ke 11 (checkpoint sementara; sudah dilampaui)
 
 - Upgrade dilakukan pada branch terpisah `chore/upgrade-laravel`. Dependensi mengikuti panduan resmi Laravel 11: PHP minimum 8.2, framework 11, Breeze 2, Sanctum 4, Collision 8, dan `doctrine/dbal` dihapus. Struktur bootstrap Laravel 10 dipertahankan karena tetap didukung.
 - Matriks CI berubah ke PHP 8.2–8.4. `config.platform.php` dikunci ke 8.2.0 supaya lockfile tidak memilih paket Symfony yang hanya bisa dipasang di PHP 8.4 pada runner lokal.
 - Carbon 3 mengembalikan beda tanggal sebagai angka pecahan/bertanda dan menolak `timezone(null)`. Model `User` kini membawa zona waktu default Jakarta; hitungan hari/periode menjadi integer dengan tanda eksplisit; durasi tugas berulang dihitung dari timestamp agar jadwal lokal tetap benar melewati DST.
 - Listener verifikasi email otomatis Laravel 11 kini tetap mengikuti `AUTH_EMAIL_VERIFICATION`. Tes rollback jadwal juga menurunkan indeks fase berikutnya sebelum migration kolom, tanpa mengubah migration historis; tes header PWA tidak bergantung pada kapitalisasi charset.
 - Verifikasi: `php artisan test --compact` **263 lulus (1.792 assertion)**; Pint lulus; `migrate:fresh --seed --force` di SQLite sementara menghasilkan `integrity=ok` dan nol pelanggaran FK; `composer validate --strict` dan pemeriksaan platform lock lulus. `npm run build`, bundle budget (JS 33,49 KB/CSS 19,86 KB gzip), serta `npm audit --audit-level=high` lulus.
-- **Gate Composer tetap merah pada lompatan sementara ini:** `composer audit` melaporkan 5 advisori untuk `laravel/framework`, termasuk CVE-2026-48019 yang mencakup seluruh rentang Laravel 11 dan tidak memiliki versi perbaikan Laravel 11. Resolver normal menolak framework 11; `--no-security-blocking` hanya dipakai untuk menguji hop perantara sesuai urutan upgrade. Branch ini tidak boleh dirilis/di-merge pada checkpoint ini. Lanjutkan langsung ke Laravel 12 lalu 13 (PHP 8.3+) dan hanya tutup fase jika audit final bersih.
+- **Gate Composer pada checkpoint Laravel 11 berwarna merah:** `composer audit` melaporkan 5 advisori untuk `laravel/framework`, termasuk CVE-2026-48019 yang mencakup seluruh rentang Laravel 11 dan tidak memiliki versi perbaikan Laravel 11. Resolver normal menolak framework 11; `--no-security-blocking` hanya dipakai untuk menguji hop perantara sesuai urutan upgrade. Checkpoint Laravel 11 itu tidak layak dirilis/di-merge; hop Laravel 12 di bawah ini berhasil membersihkan advisori. Lanjutkan ke Laravel 13 (PHP 8.3+) dan hanya tutup fase jika audit final bersih.
+
+## Fase 3.1 — Lompatan Laravel 11 ke 12
+
+- Framework dinaikkan ke Laravel 12 dan PHPUnit ke 11; PHP minimum/`config.platform.php` tetap 8.2.0 pada hop ini agar lockfile tetap kompatibel dengan matriks CI 8.2–8.4. Composer memilih Laravel 12.73.0 dan PHPUnit 11.5.58.
+- Migrasi perilaku Laravel 11 dan perbaikan Carbon 3 tetap dipertahankan. Provider data pada smoke test rute menggunakan atribut PHPUnit 11, menghapus peringatan metadata doc-comment yang sudah deprecated.
+- Verifikasi: `php artisan test --compact` **263 lulus (1.792 assertion)**; tes provider rute setelah migrasi ke atribut PHPUnit **15 lulus** tanpa peringatan deprecation; Pint, `composer validate --strict`, `composer check-platform-reqs --lock`, `composer audit`, `npm run build`, pemeriksaan budget bundle (JS 33,49 KB/CSS 19,91 KB gzip), dan `npm audit --audit-level=high` lulus. `migrate:fresh --seed --force` di SQLite sementara menghasilkan `integrity=ok` dan nol pelanggaran FK.
+- Lanjutkan ke Laravel 13 dengan menaikkan minimum PHP ke 8.3, lalu jalankan ulang semua gerbang dan pastikan `composer audit` tetap bersih sebelum menyelesaikan Fase 3.1.

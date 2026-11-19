@@ -2,21 +2,18 @@
 
 namespace Tests\Feature;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class RouteAccessSmokeTest extends TestCase
 {
-    /**
-     * @dataProvider protectedUserRoutes
-     */
+    #[DataProvider('protectedUserRoutes')]
     public function test_guest_is_redirected_from_user_pages(string $route): void
     {
         $this->get(route($route))->assertRedirect(route('login'));
     }
 
-    /**
-     * @dataProvider protectedAdminRoutes
-     */
+    #[DataProvider('protectedAdminRoutes')]
     public function test_guest_is_redirected_from_admin_pages(string $route): void
     {
         $this->get(route($route))->assertRedirect(route('login'));
