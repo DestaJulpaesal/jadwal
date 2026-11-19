@@ -19,6 +19,10 @@ class User extends Authenticatable implements MustVerifyEmailContract
     use MustVerifyEmailTrait;
     use Notifiable;
 
+    protected $attributes = [
+        'timezone' => 'Asia/Jakarta',
+    ];
+
     protected array $businessDateColumns = ['digest_last_sent_on'];
 
     protected $fillable = [

@@ -15,8 +15,10 @@ class ScheduleMigrationTest extends TestCase
     {
         $user = User::factory()->create();
         $task = $user->tasks()->create(['title' => 'Legacy deadline']);
+        $indexes = require database_path('migrations/2026_10_29_130400_add_task_schedule_indexes.php');
         $migration = require database_path('migrations/2026_10_29_130300_add_schedule_times_and_user_timezones.php');
 
+        $indexes->down();
         $migration->down();
         $this->assertSame(1, DB::table('tasks')->count());
         DB::table('tasks')->where('id', $task->id)->update([
@@ -27,6 +29,7 @@ class ScheduleMigrationTest extends TestCase
             DB::table('tasks')->where('id', $task->id)->value('due_date')
         );
         $migration->up();
+        $indexes->up();
 
         $this->assertSame(
             '2026-10-15 02:00:00',

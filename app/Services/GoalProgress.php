@@ -60,7 +60,7 @@ class GoalProgress
         }
         $remaining = $this->remaining($goal, $current);
         $user = $goal->relationLoaded('user') ? $goal->user : $goal->user()->firstOrFail();
-        $days = $this->clock->today($user)->startOfDay()->diffInDays($goal->due_on->startOfDay(), false);
+        $days = (int) $this->clock->today($user)->startOfDay()->diffInDays($goal->due_on->startOfDay(), false);
 
         return $days < 0 ? null : (int) ceil($remaining / max(1, $days));
     }

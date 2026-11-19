@@ -9,13 +9,8 @@ use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any events for your application.
-     */
-    public function boot(): void
+    protected function configureEmailVerification(): void
     {
-        parent::boot();
-
         if (config('auth.email_verification')) {
             Event::listen(Registered::class, SendEmailVerificationNotification::class);
         }

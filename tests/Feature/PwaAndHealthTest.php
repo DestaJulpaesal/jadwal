@@ -12,9 +12,11 @@ class PwaAndHealthTest extends TestCase
 
     public function test_offline_page_and_pwa_metadata_are_available(): void
     {
-        $this->get('/offline')
-            ->assertOk()
-            ->assertHeader('content-type', 'text/html; charset=UTF-8');
+        $response = $this->get('/offline')->assertOk();
+        $this->assertMatchesRegularExpression(
+            '/^text\/html;\s*charset=utf-8$/i',
+            (string) $response->headers->get('content-type')
+        );
 
         $offlinePage = file_get_contents(public_path('offline.html'));
         $this->assertIsString($offlinePage);

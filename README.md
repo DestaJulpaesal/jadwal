@@ -16,7 +16,7 @@ Aplikasi jadwal multi-user berbasis Laravel. Pengguna hanya dapat mengelola tuga
 
 ## Persyaratan
 
-- PHP 8.1 atau lebih baru dengan ekstensi PDO SQLite (`pdo_sqlite`).
+- PHP 8.2 atau lebih baru dengan ekstensi PDO SQLite (`pdo_sqlite`).
 - Composer.
 - Node.js dan npm.
 

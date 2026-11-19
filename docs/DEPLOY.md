@@ -4,7 +4,7 @@ Panduan ini menargetkan Laravel 10 dan SQLite pada satu server. Data aplikasi da
 
 ## Prasyarat dan izin
 
-- PHP 8.1+ dengan `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `gd`, `zip`, dan `zlib`.
+- PHP 8.2+ dengan `pdo_sqlite`, `mbstring`, `openssl`, `fileinfo`, `gd`, `zip`, dan `zlib`.
 - Composer 2, Node.js 20 dan npm untuk membuat aset rilis.
 - HTTPS aktif dengan sertifikat valid. Redirect HTTP ke HTTPS di load balancer atau web server.
 - Akun PHP harus dapat membaca kode dan menulis `storage/`, `bootstrap/cache/`, file SQLite di `database/`, serta direktori cadangan privat. Jangan beri hak tulis kepada pengguna lain.

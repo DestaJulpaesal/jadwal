@@ -106,15 +106,13 @@ class SendDailyDigestTest extends TestCase
             ]);
         }
 
-        $failingRecipient = new class
-        {
+        $failingRecipient = new class {
             public function send($message): void
             {
                 throw new \RuntimeException('SMTP unavailable');
             }
         };
-        $successfulRecipient = new class
-        {
+        $successfulRecipient = new class {
             public int $sent = 0;
 
             public function send($message): void

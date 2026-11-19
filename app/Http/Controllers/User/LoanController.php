@@ -39,11 +39,11 @@ class LoanController extends Controller
                 $remaining === 0 => __('ui.agenda.loan_paid'),
                 ! $loan->due_on => __('ui.agenda.loan_running'),
                 $loan->due_on->toDateString() < $today => __('ui.agenda.late_days', [
-                    'days' => Carbon::parse($loan->due_on->toDateString())->diffInDays(Carbon::parse($today)),
+                    'days' => abs((int) Carbon::parse($loan->due_on->toDateString())->diffInDays(Carbon::parse($today))),
                 ]),
                 $loan->due_on->toDateString() === $today => __('ui.agenda.due_today'),
                 $loan->due_on->lte(Carbon::parse($today)->addDays(3)) => __('ui.agenda.loan_due_in_days', [
-                    'days' => $loan->due_on->diffInDays(Carbon::parse($today)),
+                    'days' => abs((int) $loan->due_on->diffInDays(Carbon::parse($today))),
                 ]),
                 default => __('ui.agenda.loan_running'),
             });

@@ -50,7 +50,7 @@ class ObligationController extends Controller
                     $status = match (true) {
                         $payment !== null => __('ui.agenda.paid'),
                         $dateKey < $today => __('ui.agenda.late_days', [
-                            'days' => $date->diffInDays(\Illuminate\Support\Carbon::parse($today)),
+                            'days' => abs((int) $date->diffInDays(\Illuminate\Support\Carbon::parse($today))),
                         ]),
                         $dateKey === $today => __('ui.agenda.due_today'),
                         default => __('ui.agenda.not_due'),

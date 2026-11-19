@@ -35,7 +35,7 @@ class TaskRecurrence
 
         $today = CarbonImmutable::now($timezone)->startOfDay();
         if ($task->recurrence === 'daily' && $nextDate->lt($today)) {
-            $nextDate = $nextDate->addDays($nextDate->diffInDays($today));
+            $nextDate = $nextDate->addDays((int) $nextDate->diffInDays($today));
         } else {
             while ($nextDate->lt($today)) {
                 $nextDate = $this->nextDate($nextDate, $task->recurrence, $days, $anchorDay);
@@ -56,11 +56,11 @@ class TaskRecurrence
             ? $this->onDate($nextDate, $localStart)->utc()
             : null;
         $endAt = $startAt && $localEnd
-            ? $startAt->addSeconds(CarbonImmutable::instance($task->ends_at)->diffInSeconds($task->starts_at))
+            ? $startAt->addSeconds($task->ends_at->getTimestamp() - $task->starts_at->getTimestamp())
             : null;
         $dueDate = $localDue
             ? $this->onDate(
-                $nextDate->addDays($currentDate->diffInDays($localDue->startOfDay(), false)),
+                $nextDate->addDays((int) $currentDate->diffInDays($localDue->startOfDay(), false)),
                 $localDue
             )->utc()
             : null;

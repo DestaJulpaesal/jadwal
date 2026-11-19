@@ -534,3 +534,12 @@ Selesaikan sisa verifikasi Fase 8 yang dapat dijalankan di environment ini; Ligh
 ## Serah-terima akhir
 
 Laporan ringkas per fase, bukti yang tersedia, batas pengukuran, perubahan, dan keputusan terbuka ada di `docs/LAPORAN_POLISH.md`. Jangan mengubah status "sebagian" menjadi "selesai" tanpa bukti tambahan dari production/browser/perangkat yang disebutkan di laporan.
+
+## Fase 3.1 — Lompatan Laravel 10 ke 11 (checkpoint sementara; jangan rilis)
+
+- Upgrade dilakukan pada branch terpisah `chore/upgrade-laravel`. Dependensi mengikuti panduan resmi Laravel 11: PHP minimum 8.2, framework 11, Breeze 2, Sanctum 4, Collision 8, dan `doctrine/dbal` dihapus. Struktur bootstrap Laravel 10 dipertahankan karena tetap didukung.
+- Matriks CI berubah ke PHP 8.2–8.4. `config.platform.php` dikunci ke 8.2.0 supaya lockfile tidak memilih paket Symfony yang hanya bisa dipasang di PHP 8.4 pada runner lokal.
+- Carbon 3 mengembalikan beda tanggal sebagai angka pecahan/bertanda dan menolak `timezone(null)`. Model `User` kini membawa zona waktu default Jakarta; hitungan hari/periode menjadi integer dengan tanda eksplisit; durasi tugas berulang dihitung dari timestamp agar jadwal lokal tetap benar melewati DST.
+- Listener verifikasi email otomatis Laravel 11 kini tetap mengikuti `AUTH_EMAIL_VERIFICATION`. Tes rollback jadwal juga menurunkan indeks fase berikutnya sebelum migration kolom, tanpa mengubah migration historis; tes header PWA tidak bergantung pada kapitalisasi charset.
+- Verifikasi: `php artisan test --compact` **263 lulus (1.792 assertion)**; Pint lulus; `migrate:fresh --seed --force` di SQLite sementara menghasilkan `integrity=ok` dan nol pelanggaran FK; `composer validate --strict` dan pemeriksaan platform lock lulus. `npm run build`, bundle budget (JS 33,49 KB/CSS 19,86 KB gzip), serta `npm audit --audit-level=high` lulus.
+- **Gate Composer tetap merah pada lompatan sementara ini:** `composer audit` melaporkan 5 advisori untuk `laravel/framework`, termasuk CVE-2026-48019 yang mencakup seluruh rentang Laravel 11 dan tidak memiliki versi perbaikan Laravel 11. Resolver normal menolak framework 11; `--no-security-blocking` hanya dipakai untuk menguji hop perantara sesuai urutan upgrade. Branch ini tidak boleh dirilis/di-merge pada checkpoint ini. Lanjutkan langsung ke Laravel 12 lalu 13 (PHP 8.3+) dan hanya tutup fase jika audit final bersih.

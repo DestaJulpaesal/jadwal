@@ -116,7 +116,7 @@ class AgendaService
                 if (! $dates->has($key)) {
                     continue;
                 }
-                $daysUntil = CarbonImmutable::parse($this->clock->date($user), $timezone)
+                $daysUntil = (int) CarbonImmutable::parse($this->clock->date($user), $timezone)
                     ->diffInDays(CarbonImmutable::parse($key, $timezone), false);
                 $status = match (true) {
                     $daysUntil < 0 => __('ui.agenda.late_days', ['days' => abs($daysUntil)]),
@@ -189,7 +189,7 @@ class AgendaService
 
             $dueDate = CarbonImmutable::parse($loan->due_on->toDateString(), $user->timezone);
             $status = $dueDate->lt($todayDate)
-                ? __('ui.agenda.late_days', ['days' => $dueDate->diffInDays($todayDate)])
+                ? __('ui.agenda.late_days', ['days' => abs((int) $dueDate->diffInDays($todayDate))])
                 : __('ui.agenda.due');
             $items->push($this->item(
                 'loan_due',
@@ -240,7 +240,7 @@ class AgendaService
                 continue;
             }
 
-            $daysUntil = $todayDate->diffInDays($due, false);
+            $daysUntil = (int) $todayDate->diffInDays($due, false);
             $status = $daysUntil === 0
                 ? __('ui.agenda.due_today')
                 : __('ui.agenda.due_in_days', ['days' => $daysUntil]);

@@ -34,7 +34,7 @@ class ObligationSchedule
         $start = $isInstallment ? $startsOn : max($startsOn, $from);
         $firstMonth = CarbonImmutable::parse($start)->startOfMonth();
         $lastMonth = CarbonImmutable::parse($through)->startOfMonth();
-        $periodLimit = $firstMonth->diffInMonths($lastMonth) + 1;
+        $periodLimit = (int) $firstMonth->diffInMonths($lastMonth) + 1;
         $limit = $isInstallment ? $installmentTotal + 1 : $periodLimit;
         $periods = $this->scheduler->periodsBetween(
             $startsOn,
