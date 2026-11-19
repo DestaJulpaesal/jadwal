@@ -50,6 +50,9 @@ jobs:
       - name: Run tests
         run: php artisan test
 
+      - name: Run Larastan
+        run: vendor/bin/phpstan analyse --no-progress
+
       - name: Audit Composer dependencies
         run: composer audit
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\UserAuditLog;
 use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,13 @@ class PasswordController extends Controller
         Auth::logoutOtherDevices($validated['current_password']);
         $request->user()->update([
             'password' => Hash::make($validated['password']),
+        ]);
+
+        UserAuditLog::query()->create([
+            'user_id' => $request->user()->id,
+            'action' => 'password_changed',
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 500),
         ]);
 
         return Feedback::success(back(), __('ui.password_reset.changed'));

@@ -133,6 +133,10 @@ class ProfileTest extends TestCase
         $this->assertSame('test@example.com', $user->email);
         $this->assertSame('Asia/Jakarta', $user->timezone);
         $this->assertNull($user->email_verified_at);
+        $this->assertDatabaseHas('user_audit_logs', [
+            'user_id' => $user->id,
+            'action' => 'email_changed',
+        ]);
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
@@ -187,6 +191,10 @@ class ProfileTest extends TestCase
 
         $this->assertGuest();
         $this->assertNull($user->fresh());
+        $this->assertDatabaseHas('user_audit_logs', [
+            'action' => 'account_deleted',
+            'user_id' => null,
+        ]);
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void

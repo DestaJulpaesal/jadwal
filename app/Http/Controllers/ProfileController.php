@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
+use App\Models\UserAuditLog;
 use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,6 +37,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $validated = $request->validated();
+        $emailChanged = $user->email !== ($validated['email'] ?? $user->email);
         $avatar = $request->file('avatar');
         $removeAvatar = (bool) ($validated['remove_avatar'] ?? false);
         unset($validated['avatar'], $validated['remove_avatar']);
@@ -72,6 +74,15 @@ class ProfileController extends Controller
             $this->deletePhoto($oldPhotoPath);
         }
 
+        if ($emailChanged) {
+            UserAuditLog::query()->create([
+                'user_id' => $user->id,
+                'action' => 'email_changed',
+                'ip_address' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            ]);
+        }
+
         return Feedback::success(Redirect::route('profile.edit'), __('ui.account.profile_updated'));
     }
 
@@ -103,6 +114,13 @@ class ProfileController extends Controller
                 'account' => __('ui.feedback.last_active_admin_deletion'),
             ], 'userDeletion');
         }
+
+        UserAuditLog::query()->create([
+            'user_id' => $user->id,
+            'action' => 'account_deleted',
+            'ip_address' => $request->ip(),
+            'user_agent' => substr((string) $request->userAgent(), 0, 500),
+        ]);
 
         Auth::logout();
 

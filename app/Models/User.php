@@ -140,4 +140,9 @@ class User extends Authenticatable implements MustVerifyEmailContract
     {
         return $this->hasMany(LoanRepayment::class);
     }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(UserAuditLog::class);
+    }
 }

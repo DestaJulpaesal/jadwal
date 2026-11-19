@@ -558,3 +558,14 @@ Laporan ringkas per fase, bukti yang tersedia, batas pengukuran, perubahan, dan 
 - `config/session.php` menetapkan serialisasi `php` untuk mempertahankan kompatibilitas sesi aktif saat deploy; ini sengaja menghindari perubahan format ke JSON yang akan meminta pengguna masuk lagi.
 - Verifikasi: `php artisan test --compact` **263 lulus (1.792 assertion)**; Pint, `composer validate --strict`, `composer check-platform-reqs --lock`, `composer audit` tanpa advisori, `npm run build`, budget bundle (JS 33,49 KB/CSS 19,91 KB gzip), dan `npm audit --audit-level=high` (nol advisori) lulus. Migrasi + seeding SQLite sementara memberi `integrity=ok` dan nol pelanggaran FK; fixture migrasi dengan data lama juga termasuk dalam suite.
 - Gerbang telah lulus secara lokal pada PHP 8.4.27; GitHub Actions dan runtime PHP 8.3 belum dijalankan dari checkout bersih karena branch belum dipush. Jalankan CI hosted pada branch sebelum merge.
+
+## Penutupan operasional — 19 November 2026
+
+- Larastan 3.15 ditambahkan pada level 5 beserta `phpstan.neon`; CI menjalankan Larastan pada job PHP.
+- Ditambahkan throttle terpisah untuk permintaan reset kata sandi (`password.email`, `password.store`) dengan batas lima percobaan per menit per IP.
+- Ditambahkan tabel audit akun yang menyimpan hanya aksi, waktu, IP, dan user-agent. Perubahan email, perubahan kata sandi, dan penghapusan akun kini mencatat aksi; tidak ada email, kata sandi, isi formulir, atau data keuangan yang disimpan.
+- Backup timestamped dibuat sebelum migration, dan migration `2026_11_19_210000_create_user_audit_logs_table` berhasil dijalankan pada database kerja.
+- Verifikasi terbaru: **263 tes lulus dengan 1.795 assertion**; Pint lulus untuk 248 file; Larastan level 5 lulus; `composer audit` tidak menemukan advisori; `npm audit --audit-level=high` menemukan nol advisori; build Vite dan batas bundle lulus (JS 33,49 KB gzip, CSS 19,91 KB gzip).
+- Tes profil/password terarah **15 lulus dengan 77 assertion**, termasuk pencatatan perubahan email, kata sandi, dan penghapusan akun.
+- Pemulihan error login: migration anggaran sudah tercatat dan tabel `budgets` terbukti tersedia pada database aktif; `PRAGMA integrity_check` mengembalikan `ok`, tidak ada migration tertinggal.
+- Pekerjaan yang masih memerlukan bukti di luar repo: run GitHub Actions pada checkout bersih, hasil Apache production, smoke browser terautentikasi di mode gelap, Lighthouse/screen-reader seluruh route, install PWA pada perangkat nyata, transfer backup offsite, dan latihan restore produksi.
