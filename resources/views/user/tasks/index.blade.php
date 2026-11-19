@@ -4,8 +4,8 @@
 
 @section('content')
     <div class="mx-auto max-w-6xl">
-        <x-page-header class="mb-6" eyebrow="Ruang kerja pribadi" title="Daftar tugas" description="Cari, saring, dan perbarui rencanamu.">
-            <x-button href="{{ route('user.tasks.create') }}" variant="primary" class="hidden md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</x-button>
+        <x-page-header class="mb-5" eyebrow="Ruang kerja pribadi" title="Daftar tugas" description="Fokus pada yang harus dikerjakan sekarang.">
+            <x-button href="{{ route('user.tasks.create') }}" variant="primary" class="min-h-11 md:inline-flex"><x-concept-icon name="tk" class="h-5 w-5" />Tambah tugas</x-button>
         </x-page-header>
 
         @if (session('schedule_conflicts'))
@@ -19,52 +19,70 @@
             </x-alert>
         @endif
 
-        <form method="GET" action="{{ route('user.tasks.index') }}" class="surface-card mb-5 grid gap-4 p-4 sm:grid-cols-2 lg:grid-cols-3 lg:items-end">
-            <div>
-                <label for="search" class="field-label inline-flex items-center gap-2"><x-concept-icon name="sc" class="h-5 w-5" />Cari tugas</label>
-                <input id="search" name="search" value="{{ $filters['search'] ?? '' }}" type="search" autocomplete="off" placeholder="Judul atau catatan" class="form-control">
+        <nav class="mb-4 overflow-x-auto" aria-label="Filter cepat tugas">
+            <div class="flex min-w-max gap-2">
+                <x-button href="{{ route('user.tasks.index') }}" variant="{{ ! request()->hasAny(['due', 'status_id', 'search', 'category_id']) ? 'primary' : 'secondary' }}" class="min-h-11">Semua {{ $taskCounts['all'] }}</x-button>
+                <x-button href="{{ route('user.tasks.index', ['due' => 'today']) }}" variant="{{ ($filters['due'] ?? '') === 'today' ? 'primary' : 'secondary' }}" class="min-h-11">Hari ini {{ $taskCounts['today'] }}</x-button>
+                <x-button href="{{ route('user.tasks.index', ['due' => 'upcoming']) }}" variant="{{ ($filters['due'] ?? '') === 'upcoming' ? 'primary' : 'secondary' }}" class="min-h-11">Akan datang {{ $taskCounts['upcoming'] }}</x-button>
+                <x-button href="{{ route('user.tasks.index', ['due' => 'overdue']) }}" variant="{{ ($filters['due'] ?? '') === 'overdue' ? 'primary' : 'secondary' }}" class="min-h-11">Terlambat {{ $taskCounts['overdue'] }}</x-button>
+                @if ($completedStatus)
+                    <x-button href="{{ route('user.tasks.index', ['status_id' => $completedStatus->id]) }}" variant="{{ (string) ($filters['status_id'] ?? '') === (string) $completedStatus->id ? 'primary' : 'secondary' }}" class="min-h-11">Selesai {{ $taskCounts['completed'] }}</x-button>
+                @endif
             </div>
-            <div>
-                <label for="status_id" class="field-label">Status</label>
-                <select id="status_id" name="status_id" class="form-control">
-                    <option value="">Semua status</option>
-                    @foreach ($statuses as $status)
-                        <option value="{{ $status->id }}" @selected(($filters['status_id'] ?? '') == $status->id)>{{ $status->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label for="due" class="field-label inline-flex items-center gap-2"><x-concept-icon name="cl" class="h-5 w-5" />Waktu tugas</label>
-                <select id="due" name="due" class="form-control">
-                    <option value="">Semua jadwal</option>
-                    <option value="today" @selected(($filters['due'] ?? '') === 'today')>Hari ini</option>
-                    <option value="upcoming" @selected(($filters['due'] ?? '') === 'upcoming')>Akan datang</option>
-                    <option value="overdue" @selected(($filters['due'] ?? '') === 'overdue')>{{ __('ui.agenda.overdue') }}</option>
-                    <option value="none" @selected(($filters['due'] ?? '') === 'none')>Tanpa tenggat</option>
-                </select>
-            </div>
-            <div>
-                <label for="category_id" class="field-label">{{ __('ui.task.filters.category') }}</label>
-                <select id="category_id" name="category_id" class="form-control">
-                    <option value="">{{ __('ui.task.filters.all_categories') }}</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" @selected(($filters['category_id'] ?? '') == $category->id)>{{ $category->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label for="sort" class="field-label">{{ __('ui.task.filters.sort') }}</label>
-                <select id="sort" name="sort" class="form-control">
-                    <option value="due" @selected(($filters['sort'] ?? 'due') === 'due')>{{ __('ui.task.filters.sort_due') }}</option>
-                    <option value="created" @selected(($filters['sort'] ?? '') === 'created')>{{ __('ui.task.filters.sort_created') }}</option>
-                    <option value="title" @selected(($filters['sort'] ?? '') === 'title')>{{ __('ui.task.filters.sort_title') }}</option>
-                </select>
-            </div>
-            <div class="flex gap-2 sm:col-span-2 lg:col-span-3">
-                <x-button type="submit" variant="primary" class="flex-1 lg:flex-none">Terapkan</x-button>
-                <x-button href="{{ route('user.tasks.index') }}" variant="secondary" class="flex-1 lg:flex-none">Reset</x-button>
-            </div>
-        </form>
+        </nav>
+
+        <details class="surface-card mb-4 {{ request()->hasAny(['search', 'status_id', 'due', 'category_id', 'sort']) ? 'open' : '' }}">
+            <summary class="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 py-3 font-semibold">
+                <span class="inline-flex items-center gap-2"><x-concept-icon name="sc" class="h-5 w-5" />Cari & filter</span>
+                <span class="text-sm font-normal text-muted">{{ request()->hasAny(['search', 'status_id', 'due', 'category_id', 'sort']) ? 'Filter aktif' : 'Judul, status, jadwal, kategori' }}</span>
+            </summary>
+            <form method="GET" action="{{ route('user.tasks.index') }}" class="grid gap-4 border-t border-line p-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                    <label for="search" class="field-label">Cari tugas</label>
+                    <input id="search" name="search" value="{{ $filters['search'] ?? '' }}" type="search" autocomplete="off" placeholder="Judul atau catatan" class="form-control">
+                </div>
+                <div>
+                    <label for="status_id" class="field-label">Status</label>
+                    <select id="status_id" name="status_id" class="form-control">
+                        <option value="">Semua status</option>
+                        @foreach ($statuses as $status)
+                            <option value="{{ $status->id }}" @selected((string) ($filters['status_id'] ?? '') === (string) $status->id)>{{ $status->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="due" class="field-label">Waktu tugas</label>
+                    <select id="due" name="due" class="form-control">
+                        <option value="">Semua jadwal</option>
+                        <option value="today" @selected(($filters['due'] ?? '') === 'today')>Hari ini</option>
+                        <option value="upcoming" @selected(($filters['due'] ?? '') === 'upcoming')>Akan datang</option>
+                        <option value="overdue" @selected(($filters['due'] ?? '') === 'overdue')>{{ __('ui.agenda.overdue') }}</option>
+                        <option value="none" @selected(($filters['due'] ?? '') === 'none')>Tanpa tenggat</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="category_id" class="field-label">{{ __('ui.task.filters.category') }}</label>
+                    <select id="category_id" name="category_id" class="form-control">
+                        <option value="">{{ __('ui.task.filters.all_categories') }}</option>
+                        @foreach ($categories as $category)
+                            <option value="{{ $category->id }}" @selected((string) ($filters['category_id'] ?? '') === (string) $category->id)>{{ $category->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label for="sort" class="field-label">{{ __('ui.task.filters.sort') }}</label>
+                    <select id="sort" name="sort" class="form-control">
+                        <option value="due" @selected(($filters['sort'] ?? 'due') === 'due')>{{ __('ui.task.filters.sort_due') }}</option>
+                        <option value="created" @selected(($filters['sort'] ?? '') === 'created')>{{ __('ui.task.filters.sort_created') }}</option>
+                        <option value="title" @selected(($filters['sort'] ?? '') === 'title')>{{ __('ui.task.filters.sort_title') }}</option>
+                    </select>
+                </div>
+                <div class="flex items-end gap-2">
+                    <x-button type="submit" variant="primary" class="min-h-11 flex-1">Terapkan</x-button>
+                    <x-button href="{{ route('user.tasks.index') }}" variant="secondary" class="min-h-11 flex-1">Reset</x-button>
+                </div>
+            </form>
+        </details>
 
         <div class="surface-card mb-5 flex flex-wrap items-end gap-3 p-4">
             <form id="bulk-task-form" method="POST" action="{{ route('user.tasks.bulk') }}" class="flex flex-wrap items-end gap-3">
@@ -126,7 +144,7 @@
                             $endsAt = $task->ends_at?->timezone(auth()->user()->timezone);
                             $dueDate = $task->due_date?->timezone(auth()->user()->timezone);
                         @endphp
-                        <li class="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+                        <li class="flex flex-col gap-3 p-3 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
                             <div class="flex min-w-0 items-start gap-3">
                                 <label class="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
                                     <input type="checkbox" value="{{ $task->id }}" data-bulk-task-checkbox

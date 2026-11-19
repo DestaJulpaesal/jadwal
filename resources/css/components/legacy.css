@@ -263,6 +263,7 @@
         transform: scaleX(.8);
     }
 
+
     @media (prefers-reduced-motion: reduce) {
         .user-app .user-main {
             animation: none;

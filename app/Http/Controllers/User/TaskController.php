@@ -91,8 +91,28 @@ class TaskController extends Controller
         $tasks = $query->orderBy('tasks.id')->paginate(10)->withQueryString();
         $statuses = TaskStatus::orderBy('name')->get();
         $categories = $this->availableCategories($request->user());
+        $completedStatus = $statuses->firstWhere('is_completed', true);
+        $taskCounts = [
+            'all' => $request->user()->tasks()->count(),
+            'today' => $request->user()->tasks()
+                ->whereBetween('due_date', [$todayStart, $tomorrowStart])
+                ->count(),
+            'upcoming' => $request->user()->tasks()
+                ->where('due_date', '>=', $tomorrowStart)
+                ->count(),
+            'overdue' => $request->user()->tasks()
+                ->whereDoesntHave('status', fn ($query) => $query->where('is_completed', true))
+                ->where(function ($query) use ($todayStart) {
+                    $query->where(fn ($query) => $query->whereNotNull('due_date')->where('due_date', '<', $todayStart))
+                        ->orWhere(fn ($query) => $query->whereNull('due_date')->whereNotNull('ends_at')->where('ends_at', '<', Carbon::now('UTC')));
+                })
+                ->count(),
+            'completed' => $completedStatus
+                ? $request->user()->tasks()->where('task_status_id', $completedStatus->id)->count()
+                : 0,
+        ];
 
-        return view('user.tasks.index', compact('tasks', 'statuses', 'categories', 'filters'));
+        return view('user.tasks.index', compact('tasks', 'statuses', 'categories', 'filters', 'taskCounts', 'completedStatus'));
     }
 
     public function create(Request $request)

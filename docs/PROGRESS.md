@@ -559,6 +559,15 @@ Laporan ringkas per fase, bukti yang tersedia, batas pengukuran, perubahan, dan 
 - Verifikasi: `php artisan test --compact` **263 lulus (1.792 assertion)**; Pint, `composer validate --strict`, `composer check-platform-reqs --lock`, `composer audit` tanpa advisori, `npm run build`, budget bundle (JS 33,49 KB/CSS 19,91 KB gzip), dan `npm audit --audit-level=high` (nol advisori) lulus. Migrasi + seeding SQLite sementara memberi `integrity=ok` dan nol pelanggaran FK; fixture migrasi dengan data lama juga termasuk dalam suite.
 - Gerbang telah lulus secara lokal pada PHP 8.4.27; GitHub Actions dan runtime PHP 8.3 belum dijalankan dari checkout bersih karena branch belum dipush. Jalankan CI hosted pada branch sebelum merge.
 
+## Redesign halaman tugas — 19 November 2026
+
+- Daftar tugas mendapat tab cepat untuk Semua, Hari ini, Akan datang, Terlambat, dan Selesai beserta jumlah masing-masing.
+- Pencarian dan filter lanjutan dipindahkan ke panel yang dapat ditutup sehingga daftar lebih ringkas dan mudah dipindai.
+- Header mobile menjaga tombol Tambah tugas tetap mudah dijangkau; kartu tugas mempertahankan checkbox massal, status, jadwal, kategori, penyelesaian cepat, edit, dan hapus.
+- Server development dan cache Laravel dibersihkan/dipanas-kan setelah reload yang lambat. Pengukuran login berulang setelah cache stabil berkisar sekitar 0.3–0.6 detik tanpa proxy; jalur dashboard guest juga sekitar 0.3–0.4 detik setelah permintaan pertama.
+- Tes fitur TaskManagement dan UserTask: **32 lulus, 166 assertion**. Suite penuh sebelumnya: **263 lulus, 1.795 assertion**.
+- Build Vite dan JavaScript lulus; pemeriksaan CSS tetap melaporkan aplikasi 21.79 KB gzip terhadap budget lama 20 KB, sehingga penyempurnaan bundle/CSS legacy masih terbuka.
+
 ## Penutupan operasional — 19 November 2026
 
 - Larastan 3.15 ditambahkan pada level 5 beserta `phpstan.neon`; CI menjalankan Larastan pada job PHP.
