@@ -11,6 +11,7 @@ use App\Models\TaskStatus;
 use App\Models\User;
 use App\Services\TaskCompletion;
 use App\Services\TaskRecurrence;
+use App\Support\Db as DatabaseTransaction;
 use App\Support\Feedback;
 use App\Support\Like;
 use Illuminate\Http\Request;
@@ -63,6 +64,7 @@ class TaskController extends Controller
         $todayStartLocal = Carbon::now($request->user()->timezone)->startOfDay();
         $todayStart = $todayStartLocal->copy()->utc();
         $tomorrowStart = $todayStartLocal->copy()->addDay()->utc();
+        $nowUtc = Carbon::now('UTC');
 
         match ($filters['due'] ?? null) {
             'today' => $query->where('due_date', '>=', $todayStart)
@@ -70,10 +72,9 @@ class TaskController extends Controller
             'upcoming' => $query->where('due_date', '>=', $tomorrowStart),
             'overdue' => $query
                 ->whereDoesntHave('status', fn ($query) => $query->where('is_completed', true))
-                ->where(function ($query) {
-                    $now = Carbon::now('UTC');
-                    $query->where(fn ($query) => $query->whereNotNull('due_date')->where('due_date', '<', $now))
-                        ->orWhere(fn ($query) => $query->whereNull('due_date')->whereNotNull('ends_at')->where('ends_at', '<', $now));
+                ->where(function ($query) use ($nowUtc) {
+                    $query->where(fn ($query) => $query->whereNotNull('due_date')->where('due_date', '<', $nowUtc))
+                        ->orWhere(fn ($query) => $query->whereNull('due_date')->whereNotNull('ends_at')->where('ends_at', '<', $nowUtc));
                 }),
             'none' => $query->whereNull('due_date'),
             default => null,
@@ -92,24 +93,32 @@ class TaskController extends Controller
         $statuses = TaskStatus::orderBy('name')->get();
         $categories = $this->availableCategories($request->user());
         $completedStatus = $statuses->firstWhere('is_completed', true);
+        $counts = $request->user()->tasks()
+            ->selectRaw(
+                'COUNT(*) AS all_count,
+                COALESCE(SUM(CASE WHEN due_date >= ? AND due_date < ? THEN 1 ELSE 0 END), 0) AS today_count,
+                COALESCE(SUM(CASE WHEN due_date >= ? THEN 1 ELSE 0 END), 0) AS upcoming_count,
+                COALESCE(SUM(CASE
+                    WHEN NOT EXISTS (
+                        SELECT 1 FROM task_statuses
+                        WHERE task_statuses.id = tasks.task_status_id
+                            AND task_statuses.is_completed = 1
+                    ) AND (
+                        (due_date IS NOT NULL AND due_date < ?)
+                        OR (due_date IS NULL AND ends_at IS NOT NULL AND ends_at < ?)
+                    )
+                    THEN 1 ELSE 0
+                END), 0) AS overdue_count,
+                COALESCE(SUM(CASE WHEN task_status_id = ? THEN 1 ELSE 0 END), 0) AS completed_count',
+                [$todayStart, $tomorrowStart, $tomorrowStart, $nowUtc, $nowUtc, $completedStatus?->id ?? 0]
+            )
+            ->first();
         $taskCounts = [
-            'all' => $request->user()->tasks()->count(),
-            'today' => $request->user()->tasks()
-                ->whereBetween('due_date', [$todayStart, $tomorrowStart])
-                ->count(),
-            'upcoming' => $request->user()->tasks()
-                ->where('due_date', '>=', $tomorrowStart)
-                ->count(),
-            'overdue' => $request->user()->tasks()
-                ->whereDoesntHave('status', fn ($query) => $query->where('is_completed', true))
-                ->where(function ($query) use ($todayStart) {
-                    $query->where(fn ($query) => $query->whereNotNull('due_date')->where('due_date', '<', $todayStart))
-                        ->orWhere(fn ($query) => $query->whereNull('due_date')->whereNotNull('ends_at')->where('ends_at', '<', Carbon::now('UTC')));
-                })
-                ->count(),
-            'completed' => $completedStatus
-                ? $request->user()->tasks()->where('task_status_id', $completedStatus->id)->count()
-                : 0,
+            'all' => (int) $counts->all_count,
+            'today' => (int) $counts->today_count,
+            'upcoming' => (int) $counts->upcoming_count,
+            'overdue' => (int) $counts->overdue_count,
+            'completed' => (int) $counts->completed_count,
         ];
 
         return view('user.tasks.index', compact('tasks', 'statuses', 'categories', 'filters', 'taskCounts', 'completedStatus'));
@@ -133,7 +142,7 @@ class TaskController extends Controller
             null
         );
 
-        $task = DB::transaction(function () use ($validated, $request, $completedAt) {
+        $result = DB::transaction(function () use ($validated, $request, $completedAt): array {
             $category = $this->resolveCategory($validated, $request);
 
             $task = $request->user()->tasks()->create([
@@ -151,16 +160,22 @@ class TaskController extends Controller
                 'recurrence_anchor_day' => $validated['recurrence_anchor_day'],
             ]);
 
+            $recurrenceStopReason = null;
             if ($completedAt !== null) {
-                $this->taskRecurrence->createNext($task, $request->user());
+                if ($this->taskRecurrence->createNext($task, $request->user()) === null) {
+                    $recurrenceStopReason = $this->taskRecurrence->stopReason($task, $request->user());
+                }
             }
 
-            return $task;
+            return ['task' => $task, 'recurrence_stop_reason' => $recurrenceStopReason];
         });
+        $task = $result['task'];
+        $message = $this->recurrenceStopMessage($result['recurrence_stop_reason'], $task)
+            ?? __('ui.feedback.task_created');
 
         return Feedback::success(
             redirect()->route('user.tasks.index')->with('schedule_conflicts', $this->scheduleConflicts($task)),
-            __('ui.feedback.task_created')
+            $message
         );
     }
 
@@ -179,7 +194,7 @@ class TaskController extends Controller
         $isCompleted = $this->isCompletedStatus($validated['task_status_id'] ?? null);
         $completedAt = $this->taskCompletion->forStatusTransition($wasCompleted, $isCompleted, $task->completed_at);
 
-        DB::transaction(function () use ($validated, $request, $task, $completedAt, $wasCompleted, $isCompleted) {
+        $recurrenceStopReason = DB::transaction(function () use ($validated, $request, $task, $completedAt, $wasCompleted, $isCompleted): ?string {
             $category = $this->resolveCategory($validated, $request);
 
             $task->update([
@@ -198,13 +213,20 @@ class TaskController extends Controller
             ]);
 
             if (! $wasCompleted && $isCompleted) {
-                $this->taskRecurrence->createNext($task->fresh(), $request->user());
+                $completedTask = $task->fresh();
+                if ($this->taskRecurrence->createNext($completedTask, $request->user()) === null) {
+                    return $this->taskRecurrence->stopReason($completedTask, $request->user());
+                }
             }
+
+            return null;
         });
+        $message = $this->recurrenceStopMessage($recurrenceStopReason, $task)
+            ?? __('ui.feedback.task_updated');
 
         return Feedback::success(
             redirect()->route('user.tasks.index')->with('schedule_conflicts', $this->scheduleConflicts($task->refresh())),
-            __('ui.feedback.task_updated')
+            $message
         );
     }
 
@@ -222,7 +244,7 @@ class TaskController extends Controller
             return Feedback::error(back(), __('ui.feedback.task_status_missing'));
         }
 
-        $result = DB::transaction(function () use ($task, $request, $completedStatus): array {
+        $result = DatabaseTransaction::immediate(function () use ($task, $request, $completedStatus): array {
             $task = $request->user()->tasks()->lockForUpdate()->findOrFail($task->id);
 
             if ($task->status()->where('is_completed', true)->exists()) {
@@ -233,9 +255,15 @@ class TaskController extends Controller
                 'task_status_id' => $completedStatus->id,
                 'completed_at' => $this->taskCompletion->forStatusTransition(false, true, null),
             ]);
-            $this->taskRecurrence->createNext($task->fresh(), $request->user());
+            $completedTask = $task->fresh();
+            $nextTask = $this->taskRecurrence->createNext($completedTask, $request->user());
 
-            return ['already_completed' => false];
+            return [
+                'already_completed' => false,
+                'recurrence_stop_reason' => $nextTask === null
+                    ? $this->taskRecurrence->stopReason($completedTask, $request->user())
+                    : null,
+            ];
         });
 
         if ($result['already_completed']) {
@@ -246,14 +274,16 @@ class TaskController extends Controller
             return Feedback::info(back(), __('ui.feedback.task_already_completed'));
         }
 
+        $message = $this->recurrenceStopMessage($result['recurrence_stop_reason'], $task);
+
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => __('ui.feedback.task_completed'),
+                'message' => $message ?? __('ui.feedback.task_completed'),
                 'status' => $completedStatus->name,
             ]);
         }
 
-        return Feedback::success(back(), __('ui.feedback.task_completed'));
+        return Feedback::success(back(), $message ?? __('ui.feedback.task_completed'));
     }
 
     public function destroy(Task $task)
@@ -309,7 +339,8 @@ class TaskController extends Controller
             );
         }
 
-        DB::transaction(function () use ($user, $taskIds, $action, $status): void {
+        $recurrenceStopReasons = [];
+        DatabaseTransaction::immediate(function () use ($user, $taskIds, $action, $status, &$recurrenceStopReasons): void {
             $tasks = $user->tasks()->whereIn('id', $taskIds)->orderBy('id')->lockForUpdate()->get();
             if ($tasks->count() !== count(array_unique($taskIds))) {
                 abort(404);
@@ -340,16 +371,29 @@ class TaskController extends Controller
                 ]);
 
                 if (! $wasCompleted && $isCompleted) {
-                    $this->taskRecurrence->createNext($task->fresh(), $user);
+                    $completedTask = $task->fresh();
+                    if ($this->taskRecurrence->createNext($completedTask, $user) === null) {
+                        $reason = $this->taskRecurrence->stopReason($completedTask, $user);
+                        if ($reason !== null) {
+                            $recurrenceStopReasons[] = $reason;
+                        }
+                    }
                 }
             }
         });
 
+        $message = $action === 'delete'
+            ? __('ui.feedback.task_bulk_deleted')
+            : __('ui.feedback.task_bulk_updated');
+        if ($recurrenceStopReasons !== []) {
+            $message .= ' '.__('ui.feedback.task_bulk_recurrence_stopped', [
+                'count' => count($recurrenceStopReasons),
+            ]);
+        }
+
         return Feedback::success(
             redirect()->route('user.tasks.index'),
-            $action === 'delete'
-                ? __('ui.feedback.task_bulk_deleted')
-                : __('ui.feedback.task_bulk_updated')
+            $message
         );
     }
 
@@ -374,6 +418,18 @@ class TaskController extends Controller
                 7 => __('ui.weekdays.sunday_short'),
             ],
         ];
+    }
+
+    private function recurrenceStopMessage(?string $reason, Task $task): ?string
+    {
+        return match ($reason) {
+            'missing_weekdays' => __('ui.feedback.task_recurrence_missing_weekdays'),
+            'end_date' => __('ui.feedback.task_recurrence_end_date', [
+                'date' => $task->recurrence_until?->translatedFormat('j M Y') ?? '',
+            ]),
+            'invalid_schedule' => __('ui.feedback.task_recurrence_unavailable'),
+            default => null,
+        };
     }
 
     private function availableCategories(User $user)

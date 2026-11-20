@@ -23,10 +23,10 @@ class PasswordController extends Controller
             'password' => ['required', PasswordRule::defaults(), 'confirmed'],
         ]);
 
-        Auth::logoutOtherDevices($validated['current_password']);
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+        Auth::logoutOtherDevices($validated['password']);
 
         UserAuditLog::query()->create([
             'user_id' => $request->user()->id,

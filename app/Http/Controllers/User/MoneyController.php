@@ -22,7 +22,9 @@ use App\Support\Feedback;
 use App\Support\MonthRange;
 use App\Support\Rupiah;
 use App\Support\UserClock;
+use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -56,26 +58,39 @@ class MoneyController extends Controller
             'active' => __('ui.entity_status.active'),
             'archived' => __('ui.entity_status.archived'),
         ];
-        $wallets = $balances->forUser($user, $section === 'wallets' && $status === 'archived');
-        $transactions = $user->transactions()->with(['wallet', 'destinationWallet', 'moneyCategory'])
-            ->whereBetween('occurred_on', [
-                $monthRange->start->toDateString(),
-                $monthRange->end->toDateString(),
-            ])->orderByDesc('occurred_on')->orderByDesc('id')->paginate(15)->withQueryString();
-        $categories = $user->moneyCategories()
-            ->when($section === 'wallets' && $status === 'archived',
-                fn ($query) => $query->whereNotNull('archived_at'),
-                fn ($query) => $query->whereNull('archived_at'))
-            ->withCount(['transactions', 'obligations', 'budgets'])
-            ->orderBy('type')->orderBy('name')->get();
-        $totals = $summary->forMonth($user, $month);
+        $needsWalletData = in_array($section, ['transactions', 'wallets'], true);
+        $wallets = $needsWalletData
+            ? $balances->forUser($user, $section === 'wallets' && $status === 'archived')
+            : collect();
+        $negativeWallets = $section === 'wallets' && $status === 'archived'
+            ? collect()
+            : $wallets->filter(fn (Wallet $wallet) => $wallet->calculated_balance < 0)->values();
+        $transactions = $section === 'transactions'
+            ? $user->transactions()->with(['wallet', 'destinationWallet', 'moneyCategory'])
+                ->whereBetween('occurred_on', [
+                    $monthRange->start->toDateString(),
+                    $monthRange->end->toDateString(),
+                ])->orderByDesc('occurred_on')->orderByDesc('id')->paginate(15)->withQueryString()
+            : collect();
+        $categories = $needsWalletData
+            ? $user->moneyCategories()
+                ->when($section === 'wallets' && $status === 'archived',
+                    fn ($query) => $query->whereNotNull('archived_at'),
+                    fn ($query) => $query->whereNull('archived_at'))
+                ->withCount(['transactions', 'obligations', 'budgets'])
+                ->orderBy('type')->orderBy('name')->get()
+            : collect();
         $previousMonth = $previousRange->key();
         $monthLabel = $monthRange->start->translatedFormat('F Y');
         $previousMonthLabel = $previousRange->start->translatedFormat('F');
-        $previous = $summary->forMonth($user, $previousMonth);
+        $needsSummary = in_array($section, ['overview', 'reports'], true);
+        $totals = $needsSummary ? $summary->forMonth($user, $month) : ['income' => 0, 'expense' => 0, 'net' => 0];
+        $previous = $section === 'reports'
+            ? $summary->forMonth($user, $previousMonth)
+            : ['income' => 0, 'expense' => 0, 'net' => 0];
         $budgetProgress = collect();
         $budgetCategories = collect();
-        if (in_array($section, ['overview', 'reports'], true)) {
+        if ($section === 'overview') {
             $budgetProgress = $budgetProgressService->forMonth($user, $monthRange);
             $budgetCategories = $user->moneyCategories()
                 ->where('type', MoneyCategoryType::Expense->value)
@@ -83,64 +98,76 @@ class MoneyController extends Controller
                 ->orderBy('name')
                 ->get();
         }
-        $plannedObligations = $user->obligations()
-            ->whereNull('archived_at')
-            ->with(['payments', 'wallet', 'moneyCategory'])
-            ->get()
-            ->map(function (Obligation $obligation) use ($monthRange, $obligationSchedule) {
-                $dueDate = $obligationSchedule->duePeriods(
-                    $obligation,
-                    $monthRange->start->toDateString(),
-                    $monthRange->end->toDateString()
-                )[0] ?? null;
+        $plannedObligations = collect();
+        if ($section === 'overview') {
+            $plannedObligations = $user->obligations()
+                ->whereNull('archived_at')
+                ->with(['payments', 'wallet', 'moneyCategory'])
+                ->get()
+                ->map(function (Obligation $obligation) use ($monthRange, $obligationSchedule) {
+                    $dueDate = $obligationSchedule->duePeriods(
+                        $obligation,
+                        $monthRange->start->toDateString(),
+                        $monthRange->end->toDateString()
+                    )[0] ?? null;
 
-                if ($dueDate === null) {
-                    return null;
-                }
+                    if ($dueDate === null) {
+                        return null;
+                    }
 
-                $obligation->setAttribute('planned_due_on', $dueDate);
+                    $obligation->setAttribute('planned_due_on', $dueDate);
 
-                return $obligation;
-            })
-            ->filter()
-            ->sortBy('planned_due_on')
-            ->values();
+                    return $obligation;
+                })
+                ->filter()
+                ->sortBy('planned_due_on')
+                ->values();
+        }
         $plannedTotal = (int) $plannedObligations->sum('amount');
-        $plannedLoans = $user->loans()
-            ->whereNull('archived_at')
-            ->whereNotNull('due_on')
-            ->with('repayments')
-            ->get()
-            ->map(function ($loan) use ($monthRange, $loanBalances) {
-                $monthDate = $monthRange->start;
-                $remaining = $loanBalances->remaining($loan);
+        $plannedLoans = collect();
+        if ($section === 'overview') {
+            $plannedLoans = $user->loans()
+                ->whereNull('archived_at')
+                ->whereNotNull('due_on')
+                ->with('repayments')
+                ->get()
+                ->map(function ($loan) use ($monthRange, $loanBalances, $today) {
+                    $monthDate = $monthRange->start;
+                    $remaining = $loanBalances->remaining($loan);
+                    $isOverdue = $monthRange->key() === substr($today, 0, 7)
+                        && $loan->due_on->toDateString() < $today;
 
-                if ($remaining === 0 || ! $loan->due_on->isSameMonth($monthDate)) {
-                    return null;
-                }
+                    if ($remaining === 0 || (! $loan->due_on->isSameMonth($monthDate) && ! $isOverdue)) {
+                        return null;
+                    }
 
-                $loan->setAttribute('planned_amount', $remaining);
+                    $loan->setAttribute('planned_amount', $remaining);
+                    $loan->setAttribute('planned_status', $isOverdue ? 'overdue' : 'due');
 
-                return $loan;
-            })
-            ->filter()
-            ->sortBy('due_on')
-            ->values();
+                    return $loan;
+                })
+                ->filter()
+                ->sortBy('due_on')
+                ->values();
+        }
         $plannedLoanIncome = (int) $plannedLoans
             ->where('direction', LoanDirection::Lent)
             ->sum('planned_amount');
         $plannedLoanExpense = (int) $plannedLoans
             ->where('direction', LoanDirection::Borrowed)
             ->sum('planned_amount');
-        $reportCategories = $categoryReport->topExpenses($user, $monthRange);
+        $reportCategories = $section === 'reports'
+            ? $categoryReport->topExpenses($user, $monthRange)
+            : collect();
         $largest = (int) $reportCategories->max('total');
-        $comparison = $previous['expense'] === 0
+        $comparison = $section !== 'reports' || $previous['expense'] === 0
             ? null
             : (int) round(($totals['expense'] - $previous['expense']) * 100 / $previous['expense']);
         $walletTypes = WalletType::cases();
 
         return view('user.money.index', compact(
             'wallets',
+            'negativeWallets',
             'transactions',
             'categories',
             'totals',
@@ -209,7 +236,9 @@ class MoneyController extends Controller
                 ->where('user_id', $request->user()->id)
                 ->where(fn ($query) => $query->where('wallet_id', $locked->id)->orWhere('to_wallet_id', $locked->id))
                 ->exists();
-            abort_if($hasTransactions, 422, __('ui.feedback.wallet_in_use'));
+            $hasObligations = $request->user()->obligations()->where('wallet_id', $locked->id)->exists();
+            $hasLoans = $request->user()->loans()->where('wallet_id', $locked->id)->exists();
+            abort_if($hasTransactions || $hasObligations || $hasLoans, 422, __('ui.feedback.wallet_in_use'));
             $locked->delete();
         });
 
@@ -284,13 +313,40 @@ class MoneyController extends Controller
     {
         $this->authorize('create', MoneyCategory::class);
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:60'],
+            'name' => [
+                'required',
+                'string',
+                'max:60',
+                $this->uniqueCategoryNameRule($request, (string) $request->input('type'), allowArchived: true),
+            ],
             'type' => ['required', Rule::in(array_column(MoneyCategoryType::cases(), 'value'))],
         ]);
-        $category = $request->user()->moneyCategories()->firstOrCreate($data);
-        if ($category->archived_at) {
-            $category->update(['archived_at' => null]);
+        $normalizedName = mb_strtolower($data['name'], 'UTF-8');
+        $restored = DatabaseTransaction::immediate(function () use ($request, $data, $normalizedName): bool {
+            $category = $request->user()->moneyCategories()
+                ->where('type', $data['type'])
+                ->where('name_normalized', $normalizedName)
+                ->lockForUpdate()
+                ->first();
 
+            if ($category) {
+                if (! $category->archived_at) {
+                    throw ValidationException::withMessages([
+                        'name' => __('validation.unique', ['attribute' => 'nama kategori']),
+                    ]);
+                }
+
+                $category->update(['archived_at' => null]);
+
+                return true;
+            }
+
+            $request->user()->moneyCategories()->create($data);
+
+            return false;
+        });
+
+        if ($restored) {
             return Feedback::success(back(), __('ui.feedback.record_restored'));
         }
 
@@ -306,10 +362,7 @@ class MoneyController extends Controller
                 'required',
                 'string',
                 'max:60',
-                Rule::unique('money_categories', 'name')
-                    ->where('user_id', $request->user()->id)
-                    ->where('type', $moneyCategory->type->value)
-                    ->ignore($moneyCategory->id),
+                $this->uniqueCategoryNameRule($request, $moneyCategory->type->value, $moneyCategory->id),
             ],
         ]);
         $moneyCategory->update($data);
@@ -366,12 +419,12 @@ class MoneyController extends Controller
     {
         $this->authorize('update', $transaction);
         abort_if($transaction->user_id !== $request->user()->id || $transaction->source_type !== null, 404);
-        abort_if(
-            $transaction->wallet?->archived_at
-                || $transaction->destinationWallet?->archived_at
-                || $transaction->moneyCategory?->archived_at,
-            404
-        );
+        if ($this->transactionUsesArchivedRecord($transaction)) {
+            return Feedback::error(
+                $this->transactionIndexRedirect($transaction),
+                __('ui.feedback.transaction_edit_archived')
+            );
+        }
         $wallets = $request->user()->wallets()
             ->whereNull('archived_at')
             ->orderBy('name')
@@ -389,6 +442,13 @@ class MoneyController extends Controller
     {
         $this->authorize('update', $transaction);
         abort_if($transaction->user_id !== $request->user()->id || $transaction->source_type !== null, 404);
+        if ($this->transactionUsesArchivedRecord($transaction)) {
+            return Feedback::error(
+                $this->transactionIndexRedirect($transaction),
+                __('ui.feedback.transaction_edit_archived')
+            );
+        }
+
         $data = $this->validatedTransactionData($request);
         DB::transaction(fn () => $transaction->update($data));
 
@@ -439,5 +499,51 @@ class MoneyController extends Controller
         }
 
         return $data;
+    }
+
+    private function uniqueCategoryNameRule(
+        Request $request,
+        string $type,
+        ?int $ignoreId = null,
+        bool $allowArchived = false
+    ): Closure {
+        return function (string $attribute, mixed $value, Closure $fail) use ($request, $type, $ignoreId, $allowArchived): void {
+            if (! is_string($value)) {
+                return;
+            }
+
+            $query = $request->user()->moneyCategories()
+                ->where('type', $type)
+                ->where('name_normalized', mb_strtolower($value, 'UTF-8'));
+
+            if ($ignoreId !== null) {
+                $query->where('id', '!=', $ignoreId);
+            }
+
+            if ($allowArchived) {
+                $query->whereNull('archived_at');
+            }
+
+            if ($query->exists()) {
+                $fail(__('validation.unique', ['attribute' => 'nama kategori']));
+            }
+        };
+    }
+
+    private function transactionUsesArchivedRecord(Transaction $transaction): bool
+    {
+        return (bool) (
+            $transaction->wallet?->archived_at
+            || $transaction->destinationWallet?->archived_at
+            || $transaction->moneyCategory?->archived_at
+        );
+    }
+
+    private function transactionIndexRedirect(Transaction $transaction): RedirectResponse
+    {
+        return redirect()->route('user.money.index', [
+            'section' => 'transactions',
+            'month' => substr($transaction->occurred_on->toDateString(), 0, 7),
+        ]);
     }
 }

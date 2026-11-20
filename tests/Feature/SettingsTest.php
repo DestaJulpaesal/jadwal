@@ -23,6 +23,22 @@ class SettingsTest extends TestCase
             ->assertSee('Informasi di dashboard');
     }
 
+    public function test_push_settings_expose_the_public_key_but_not_the_private_key(): void
+    {
+        config([
+            'services.webpush.public_key' => 'public-vapid-key',
+            'services.webpush.private_key' => 'private-vapid-key',
+        ]);
+
+        $this->actingAs(User::factory()->create())
+            ->get(route('settings.edit'))
+            ->assertOk()
+            ->assertSee('data-push-settings', false)
+            ->assertSee('public-vapid-key')
+            ->assertDontSee('private-vapid-key')
+            ->assertSee(__('ui.push.enable'));
+    }
+
     public function test_user_can_update_their_application_settings(): void
     {
         $user = User::factory()->create();

@@ -152,3 +152,37 @@ self.addEventListener('fetch', (event) => {
         })());
     }
 });
+
+self.addEventListener('push', (event) => {
+    const payload = event.data ? event.data.json() : {};
+    const title = payload.title || 'Jadwal Harian';
+
+    event.waitUntil(self.registration.showNotification(title, {
+        body: payload.body || 'Ada pengingat untuk hari ini.',
+        icon: '/icons/jadwal-192.png',
+        badge: '/icons/jadwal-192.png',
+        data: { url: payload.url || '/dashboard' },
+    }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const target = new URL(event.notification.data?.url || '/dashboard', self.location.origin);
+    if (target.origin !== self.location.origin) {
+        return;
+    }
+
+    event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (clients) => {
+        const client = clients.find((candidate) => new URL(candidate.url).origin === target.origin);
+        if (client) {
+            await client.focus();
+            if (client.url !== target.href) {
+                await client.navigate(target.href);
+            }
+
+            return;
+        }
+
+        await self.clients.openWindow(target.href);
+    }));
+});

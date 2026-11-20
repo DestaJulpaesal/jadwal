@@ -1,12 +1,12 @@
 @extends('layouts.user')
 
-@section('title', 'Aplikasi')
+@section('title', 'Pasang di HP')
 
 @section('content')
     <div class="mx-auto max-w-3xl space-y-5">
         <x-page-header
             eyebrow="Akses perangkat"
-            title="Aplikasi"
+            title="Pasang di HP"
             description="Pasang Jadwal Harian di layar utama, atau terapkan pembaruan yang tersedia."
         />
         @include('user.partials.profile-subnav')

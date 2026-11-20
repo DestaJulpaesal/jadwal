@@ -10,7 +10,7 @@ Aplikasi jadwal multi-user berbasis Laravel. Pengguna hanya dapat mengelola tuga
 - Catatan kebiasaan dengan jadwal, check-in yang bisa dibatalkan, dan statistik beruntun.
 - Keuangan pribadi: dompet, kategori, transaksi, transfer, penyesuaian saldo, tagihan, cicilan, utang, dan piutang.
 - Laporan keuangan bulanan dengan kategori pengeluaran terbesar dan perbandingan bulan sebelumnya.
-- Target angka/tabungan/kebiasaan, mode privasi nominal, dan ringkasan harian email opsional.
+- Target angka/tabungan/kebiasaan, mode privasi nominal, serta ringkasan harian email dan push opsional.
 - Pengaturan zona waktu, awal minggu, tema, jadwal ringkasan email, privasi nominal, dan kartu dashboard.
 - Kategori berwarna, verifikasi email opsional, foto profil privat yang dapat dikelola dari halaman Profil, dan panel admin untuk mencari/filter akun, melihat ringkasan akun, mengelola status dan role, serta mengirim tautan reset password.
 
@@ -53,7 +53,7 @@ Pada environment `local`, `php artisan db:seed` juga menyiapkan data demo yang a
 
 Secara default, verifikasi email dinonaktifkan agar pendaftaran dan login lokal tidak mengirim email. Untuk mengaktifkannya, atur `AUTH_EMAIL_VERIFICATION=true` dan konfigurasi mailer (contohnya `MAIL_MAILER=log` untuk mencatat email verifikasi lokal di `storage/logs/laravel.log`). Untuk penggunaan online, atur provider email yang benar dan HTTPS.
 
-Ringkasan harian bersifat opsional dan mati secara default. Pengguna mengaktifkannya dari Profil. Perintah `php artisan app:send-daily-digest` diperiksa oleh scheduler Laravel setiap menit; untuk menjalankan scheduler, panggil `php artisan schedule:run` setiap menit. Contoh cron Linux:
+Ringkasan harian email dan pengingat push bersifat opsional. Pengguna mengatur jam/hari ringkasan di Pengaturan; push diaktifkan terpisah pada setiap perangkat. Push memerlukan HTTPS dan kunci VAPID. Buat satu pasangan kunci dengan `php -r "require 'vendor/autoload.php'; echo json_encode(Minishlink\\WebPush\\VAPID::createVapidKeys(), JSON_PRETTY_PRINT);"`; simpan `VAPID_PRIVATE_KEY` hanya di secret manager, lalu atur `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, dan `VAPID_SUBJECT`. Jangan buat ulang kunci pada setiap rilis. Perintah `php artisan app:send-daily-digest` diperiksa oleh scheduler Laravel setiap menit; untuk menjalankan scheduler, panggil `php artisan schedule:run` setiap menit. Contoh cron Linux:
 
 ```cron
 * * * * * cd /path/to/jadwal-harian && php artisan schedule:run >> /dev/null 2>&1

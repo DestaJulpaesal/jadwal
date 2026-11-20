@@ -8,12 +8,24 @@
             <p class="concept-chip">{{ $monthLabel }}</p>
         </x-page-header>
         @include('user.partials.finance-subnav')
+        @if ($negativeWallets->isNotEmpty())
+            <x-alert type="warning">
+                <p class="font-semibold">{{ __('ui.money.negative_wallets_title') }}</p>
+                <ul class="mt-2 list-inside list-disc">
+                    @foreach ($negativeWallets as $wallet)
+                        <li>{{ $wallet->name }}: <strong data-private>{{ rupiah($wallet->calculated_balance) }}</strong></li>
+                    @endforeach
+                </ul>
+                <p class="mt-2 text-sm">{{ __('ui.money.negative_wallets_help') }}</p>
+            </x-alert>
+        @endif
         @if (in_array($section, ['overview', 'reports'], true))
         <section class="money-summary-grid" aria-label="Ringkasan keuangan">
             <article class="money-summary-card"><p class="text-sm">Pemasukan</p><p class="display-number mt-1" data-private>{{ rupiah($totals['income']) }}</p></article>
             <article class="money-summary-card"><p class="text-sm">Pengeluaran</p><p class="display-number mt-1" data-private>{{ rupiah($totals['expense']) }}</p></article>
             <article class="money-summary-card"><p class="text-sm">Selisih</p><p class="display-number mt-1" data-private>{{ rupiah($totals['net']) }}</p></article>
         </section>
+        <p class="text-sm text-muted">{{ __('ui.money.monthly_net_help') }}</p>
         @endif
         @if ($section === 'overview')
         @include('user.money.budgets')
@@ -38,7 +50,7 @@
         </section>
         <section class="concept-card concept-card-white">
             <div class="concept-card-header">
-                <div><h2 class="text-lg font-semibold">Rencana utang dan piutang</h2><p class="text-sm">Sisa pembayaran atau penerimaan yang jatuh tempo pada bulan ini.</p></div>
+                <div><h2 class="text-lg font-semibold">Rencana utang dan piutang</h2><p class="text-sm">Sisa pembayaran atau penerimaan yang jatuh tempo bulan ini atau masih terlambat.</p></div>
                 <div class="text-right text-sm">
                     <p class="text-success">Piutang masuk: <strong data-private>{{ rupiah($plannedLoanIncome) }}</strong></p>
                     <p class="text-danger">Utang keluar: <strong data-private>{{ rupiah($plannedLoanExpense) }}</strong></p>
@@ -49,14 +61,19 @@
                     <li class="concept-item">
                         <div class="min-w-0 flex-1">
                             <p class="font-medium">{{ $loan->direction->label() }} · {{ $loan->counterparty }}</p>
-                            <p class="text-sm">{{ __('ui.agenda.due') }} {{ $loan->due_on->translatedFormat('j M Y') }}</p>
+                            <p class="text-sm">
+                                @if ($loan->planned_status === 'overdue')
+                                    <span class="font-semibold text-danger">Terlambat</span> ·
+                                @endif
+                                {{ __('ui.agenda.due') }} {{ $loan->due_on->translatedFormat('j M Y') }}
+                            </p>
                         </div>
                         <strong class="shrink-0 {{ $loan->direction === \App\Enums\LoanDirection::Lent ? 'text-success' : 'text-danger' }}" data-private>
                             {{ $loan->direction === \App\Enums\LoanDirection::Lent ? '+' : '−' }}{{ rupiah($loan->planned_amount) }}
                         </strong>
                     </li>
                 @empty
-                    <li class="py-4 text-sm text-muted">Tidak ada utang atau piutang jatuh tempo pada bulan ini. <a class="font-semibold underline" href="{{ route('user.loans.index', ['create' => 'loan']) }}">Tambah catatan</a></li>
+                    <li class="py-4 text-sm text-muted">Tidak ada utang atau piutang yang jatuh tempo atau terlambat. <a class="font-semibold underline" href="{{ route('user.loans.index', ['create' => 'loan']) }}">Tambah catatan</a></li>
                 @endforelse
             </ul>
         </section>
@@ -107,10 +124,15 @@
             </form>
             <ul class="concept-list">
                 @forelse ($wallets as $wallet)
-                    <li class="concept-item flex-wrap">
-                        <span class="min-w-0 flex-1">{{ $wallet->name }} <span class="block text-xs">{{ $wallet->type->label() }}</span></span>
-                        <strong class="shrink-0" data-private>{{ rupiah($wallet->calculated_balance) }}</strong>
-                        <div class="flex w-full flex-wrap gap-2 sm:w-auto">
+                    <li class="grid gap-3 rounded-xl border border-line bg-surface p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                        <div class="flex min-w-0 items-center gap-3">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-info-soft text-info" aria-hidden="true">
+                                <x-icon name="keuangan" class="h-5 w-5" />
+                            </span>
+                            <span class="min-w-0 flex-1 font-semibold">{{ $wallet->name }} <span class="block text-xs font-normal text-muted">{{ $wallet->type->label() }}</span></span>
+                        </div>
+                        <strong class="shrink-0 text-right tabular-nums" data-private>{{ rupiah($wallet->calculated_balance) }}</strong>
+                        <div class="flex w-full flex-wrap gap-2 sm:col-span-2">
                             @if ($status === 'archived')
                                 <form method="POST" action="{{ route('user.money.wallets.restore', $wallet) }}">
                                     @csrf
@@ -274,28 +296,8 @@
                     </form>
                 </div>
                 <x-button type="button" class="mt-4" variant="primary" icon="tambah" x-data x-on:click="$dispatch('open-modal', 'transaction-create')">Catat transaksi</x-button>
-                <ul class="concept-list">
-                    @forelse ($transactions as $transaction)
-                        <li class="concept-item items-start">
-                            <div class="min-w-0 flex-1"><p class="font-medium">{{ $transaction->source_type === 'adjustment' ? __('ui.money.adjustment_label') : ($transaction->moneyCategory?->name ?? $transaction->type->label()) }}</p><p class="text-sm">{{ $transaction->occurred_on->translatedFormat('j M Y') }} · {{ $transaction->wallet->name }}@if($transaction->destinationWallet) → {{ $transaction->destinationWallet->name }}@endif</p>@if($transaction->note && $transaction->source_type !== 'adjustment')<p class="text-sm">{{ $transaction->note }}</p>@endif</div>
-                            <strong class="money-transaction-amount shrink-0" data-private>{{ $transaction->type === \App\Enums\TransactionType::Expense ? '−' : '' }}{{ rupiah($transaction->amount) }}</strong>
-                            @if ($transaction->source_type === null && ! $transaction->wallet?->archived_at && ! $transaction->destinationWallet?->archived_at && ! $transaction->moneyCategory?->archived_at)
-                                <x-button href="{{ route('user.money.transactions.edit', $transaction) }}" size="sm" variant="secondary" icon="ubah">Ubah transaksi</x-button>
-                            @endif
-                            @if ($transaction->source_type === null || $transaction->source_type === 'adjustment')
-                                <x-confirm-action :action="route('user.money.transactions.destroy', $transaction)"
-                                    title="Hapus transaksi?"
-                                    :message="'Transaksi '.$transaction->type->label().' sebesar '.rupiah($transaction->amount).' akan dihapus dan saldo dompet dihitung ulang.'"
-                                    label="Hapus" />
-                            @elseif ($transaction->source_type === 'obligation_payment')
-                                <x-button href="{{ route('user.obligations.index') }}" size="sm" variant="secondary" icon="kembali">Batalkan pembayaran</x-button>
-                            @elseif ($transaction->source_type === 'loan_repayment')
-                                <x-button href="{{ route('user.loans.index') }}" size="sm" variant="secondary" icon="kembali">Batalkan pembayaran</x-button>
-                            @elseif ($transaction->source_type === 'loan')
-                                <x-button href="{{ route('user.loans.index') }}" size="sm" variant="secondary" icon="ubah">Kelola utang/piutang</x-button>
-                            @endif
-                        </li>
-                    @empty
+                <ul class="grid gap-4">
+                    @if ($transactions->isEmpty())
                         <li class="list-none">
                             <x-empty-state
                                 title="Belum ada transaksi pada bulan ini."
@@ -306,7 +308,72 @@
                                 <x-slot:icon><x-icon name="keuangan" /></x-slot:icon>
                             </x-empty-state>
                         </li>
-                    @endforelse
+                    @else
+                        @foreach ($transactions->getCollection()->groupBy(fn ($transaction) => $transaction->occurred_on->toDateString()) as $dayTransactions)
+                            @php
+                                $day = $dayTransactions->first()->occurred_on;
+                            @endphp
+                            <li class="list-none">
+                                <h3 class="mb-2 font-semibold">{{ $day->translatedFormat('l, j F Y') }}</h3>
+                                <ul class="grid gap-2">
+                                    @foreach ($dayTransactions as $transaction)
+                                        @php
+                                            $transactionTitle = $transaction->source_type === 'adjustment'
+                                                ? __('ui.money.adjustment_label')
+                                                : ($transaction->moneyCategory?->name ?? $transaction->type->label());
+                                            $iconColor = match ($transaction->type) {
+                                                \App\Enums\TransactionType::Expense => 'bg-danger-soft text-danger',
+                                                \App\Enums\TransactionType::Transfer => 'bg-info-soft text-info',
+                                                default => 'bg-success-soft text-success',
+                                            };
+                                        @endphp
+                                        <li class="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-line bg-white p-3 sm:p-4">
+                                            <span class="flex h-11 w-11 items-center justify-center rounded-full {{ $iconColor }}" aria-hidden="true">
+                                                <x-icon name="keuangan" class="h-5 w-5" />
+                                            </span>
+                                            <div class="min-w-0">
+                                                <p class="break-words font-semibold">{{ $transactionTitle }}</p>
+                                                <p class="mt-1 text-sm text-muted">
+                                                    {{ $transaction->wallet->name }}@if($transaction->destinationWallet) → {{ $transaction->destinationWallet->name }}@endif
+                                                </p>
+                                                @if ($transaction->note && $transaction->source_type !== 'adjustment')
+                                                    <p class="mt-1 break-words text-sm text-muted">{{ $transaction->note }}</p>
+                                                @endif
+                                            </div>
+                                            <div class="flex flex-col items-end gap-2">
+                                                <strong class="money-transaction-amount tabular-nums" data-private>
+                                                    {{ $transaction->type === \App\Enums\TransactionType::Expense ? '−' : '' }}{{ rupiah($transaction->amount) }}
+                                                </strong>
+                                                <x-button type="button" size="sm" variant="secondary" icon="menu-aksi"
+                                                    aria-label="Aksi untuk {{ $transactionTitle }}"
+                                                    x-data
+                                                    x-on:click="$dispatch('open-modal', 'transaction-actions-{{ $transaction->id }}')">Aksi</x-button>
+                                            </div>
+                                            <x-bottom-sheet name="transaction-actions-{{ $transaction->id }}" :title="'Aksi transaksi: '.$transactionTitle">
+                                                <div class="space-y-3">
+                                                    @if ($transaction->source_type === null && ! $transaction->wallet?->archived_at && ! $transaction->destinationWallet?->archived_at && ! $transaction->moneyCategory?->archived_at)
+                                                        <x-button href="{{ route('user.money.transactions.edit', $transaction) }}" variant="secondary" icon="ubah" class="w-full">Ubah transaksi</x-button>
+                                                    @endif
+                                                    @if ($transaction->source_type === null || $transaction->source_type === 'adjustment')
+                                                        <x-confirm-action :action="route('user.money.transactions.destroy', $transaction)"
+                                                            title="Hapus transaksi?"
+                                                            :message="'Transaksi '.$transaction->type->label().' sebesar '.rupiah($transaction->amount).' akan dihapus dan saldo dompet dihitung ulang.'"
+                                                            label="Hapus" />
+                                                    @elseif ($transaction->source_type === 'obligation_payment')
+                                                        <x-button href="{{ route('user.obligations.index') }}" variant="secondary" icon="kembali" class="w-full">Batalkan pembayaran</x-button>
+                                                    @elseif ($transaction->source_type === 'loan_repayment')
+                                                        <x-button href="{{ route('user.loans.index') }}" variant="secondary" icon="kembali" class="w-full">Batalkan pembayaran</x-button>
+                                                    @elseif ($transaction->source_type === 'loan')
+                                                        <x-button href="{{ route('user.loans.index') }}" variant="secondary" icon="ubah" class="w-full">Kelola utang/piutang</x-button>
+                                                    @endif
+                                                </div>
+                                            </x-bottom-sheet>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </li>
+                        @endforeach
+                    @endif
                 </ul>
                 <div class="mt-4">{{ $transactions->links() }}</div>
             </section>
@@ -360,6 +427,17 @@
                     @csrf
                     <input type="hidden" name="form_context" value="transaction-create">
                     <x-segmented name="type" label="Jenis transaksi" :options="['expense' => 'Pengeluaran', 'income' => 'Pemasukan', 'transfer' => 'Pindah dana']" :value="old('type', 'expense')" required help="Pilih arah uang sebelum mengisi dompet dan kategori." />
+                    <div data-receipt-scan class="space-y-2 rounded-lg border border-line p-3">
+                        <input type="file" accept="image/*" capture="environment" data-receipt-input="camera" hidden>
+                        <input type="file" accept="image/*" data-receipt-input="gallery" hidden>
+                        <div class="flex flex-wrap gap-2">
+                            <x-button type="button" variant="secondary" icon="tambah" data-receipt-trigger="camera">Foto struk</x-button>
+                            <x-button type="button" variant="secondary" data-receipt-trigger="gallery">Pilih dari galeri</x-button>
+                        </div>
+                        <p class="field-help">Struk dibaca langsung di perangkat. Foto tidak dikirim ke mana pun. Dekatkan kamera sampai struk memenuhi layar dan pastikan terang.</p>
+                        <p data-receipt-status class="text-sm" role="status" aria-live="polite"></p>
+                        <div data-receipt-suggestions class="flex flex-wrap gap-2"></div>
+                    </div>
                     <x-money-input id="transaction_amount" name="amount" label="Nominal" :error="$errors->first('amount')" />
                     <x-select id="transaction_wallet_id" name="wallet_id" label="Dompet asal" help="Pilih dompet yang menjadi sumber transaksi." required :error="$errors->first('wallet_id')">
                         <option value="">Pilih dompet</option>

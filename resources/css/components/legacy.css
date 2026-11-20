@@ -194,23 +194,6 @@
         @apply rounded-xl border border-line bg-white shadow-card;
     }
 
-    .task-actions-menu {
-        @apply absolute right-0 top-full z-20 mt-2 min-w-36 rounded-xl border border-line bg-white p-1 shadow-card;
-    }
-
-    .task-actions-menu a,
-    .task-actions-menu button {
-        @apply flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-left text-sm font-medium text-ink hover:bg-gray-50;
-    }
-
-    .task-actions summary {
-        list-style: none;
-    }
-
-    .task-actions summary::-webkit-details-marker {
-        display: none;
-    }
-
     .user-app {
         --color-canvas: var(--bg);
         --color-ink: var(--ink);
@@ -337,26 +320,6 @@
         background-color: #d2645b;
     }
 
-    .user-app .btn-primary.is-submitting,
-    .user-app .btn-secondary.is-submitting,
-    .user-app .btn-danger.is-submitting {
-        pointer-events: none;
-        opacity: .72;
-    }
-
-    .user-app .btn-primary.is-submitting::after,
-    .user-app .btn-secondary.is-submitting::after,
-    .user-app .btn-danger.is-submitting::after {
-        width: 14px;
-        height: 14px;
-        margin-left: 3px;
-        border: 2px solid currentColor;
-        border-right-color: transparent;
-        border-radius: 50%;
-        animation: user-spin var(--dur-spin) linear infinite;
-        content: "";
-    }
-
     .user-app .form-control:hover {
         border-color: #9caa9f;
         box-shadow: 0 2px 0 rgb(27 27 27 / 8%);
@@ -420,10 +383,10 @@
     }
 
     .user-app .surface-card {
-        border: 3px solid var(--ink);
+        border: 2px solid var(--color-ink);
         border-radius: 20px;
-        background-color: #fff;
-        box-shadow: 4px 4px 0 var(--ink);
+        background-color: var(--color-surface);
+        box-shadow: 4px 4px 0 var(--color-ink);
     }
 
     .user-app .nav-link-active {
@@ -691,10 +654,6 @@
         background: #ffa95c;
         box-shadow: 1px 1px 0 var(--ink);
         transform: translateY(-46%) scale(.94);
-    }
-
-    .user-app .global-search-button.is-submitting {
-        background: #ff9ec4;
     }
 
     .user-app .global-search-result:hover {

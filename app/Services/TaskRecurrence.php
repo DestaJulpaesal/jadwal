@@ -16,7 +16,6 @@ class TaskRecurrence
         }
 
         $timezone = $user->timezone;
-        $currentDate = $this->scheduleDate($task, $timezone);
         $seriesId = $task->recurrence_parent_id ?? $task->id;
         $seriesRoot = $user->tasks()->find($seriesId);
 
@@ -26,29 +25,18 @@ class TaskRecurrence
         }
 
         $anchorDay = max(1, min(31, $seriesRoot->recurrence_anchor_day ?? $this->scheduleDate($seriesRoot, $timezone)->day));
-        $days = array_map('intval', $task->recurrence_days ?? []);
-        $nextDate = $this->nextDate($currentDate, $task->recurrence, $days, $anchorDay);
+        $nextDate = $this->nextOccurrenceDate($task, $user, $anchorDay);
 
         if ($nextDate === null) {
             return null;
-        }
-
-        $today = CarbonImmutable::now($timezone)->startOfDay();
-        if ($task->recurrence === 'daily' && $nextDate->lt($today)) {
-            $nextDate = $nextDate->addDays((int) $nextDate->diffInDays($today));
-        } else {
-            while ($nextDate->lt($today)) {
-                $nextDate = $this->nextDate($nextDate, $task->recurrence, $days, $anchorDay);
-                if ($nextDate === null) {
-                    return null;
-                }
-            }
         }
 
         if ($task->recurrence_until && $nextDate->gt($task->recurrence_until->startOfDay())) {
             return null;
         }
 
+        $timezone = $user->timezone;
+        $currentDate = $this->scheduleDate($task, $timezone);
         $localStart = $this->localDateTime($task->starts_at, $timezone);
         $localEnd = $this->localDateTime($task->ends_at, $timezone);
         $localDue = $this->localDateTime($task->due_date, $timezone);
@@ -83,6 +71,59 @@ class TaskRecurrence
                 'recurrence_anchor_day' => $task->recurrence_anchor_day,
             ]
         );
+    }
+
+    public function stopReason(Task $task, User $user): ?string
+    {
+        if ($task->recurrence === 'none') {
+            return null;
+        }
+
+        $days = array_map('intval', $task->recurrence_days ?? []);
+        if ($task->recurrence === 'weekly' && $days === []) {
+            return 'missing_weekdays';
+        }
+
+        $seriesId = $task->recurrence_parent_id ?? $task->id;
+        $seriesRoot = $user->tasks()->find($seriesId) ?? $task;
+        $anchorDay = max(1, min(31, $seriesRoot->recurrence_anchor_day ?? $this->scheduleDate($seriesRoot, $user->timezone)->day));
+        $nextDate = $this->nextOccurrenceDate($task, $user, $anchorDay);
+
+        if ($nextDate === null) {
+            return 'invalid_schedule';
+        }
+
+        if ($task->recurrence_until && $nextDate->gt($task->recurrence_until->startOfDay())) {
+            return 'end_date';
+        }
+
+        return null;
+    }
+
+    private function nextOccurrenceDate(Task $task, User $user, int $anchorDay): ?CarbonImmutable
+    {
+        $timezone = $user->timezone;
+        $currentDate = $this->scheduleDate($task, $timezone);
+        $days = array_map('intval', $task->recurrence_days ?? []);
+        $nextDate = $this->nextDate($currentDate, $task->recurrence, $days, $anchorDay);
+
+        if ($nextDate === null) {
+            return null;
+        }
+
+        $today = CarbonImmutable::now($timezone)->startOfDay();
+        if ($task->recurrence === 'daily' && $nextDate->lt($today)) {
+            return $nextDate->addDays((int) $nextDate->diffInDays($today));
+        }
+
+        while ($nextDate->lt($today)) {
+            $nextDate = $this->nextDate($nextDate, $task->recurrence, $days, $anchorDay);
+            if ($nextDate === null) {
+                return null;
+            }
+        }
+
+        return $nextDate;
     }
 
     private function scheduleDate(Task $task, string $timezone): CarbonImmutable

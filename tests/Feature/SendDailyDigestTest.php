@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\ObligationKind;
 use App\Mail\DailyDigestMail;
 use App\Models\User;
+use App\Services\WebPushSender;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -133,6 +134,57 @@ class SendDailyDigestTest extends TestCase
         $this->assertSame(1, $successfulRecipient->sent);
         $this->assertNull($first->fresh()->digest_last_sent_on);
         $this->assertSame('2026-11-02', $second->fresh()->digest_last_sent_on->toDateString());
+    }
+
+    public function test_push_digest_uses_the_shared_schedule_and_is_independent_of_email_failure(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-02 08:00:00', 'UTC'));
+        $user = User::factory()->create([
+            'digest_enabled' => true,
+            'push_enabled' => true,
+            'digest_time' => '07:00',
+            'digest_days' => [1, 2, 3, 4, 5, 6, 7],
+            'timezone' => 'UTC',
+        ]);
+        $user->pushSubscriptions()->create([
+            'endpoint_hash' => hash('sha256', 'https://push.example.test/subscriptions/reminder'),
+            'endpoint' => 'https://push.example.test/subscriptions/reminder',
+            'public_key' => 'client-public-key',
+            'auth_token' => 'client-auth-key',
+        ]);
+        $user->tasks()->create([
+            'title' => 'Agenda',
+            'starts_at' => '2026-11-02 09:00:00',
+        ]);
+
+        Mail::shouldReceive('to')
+            ->once()
+            ->with($user->email)
+            ->andThrow(new \RuntimeException('SMTP unavailable'));
+        \Illuminate\Support\Facades\Log::shouldReceive('warning')
+            ->once()
+            ->with('Digest gagal', \Mockery::on(
+                fn (array $context) => $context['user_id'] === $user->id
+                    && $context['exception'] === \RuntimeException::class
+            ));
+
+        $sender = \Mockery::mock(WebPushSender::class);
+        $sender->shouldReceive('send')->once()->withArgs(
+            fn (User $recipient, array $payload) => $recipient->is($user)
+                && $payload['title'] === __('ui.push.reminder_title')
+                && $payload['body'] === __('ui.push.reminder_body', [
+                    'tasks' => 1,
+                    'habits' => 0,
+                    'attention' => 0,
+                ])
+                && $payload['url'] === '/dashboard'
+        );
+        $this->app->instance(WebPushSender::class, $sender);
+
+        $this->artisan('app:send-daily-digest')->assertSuccessful();
+
+        $this->assertNull($user->fresh()->digest_last_sent_on);
+        $this->assertSame('2026-11-02', $user->fresh()->push_last_sent_on->toDateString());
     }
 
     public function test_digest_is_not_sent_when_there_are_no_items(): void

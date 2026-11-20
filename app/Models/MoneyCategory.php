@@ -19,6 +19,12 @@ class MoneyCategory extends Model
         'archived_at' => 'datetime',
     ];
 
+    public function setNameAttribute(string $value): void
+    {
+        $this->attributes['name'] = $value;
+        $this->attributes['name_normalized'] = mb_strtolower($value, 'UTF-8');
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -23,10 +23,10 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'timezone' => 'Asia/Jakarta',
     ];
 
-    protected array $businessDateColumns = ['digest_last_sent_on'];
+    protected array $businessDateColumns = ['digest_last_sent_on', 'push_last_sent_on'];
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'timezone', 'digest_enabled',
+        'name', 'email', 'password', 'role', 'timezone', 'digest_enabled', 'push_enabled',
         'week_starts_on', 'theme', 'digest_time', 'digest_days',
         'hide_financial_amounts', 'dashboard_sections',
     ];
@@ -39,10 +39,12 @@ class User extends Authenticatable implements MustVerifyEmailContract
         'email_verified_at' => 'datetime',
         'is_active' => 'boolean',
         'digest_enabled' => 'boolean',
+        'push_enabled' => 'boolean',
         'digest_days' => 'array',
         'hide_financial_amounts' => 'boolean',
         'dashboard_sections' => 'array',
         'digest_last_sent_on' => 'date',
+        'push_last_sent_on' => 'date',
         'money_presets_seeded_at' => 'datetime',
         'onboarding_dismissed_at' => 'datetime',
     ];
@@ -144,5 +146,10 @@ class User extends Authenticatable implements MustVerifyEmailContract
     public function auditLogs(): HasMany
     {
         return $this->hasMany(UserAuditLog::class);
+    }
+
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
     }
 }

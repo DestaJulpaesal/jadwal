@@ -26,6 +26,25 @@
         <x-page-header eyebrow="Sesuaikan aplikasi" title="Pengaturan" description="Atur tampilan, pengingat, dan informasi yang muncul di dashboard." />
         @include('user.partials.profile-subnav')
 
+        <section class="surface-card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-7" aria-labelledby="install-app-heading">
+            <div>
+                <h2 id="install-app-heading" class="text-lg font-semibold">Pasang di HP</h2>
+                <p class="mt-1 text-sm text-muted">Tambahkan Jadwal Harian ke layar utama perangkatmu.</p>
+            </div>
+            <x-button href="{{ route('user.application') }}" variant="secondary">Petunjuk pemasangan</x-button>
+        </section>
+
+        <section class="surface-card flex flex-wrap items-center justify-between gap-4 p-5 sm:p-7" aria-labelledby="onboarding-heading">
+            <div>
+                <h2 id="onboarding-heading" class="text-lg font-semibold">Panduan awal</h2>
+                <p class="mt-1 text-sm text-muted">Lihat kembali langkah untuk mulai memakai Jadwal Harian.</p>
+            </div>
+            <form method="POST" action="{{ route('user.onboarding.restart') }}">
+                @csrf
+                <x-button variant="secondary">Lihat panduan lagi</x-button>
+            </form>
+        </section>
+
         <x-error-summary :errors="$errors->messages()" title="Pengaturan belum disimpan. Periksa isian berikut:" />
 
         <form method="POST" action="{{ route('settings.update') }}" class="space-y-5" data-dirty-guard>
@@ -119,6 +138,40 @@
                         <p class="field-error">{{ $message }}</p>
                     @enderror
                 </fieldset>
+            </section>
+
+            <section class="surface-card space-y-4 p-5 sm:p-7" aria-labelledby="push-heading">
+                <div>
+                    <h2 id="push-heading" class="text-xl font-semibold">{{ __('ui.push.title') }}</h2>
+                    <p class="mt-1 text-sm text-muted">{{ __('ui.push.description') }}</p>
+                </div>
+                @if ($webPushPublicKey)
+                    <div
+                        class="flex flex-wrap items-center gap-3"
+                        data-push-settings
+                        data-vapid-public-key="{{ $webPushPublicKey }}"
+                        data-store-url="{{ route('settings.push-subscriptions.store') }}"
+                        data-delete-url="{{ route('settings.push-subscriptions.destroy') }}"
+                        data-csrf-token="{{ csrf_token() }}"
+                        data-message-unsupported="{{ __('ui.push.unsupported') }}"
+                        data-message-inactive="{{ __('ui.push.inactive') }}"
+                        data-message-active="{{ __('ui.push.active') }}"
+                        data-message-status-unavailable="{{ __('ui.push.status_unavailable') }}"
+                        data-message-permission-denied="{{ __('ui.push.permission_denied') }}"
+                        data-message-permission-pending="{{ __('ui.push.permission_pending') }}"
+                        data-message-enabled="{{ __('ui.push.enabled') }}"
+                        data-message-disabled="{{ __('ui.push.disabled') }}"
+                        data-message-failed="{{ __('ui.push.failed') }}"
+                    >
+                        <x-button type="button" variant="primary" data-push-enable>{{ __('ui.push.enable') }}</x-button>
+                        <x-button type="button" variant="secondary" data-push-disable hidden>{{ __('ui.push.disable') }}</x-button>
+                        <p class="w-full text-sm text-muted" role="status" aria-live="polite" data-push-status>
+                            {{ $user->push_enabled ? __('ui.push.active') : __('ui.push.inactive') }}
+                        </p>
+                    </div>
+                @else
+                    <p class="text-sm text-muted">{{ __('ui.push.setup_required') }}</p>
+                @endif
             </section>
 
             <section class="surface-card space-y-5 p-5 sm:p-7" aria-labelledby="privacy-heading">

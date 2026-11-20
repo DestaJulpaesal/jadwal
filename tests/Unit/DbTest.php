@@ -14,4 +14,14 @@ class DbTest extends TestCase
         $this->assertSame(1, $result);
         $this->assertFalse(\Illuminate\Support\Facades\DB::connection()->getPdo()->inTransaction());
     }
+
+    public function test_immediate_uses_a_nested_transaction_when_one_is_active(): void
+    {
+        $result = \Illuminate\Support\Facades\DB::transaction(
+            fn () => Db::immediate(fn () => \Illuminate\Support\Facades\DB::selectOne('SELECT 1 AS value')->value)
+        );
+
+        $this->assertSame(1, $result);
+        $this->assertFalse(\Illuminate\Support\Facades\DB::connection()->getPdo()->inTransaction());
+    }
 }

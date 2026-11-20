@@ -37,6 +37,48 @@ class TaskManagementTest extends TestCase
         $this->assertLessThan(strpos($byTitle, 'Sorting completed'), strpos($byTitle, 'Sorting near due'));
     }
 
+    public function test_filter_counts_match_local_day_and_overdue_boundaries(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-20 12:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $completed = TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $user->tasks()->create(['title' => 'Due before today', 'due_date' => '2026-11-19 16:59:00']);
+        $user->tasks()->create(['title' => 'Due earlier today', 'due_date' => '2026-11-20 11:00:00']);
+        $user->tasks()->create(['title' => 'Due late today', 'due_date' => '2026-11-20 16:59:00']);
+        $user->tasks()->create(['title' => 'Due tomorrow boundary', 'due_date' => '2026-11-20 17:00:00']);
+        $user->tasks()->create([
+            'title' => 'Completed today',
+            'task_status_id' => $completed->id,
+            'due_date' => '2026-11-20 10:00:00',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('user.tasks.index'))
+            ->assertOk()
+            ->assertViewHas('taskCounts', fn (array $counts) => $counts === [
+                'all' => 5,
+                'today' => 3,
+                'upcoming' => 1,
+                'overdue' => 2,
+                'completed' => 1,
+            ]);
+
+        $this->get(route('user.tasks.index', ['due' => 'today']))
+            ->assertOk()
+            ->assertSee('Due earlier today')
+            ->assertSee('Due late today')
+            ->assertSee('Completed today')
+            ->assertDontSee('Due before today')
+            ->assertDontSee('Due tomorrow boundary');
+
+        $this->get(route('user.tasks.index', ['due' => 'overdue']))
+            ->assertOk()
+            ->assertSee('Due before today')
+            ->assertSee('Due earlier today')
+            ->assertDontSee('Due late today')
+            ->assertDontSee('Completed today');
+    }
+
     public function test_category_filter_is_owner_scoped_and_excludes_other_users_categories(): void
     {
         $user = User::factory()->create();
@@ -85,6 +127,55 @@ class TaskManagementTest extends TestCase
 
         $this->assertDatabaseHas('tasks', ['id' => $first->id, 'task_status_id' => $inProgress->id]);
         $this->assertNull($first->fresh()->completed_at);
+    }
+
+    public function test_repeated_bulk_completion_does_not_create_duplicate_recurrences(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-17 12:00:00', 'UTC'));
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $task = $user->tasks()->create([
+            'title' => 'Rutinitas harian',
+            'recurrence' => 'daily',
+        ]);
+        $payload = ['action' => 'complete', 'task_ids' => [$task->id]];
+
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $this->actingAs($user)
+            ->from(route('user.tasks.index'))
+            ->patch(route('user.tasks.bulk'), $payload)
+            ->assertRedirect(route('user.tasks.index'));
+
+        $this->patch(route('user.tasks.bulk'), $payload)
+            ->assertRedirect(route('user.tasks.index'));
+
+        $this->assertDatabaseCount('tasks', 2);
+        $this->assertSame(1, $user->tasks()->where('recurrence_parent_id', $task->id)->count());
+    }
+
+    public function test_bulk_completion_reports_when_a_recurrence_stops(): void
+    {
+        $user = User::factory()->create();
+        TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $task = $user->tasks()->create([
+            'title' => 'Pengingat mingguan',
+            'recurrence' => 'weekly',
+            'recurrence_days' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->from(route('user.tasks.index'))
+            ->patch(route('user.tasks.bulk'), [
+                'action' => 'complete',
+                'task_ids' => [$task->id],
+            ])
+            ->assertRedirect(route('user.tasks.index'))
+            ->assertSessionHas(
+                'feedback.message',
+                __('ui.feedback.task_bulk_updated').' '.__('ui.feedback.task_bulk_recurrence_stopped', ['count' => 1])
+            );
+
+        $this->assertDatabaseCount('tasks', 1);
     }
 
     public function test_bulk_actions_reject_another_users_task_without_mutating_any_selection(): void

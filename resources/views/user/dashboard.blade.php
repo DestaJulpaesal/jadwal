@@ -1,12 +1,37 @@
 @extends('layouts.user')
 
-@section('title', 'Beranda')
+@section('title', 'Hari ini')
 
 @section('content')
     <div class="dashboard-page mx-auto max-w-6xl">
         @php
             $todayCount = $todayTasks->count() + $todayHabits->count();
         @endphp
+        @if ($showOnboarding)
+            <section class="surface-card mb-5 border-primary-200 p-5 sm:p-6">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div><h2 class="text-lg font-semibold">Mulai dari mana?</h2><p class="mt-1 text-sm text-muted">Selesaikan tiga langkah ini untuk menyiapkan ruang harianmu.</p></div>
+                    <form method="POST" action="{{ route('user.onboarding.dismiss') }}">@csrf<x-button class="dashboard-action dashboard-action-quiet">Tutup panduan</x-button></form>
+                </div>
+                <ol class="mt-4 grid gap-3 sm:grid-cols-3">
+                    @foreach ($onboardingSteps as $index => $step)
+                        <li>
+                            <a href="{{ $step['url'] }}" class="flex min-h-14 items-center gap-3 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">
+                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ $step['completed'] ? 'bg-success text-white' : 'bg-gray-100 text-muted' }}" role="img" aria-label="{{ $step['completed'] ? 'Selesai' : 'Belum selesai' }}">
+                                    @if ($step['completed'])
+                                        <x-icon name="selesai" class="h-4 w-4" />
+                                    @else
+                                        {{ $index + 1 }}
+                                    @endif
+                                </span>
+                                <span>{{ $step['label'] }}</span>
+                                <span class="sr-only">{{ $step['completed'] ? 'Selesai' : 'Belum selesai' }}</span>
+                            </a>
+                        </li>
+                    @endforeach
+                </ol>
+            </section>
+        @endif
         <section class="concept-card concept-card-blue concept-hero dashboard-wide" aria-label="Ringkasan hari ini">
             <svg class="concept-hero-mascot stk bobf" viewBox="0 0 110 100" aria-hidden="true"><use href="#mascot" /></svg>
             <svg class="concept-hero-spark stk" viewBox="0 0 24 24" aria-hidden="true"><use href="#spark" /></svg>
@@ -15,7 +40,7 @@
             <span class="concept-chip mt-2">{{ $todayCount }} hal hari ini</span>
             <p class="dashboard-hero-note">Pilih satu hal penting, lalu mulai dengan langkah kecil.</p>
             <div class="concept-stats {{ in_array('finance', $dashboardSections, true) ? '' : 'concept-stats-inline' }}">
-                <div class="concept-stat"><b>{{ $totalTasks }}</b><span>Total tugas</span></div>
+                <div class="concept-stat"><b>{{ $incompleteTodayTasks }}</b><span>{{ __('ui.dashboard.incomplete_today') }}</span></div>
                 <div class="concept-stat"><b>{{ $doneHabits }}/{{ $todayHabits->count() }}</b><span>kebiasaan</span></div>
                 @if (in_array('finance', $dashboardSections, true))
                     <div class="concept-stat concept-stat-finance">
@@ -159,21 +184,6 @@
         </section>
         @endif
 
-        @if (in_array('attention', $dashboardSections, true))
-            <section class="concept-card concept-card-pink dashboard-panel">
-                <h2 class="text-lg font-semibold">Tugas yang terlewat</h2>
-                <p class="mt-1 text-sm text-muted">Kamu masih bisa mengatur ulang waktunya atau menandainya selesai.</p>
-                @forelse ($overdueTasks as $task)
-                    <article class="concept-item flex-col items-start sm:flex-row sm:items-center">
-                        <div class="min-w-0"><h3 class="break-words font-medium">{{ $task->title }}</h3><p class="mt-1 inline-flex items-center gap-1.5 text-sm text-warning">{{ __('ui.agenda.overdue') }} · {{ ($task->due_date ?? $task->ends_at)?->timezone(auth()->user()->timezone)->translatedFormat('j M Y, H:i') }}</p></div>
-                        <x-task-actions :task="$task" />
-                    </article>
-                @empty
-                    <div class="mt-4 border-t border-line py-4"><p class="font-medium">Tidak ada tugas yang terlewat.</p><p class="mt-1 text-sm text-muted">Bagus, semua tenggat masih terjaga.</p></div>
-                @endforelse
-            </section>
-        @endif
-
         @if (in_array('upcoming', $dashboardSections, true))
             <section class="concept-card concept-card-blue dashboard-panel">
                 <h2 class="text-lg font-semibold">7 hari mendatang</h2>
@@ -250,30 +260,5 @@
         </section>
         @endif
 
-        @if ($showOnboarding)
-            <section class="surface-card mt-6 border-primary-200 p-5 sm:p-6">
-                <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div><h2 class="text-lg font-semibold">Mulai dari mana?</h2><p class="mt-1 text-sm text-muted">Selesaikan tiga langkah ini untuk menyiapkan ruang harianmu.</p></div>
-                    <form method="POST" action="{{ route('user.onboarding.dismiss') }}">@csrf<x-button class="dashboard-action dashboard-action-quiet">Tutup panduan</x-button></form>
-                </div>
-                <ol class="mt-4 grid gap-3 sm:grid-cols-3">
-                    @foreach ($onboardingSteps as $index => $step)
-                        <li>
-                            <a href="{{ $step['url'] }}" class="flex min-h-14 items-center gap-3 rounded-lg border border-line p-3 font-medium hover:bg-gray-50">
-                                <span class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full {{ $step['completed'] ? 'bg-success text-white' : 'bg-gray-100 text-muted' }}" role="img" aria-label="{{ $step['completed'] ? 'Selesai' : 'Belum selesai' }}">
-                                    @if ($step['completed'])
-                                        <x-icon name="selesai" class="h-4 w-4" />
-                                    @else
-                                        {{ $index + 1 }}
-                                    @endif
-                                </span>
-                                <span>{{ $step['label'] }}</span>
-                                <span class="sr-only">{{ $step['completed'] ? 'Selesai' : 'Belum selesai' }}</span>
-                            </a>
-                        </li>
-                    @endforeach
-                </ol>
-            </section>
-        @endif
     </div>
 @endsection

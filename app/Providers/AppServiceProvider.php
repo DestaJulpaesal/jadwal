@@ -7,6 +7,7 @@ use Illuminate\Database\Events\ConnectionEstablished;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 
@@ -25,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $viteHotFile = config('app.vite_hot_file');
+        if (is_string($viteHotFile) && $viteHotFile !== '') {
+            Vite::useHotFile($viteHotFile);
+        }
+
         if (app()->isProduction() && config('app.debug')) {
             throw new \LogicException('APP_DEBUG must be disabled in production.');
         }

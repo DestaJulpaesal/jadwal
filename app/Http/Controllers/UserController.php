@@ -41,6 +41,9 @@ class UserController extends Controller
             $todayStartLocal->copy()->utc(),
             $tomorrowStartLocal->copy()->utc()
         );
+        $incompleteTodayTasks = $todayTasks
+            ->filter(fn ($task) => ! $task->status?->is_completed)
+            ->count();
         $upcomingTasks = $this->tasksInRange(
             $user,
             $tomorrowStartLocal->copy()->utc(),
@@ -150,6 +153,7 @@ class UserController extends Controller
             'upcomingTasks',
             'overdueTasks',
             'totalTasks',
+            'incompleteTodayTasks',
             'today',
             'todayHabits',
             'doneHabits',
@@ -170,6 +174,16 @@ class UserController extends Controller
         $request->user()->forceFill(['onboarding_dismissed_at' => now()])->save();
 
         return Feedback::success(back(), __('ui.feedback.onboarding_dismissed'));
+    }
+
+    public function restartOnboarding(Request $request)
+    {
+        $request->user()->forceFill(['onboarding_dismissed_at' => null])->save();
+
+        return Feedback::success(
+            redirect()->route('user.dashboard'),
+            __('ui.feedback.onboarding_restarted')
+        );
     }
 
     private function tasksInRange(User $user, Carbon $startUtc, Carbon $endUtc, bool $excludeCompleted = false): Collection

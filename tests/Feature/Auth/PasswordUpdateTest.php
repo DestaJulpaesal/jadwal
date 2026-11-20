@@ -52,4 +52,25 @@ class PasswordUpdateTest extends TestCase
             ->assertSessionHasErrorsIn('updatePassword', 'current_password')
             ->assertRedirect('/profile');
     }
+
+    public function test_current_session_remains_authenticated_after_password_update(): void
+    {
+        $user = User::factory()->create();
+
+        $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ])->assertRedirect();
+
+        $this
+            ->from('/profile')
+            ->put('/password', [
+                'current_password' => 'password',
+                'password' => 'NewPassword123!',
+                'password_confirmation' => 'NewPassword123!',
+            ])
+            ->assertRedirect('/profile');
+
+        $this->get('/profile')->assertOk();
+    }
 }

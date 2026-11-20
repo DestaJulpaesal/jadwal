@@ -33,7 +33,8 @@ class UserTaskTest extends TestCase
         $response->assertOk()
             ->assertSee('My task')
             ->assertDontSee('Private task')
-            ->assertSee('Total tugas')
+            ->assertSee('Belum selesai hari ini')
+            ->assertDontSee('Total tugas')
             ->assertSee('Kalender')
             ->assertSee(route('user.calendar'), false)
             ->assertSee('Jadwal hari ini')
@@ -42,6 +43,34 @@ class UserTaskTest extends TestCase
             ->assertSee('Perlu perhatian')
             ->assertSee('Keuangan')
             ->assertSee('class="concept-quick-link"><svg', false);
+    }
+
+    public function test_dashboard_lists_overdue_tasks_once_and_counts_only_incomplete_today(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-20 12:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'UTC']);
+        $completed = TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $user->tasks()->create([
+            'title' => 'Tugas terlambat unik',
+            'due_date' => '2026-11-19 10:00:00',
+        ]);
+        $user->tasks()->create([
+            'title' => 'Tugas hari ini belum selesai',
+            'due_date' => '2026-11-20 14:00:00',
+        ]);
+        $user->tasks()->create([
+            'title' => 'Tugas hari ini selesai',
+            'task_status_id' => $completed->id,
+            'due_date' => '2026-11-20 11:00:00',
+        ]);
+
+        $response = $this->actingAs($user)->get(route('user.dashboard'));
+
+        $response->assertOk()
+            ->assertViewHas('incompleteTodayTasks', 1)
+            ->assertSee('Belum selesai hari ini')
+            ->assertDontSee('Tugas yang terlewat');
+        $this->assertSame(1, substr_count($response->getContent(), 'Tugas terlambat unik'));
     }
 
     public function test_calendar_page_is_displayed_separately_from_the_dashboard(): void
@@ -260,6 +289,31 @@ class UserTaskTest extends TestCase
             'status' => 'Selesai',
         ]);
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'task_status_id' => $completedStatus->id]);
+    }
+
+    public function test_repeated_quick_completion_does_not_create_duplicate_recurrences(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-09 16:00:00', 'UTC'));
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $task = $user->tasks()->create([
+            'title' => 'Rutinitas harian',
+            'recurrence' => 'daily',
+        ]);
+        TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        $this->actingAs($user)
+            ->from(route('user.tasks.index'))
+            ->patch(route('user.tasks.complete', $task))
+            ->assertRedirect(route('user.tasks.index'));
+
+        $this->from(route('user.tasks.index'))
+            ->patch(route('user.tasks.complete', $task))
+            ->assertRedirect(route('user.tasks.index'))
+            ->assertSessionHas('feedback.message', 'Tugas ini sudah ditandai selesai.');
+
+        $this->assertDatabaseCount('tasks', 2);
+        $this->assertSame(1, $user->tasks()->where('recurrence_parent_id', $task->id)->count());
     }
 
     public function test_quick_completion_reports_when_the_completed_status_is_missing(): void

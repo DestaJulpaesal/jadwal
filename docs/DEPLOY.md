@@ -34,11 +34,16 @@ LOG_CHANNEL=daily
 LOG_LEVEL=warning
 BACKUP_DIRECTORY=/srv/jadwal-private/backups
 BACKUP_ENCRYPTION_KEY=<separate base64 32-byte key>
+VAPID_SUBJECT=mailto:admin@example.com
+VAPID_PUBLIC_KEY=<persistent VAPID public key>
+VAPID_PRIVATE_KEY=<persistent VAPID private key from secret manager>
 ```
 
 `TRUSTED_PROXIES` must contain the reverse-proxy IP addresses/CIDRs that connect directly to the app, separated by commas. Leave it empty when the app is reached directly. Use `*` only when the network boundary guarantees every request reaches the app through a trusted proxy.
 
 Buat `APP_KEY` satu kali (`php artisan key:generate`) dan pertahankan lintas rilis; jangan pernah membagikannya atau memasukkannya ke repository. Buat kunci cadangan terpisah sesuai [panduan backup](./BACKUP.md). Konfigurasikan SMTP produksi untuk email/verifikasi bila digunakan. Jadwal dan `onOneServer()` perlu cache lock yang sesuai jika aplikasi berjalan di lebih dari satu instance.
+
+Untuk push PWA, buat satu pasangan kunci VAPID dengan `php -r "require 'vendor/autoload.php'; echo json_encode(Minishlink\\WebPush\\VAPID::createVapidKeys(), JSON_PRETTY_PRINT);"` lalu simpan private key di secret manager. Pertahankan pasangan kunci yang sama lintas rilis; jangan menaruh private key di repository. Push hanya tersedia setelah kunci dikonfigurasi dan hanya dikirim kepada pengguna yang berlangganan pada perangkatnya.
 
 ## Rilis
 
@@ -70,7 +75,7 @@ Jalankan scheduler Laravel setiap menit:
 * * * * * cd /srv/jadwal && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Pada Windows Server, buat Scheduled Task per menit dengan direktori kerja proyek dan PHP CLI yang benar. Scheduler menjalankan backup harian, pemeriksaan umur/ukuran backup, housekeeping, dan ringkasan email sesuai preferensi pengguna. `app:backup-status` mencatat kejadian `critical` jika tidak ada backup atau backup terbaru berumur lebih dari 36 jam; pantau channel log aplikasi. Bila `QUEUE_CONNECTION` diubah dari `sync`, jalankan worker persisten di bawah Supervisor/systemd atau Windows Service, dan atur restart setelah deployment.
+Pada Windows Server, buat Scheduled Task per menit dengan direktori kerja proyek dan PHP CLI yang benar. Scheduler menjalankan backup harian, pemeriksaan umur/ukuran backup, housekeeping, serta ringkasan email dan push sesuai preferensi pengguna. `app:backup-status` mencatat kejadian `critical` jika tidak ada backup atau backup terbaru berumur lebih dari 36 jam; pantau channel log aplikasi. Bila `QUEUE_CONNECTION` diubah dari `sync`, jalankan worker persisten di bawah Supervisor/systemd atau Windows Service, dan atur restart setelah deployment.
 
 ## Web server dan aset statis
 

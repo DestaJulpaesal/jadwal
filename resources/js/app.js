@@ -12,6 +12,7 @@ import { initializeNavigation } from './nav';
 import { initializePasswordUi } from './password';
 import { initializePrivacyUi } from './privacy';
 import { initializePwa } from './pwa';
+import { initializeReceiptScan } from './receipt/receipt-scan-ui';
 import { initializeToastQueue } from './toast';
 
 import './components';
@@ -25,6 +26,7 @@ const initializeApplicationUi = () => {
     initializePasswordUi();
     initializePrivacyUi();
     initializePwa();
+    initializeReceiptScan();
 };
 
 if (document.readyState === 'loading') {

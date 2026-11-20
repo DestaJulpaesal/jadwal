@@ -207,6 +207,8 @@ class LifeHubTest extends TestCase
             ->assertOk()
             ->assertSee('Catat transaksi')
             ->assertSee('transaction-create')
+            ->assertSee('data-receipt-scan')
+            ->assertSee('Foto struk')
             ->assertDontSee('onchange=');
 
         $this->get(route('user.money.index', ['section' => 'wallets']))
@@ -281,7 +283,7 @@ class LifeHubTest extends TestCase
             [
                 'today' => '2026-12-31',
                 'route' => 'user.money.index',
-                'month' => '2026-11',
+                'query' => ['month' => '2026-11', 'section' => 'reports'],
                 'previous' => '2026-10',
                 'amount' => 110_000,
                 'category' => 'November',
@@ -291,7 +293,7 @@ class LifeHubTest extends TestCase
             [
                 'today' => '2027-03-31',
                 'route' => 'user.reports.index',
-                'month' => '2026-02',
+                'query' => ['month' => '2026-02'],
                 'previous' => '2026-01',
                 'amount' => 220_000,
                 'category' => 'Februari',
@@ -301,7 +303,7 @@ class LifeHubTest extends TestCase
             [
                 'today' => '2026-05-31',
                 'route' => 'user.money.index',
-                'month' => '2026-04',
+                'query' => ['month' => '2026-04', 'section' => 'reports'],
                 'previous' => '2026-03',
                 'amount' => 440_000,
                 'category' => 'April',
@@ -314,7 +316,7 @@ class LifeHubTest extends TestCase
             $this->travelTo(\Illuminate\Support\Carbon::parse($case['today'].' 12:00:00', 'UTC'));
 
             $this->actingAs($user)
-                ->get(route($case['route'], ['month' => $case['month']]))
+                ->get(route($case['route'], $case['query']))
                 ->assertOk()
                 ->assertViewHas('previousMonth', $case['previous'])
                 ->assertViewHas($case['summary'], fn (array $summary) => $summary['expense'] === $case['amount'])
@@ -491,6 +493,94 @@ class LifeHubTest extends TestCase
             ->assertSee('Rencana utang dan piutang')
             ->assertSee('Budi')
             ->assertSee(rupiah(1_000_000));
+    }
+
+    public function test_unpaid_overdue_loans_are_included_in_the_current_month_plan(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-20 12:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'UTC']);
+        $overdue = $user->loans()->create([
+            'direction' => 'borrowed',
+            'counterparty' => 'Pinjaman terlambat',
+            'amount' => 1_000_000,
+            'loan_date' => '2026-08-01',
+            'due_on' => '2026-10-15',
+        ]);
+        $user->loanRepayments()->create([
+            'loan_id' => $overdue->id,
+            'amount' => 250_000,
+            'paid_on' => '2026-11-01',
+        ]);
+        $user->loans()->create([
+            'direction' => 'lent',
+            'counterparty' => 'Piutang bulan ini',
+            'amount' => 500_000,
+            'loan_date' => '2026-10-01',
+            'due_on' => '2026-11-25',
+        ]);
+        $paid = $user->loans()->create([
+            'direction' => 'lent',
+            'counterparty' => 'Piutang lunas',
+            'amount' => 100_000,
+            'loan_date' => '2026-08-01',
+            'due_on' => '2026-10-01',
+        ]);
+        $user->loanRepayments()->create([
+            'loan_id' => $paid->id,
+            'amount' => 100_000,
+            'paid_on' => '2026-10-01',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('user.money.index', ['month' => '2026-11']))
+            ->assertOk()
+            ->assertSee('Pinjaman terlambat')
+            ->assertSee('Terlambat')
+            ->assertSee(rupiah(750_000))
+            ->assertSee('Piutang bulan ini')
+            ->assertDontSee('Piutang lunas')
+            ->assertViewHas('plannedLoans', fn ($loans) => $loans->contains(
+                fn ($loan) => $loan->is($overdue)
+                    && $loan->planned_amount === 750_000
+                    && $loan->planned_status === 'overdue'
+            ));
+
+        $this->get(route('user.money.index', ['month' => '2026-12']))
+            ->assertOk()
+            ->assertDontSee('Pinjaman terlambat');
+    }
+
+    public function test_money_category_names_are_case_insensitive_and_archived_categories_restore_by_name(): void
+    {
+        $user = User::factory()->create();
+        $food = $user->moneyCategories()->create([
+            'name' => 'Makan',
+            'type' => MoneyCategoryType::Expense,
+        ]);
+        $transport = $user->moneyCategories()->create([
+            'name' => 'Transportasi',
+            'type' => MoneyCategoryType::Expense,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('user.money.categories.store'), [
+                'name' => 'makan',
+                'type' => MoneyCategoryType::Expense->value,
+            ])
+            ->assertSessionHasErrors('name');
+
+        $food->update(['archived_at' => now()]);
+        $this->post(route('user.money.categories.store'), [
+            'name' => 'MAKAN',
+            'type' => MoneyCategoryType::Expense->value,
+        ])->assertRedirect();
+        $this->assertNull($food->fresh()->archived_at);
+        $this->assertDatabaseCount('money_categories', 2);
+
+        $this->patch(route('user.money.categories.update', $food), ['name' => 'transportasi'])
+            ->assertSessionHasErrors('name');
+        $this->assertSame('makan', $food->fresh()->name_normalized);
+        $this->assertSame('transportasi', $transport->fresh()->name_normalized);
     }
 
     public function test_obligation_periods_show_status_and_only_allow_the_oldest_due_period(): void

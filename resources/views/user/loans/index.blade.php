@@ -34,28 +34,21 @@
             @forelse ($loans as $loan)
                 <article class="surface-card p-5">
                     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                        <div><h2 class="font-semibold">{{ $loan->direction->label() }} · {{ $loan->counterparty }}</h2><p class="text-sm text-muted">{{ rupiah($loan->amount) }} · tercatat {{ $loan->loan_date->translatedFormat('j M Y') }}@if($loan->due_on) · jatuh tempo {{ $loan->due_on->translatedFormat('j M Y') }}@endif</p><p class="mt-1 text-sm">Sisa: <strong data-private>{{ rupiah($loan->remaining_amount) }}</strong> · {{ $loan->due_label }}</p></div>
-                        @if ($status === 'active')
-                            <x-button href="{{ route('user.loans.edit', $loan) }}" variant="secondary" icon="ubah">Ubah catatan</x-button>
-                            <x-confirm-action :action="route('user.loans.archive', $loan)" method="PATCH"
-                                title="Arsipkan catatan?"
-                                :message="'Catatan '.$loan->counterparty.' tidak lagi muncul di agenda. Riwayat dan pembayaran tetap tersimpan.'"
-                                label="Arsipkan" tone="secondary" icon="nonaktifkan" />
-                        @else
-                            <form method="POST" action="{{ route('user.loans.restore', $loan) }}">
-                                @csrf
-                                @method('PATCH')
-                                <x-button variant="secondary" icon="kembali">Pulihkan</x-button>
-                            </form>
-                            @if ($loan->repayments->isEmpty())
-                                <x-confirm-action :action="route('user.loans.destroy', $loan)"
-                                    title="Hapus catatan permanen?"
-                                    :message="'Catatan '.$loan->counterparty.' beserta transaksi awal terkait akan dihapus permanen.'"
-                                    label="Hapus permanen" />
-                            @else
-                                <p class="text-xs text-muted">Catatan memiliki pembayaran dan tidak dapat dihapus.</p>
-                            @endif
-                        @endif
+                        <div class="flex min-w-0 items-start gap-3">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-success-soft text-success" aria-hidden="true">
+                                <x-icon name="utang" class="h-5 w-5" />
+                            </span>
+                            <div>
+                                <h2 class="font-semibold">{{ $loan->direction->label() }} · {{ $loan->counterparty }}</h2>
+                                <p class="text-sm text-muted">{{ rupiah($loan->amount) }} · tercatat {{ $loan->loan_date->translatedFormat('j M Y') }}@if($loan->due_on) · jatuh tempo {{ $loan->due_on->translatedFormat('j M Y') }}@endif</p>
+                                <p class="mt-1 text-sm">Sisa: <strong data-private>{{ rupiah($loan->remaining_amount) }}</strong> · {{ $loan->due_label }}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-end gap-2">
+                            <x-button type="button" variant="secondary" icon="menu-aksi"
+                                aria-label="Aksi untuk {{ $loan->counterparty }}"
+                                x-data
+                                x-on:click="$dispatch('open-modal', 'loan-actions-{{ $loan->id }}')">Aksi</x-button>
                         @if ($status === 'active' && $loan->remaining_amount > 0)
                             <form method="POST" action="{{ route('user.loans.repay', $loan) }}" class="flex flex-wrap items-end gap-2">
                                 @csrf
@@ -67,7 +60,33 @@
                         @elseif ($loan->remaining_amount === 0)
                             <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-800">Lunas</span>
                         @endif
+                        </div>
                     </div>
+                    <x-bottom-sheet name="loan-actions-{{ $loan->id }}" :title="'Aksi utang/piutang: '.$loan->counterparty">
+                        <div class="space-y-3">
+                            @if ($status === 'active')
+                                <x-button href="{{ route('user.loans.edit', $loan) }}" variant="secondary" icon="ubah" class="w-full">Ubah catatan</x-button>
+                                <x-confirm-action :action="route('user.loans.archive', $loan)" method="PATCH"
+                                    title="Arsipkan catatan?"
+                                    :message="'Catatan '.$loan->counterparty.' tidak lagi muncul di agenda. Riwayat dan pembayaran tetap tersimpan.'"
+                                    label="Arsipkan" tone="secondary" icon="nonaktifkan" />
+                            @else
+                                <form method="POST" action="{{ route('user.loans.restore', $loan) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <x-button variant="secondary" icon="kembali" class="w-full">Pulihkan</x-button>
+                                </form>
+                                @if ($loan->repayments->isEmpty())
+                                    <x-confirm-action :action="route('user.loans.destroy', $loan)"
+                                        title="Hapus catatan permanen?"
+                                        :message="'Catatan '.$loan->counterparty.' beserta transaksi awal terkait akan dihapus permanen.'"
+                                        label="Hapus permanen" />
+                                @else
+                                    <p class="text-xs text-muted">Catatan memiliki pembayaran dan tidak dapat dihapus.</p>
+                                @endif
+                            @endif
+                        </div>
+                    </x-bottom-sheet>
                     @if($loan->reminder_message)<div class="mt-4"><label class="field-label" for="reminder-{{ $loan->id }}">Pesan pengingat siap salin</label><textarea id="reminder-{{ $loan->id }}" readonly rows="2" class="form-control">{{ $loan->reminder_message }}</textarea></div>@endif
                     @foreach ($loan->repayments as $repayment)
                         <div class="mt-2 flex items-center justify-between border-t border-line pt-2 text-sm"><span>Pembayaran {{ $repayment->paid_on->translatedFormat('j M Y') }} · <span data-private>{{ rupiah($repayment->amount) }}</span></span>

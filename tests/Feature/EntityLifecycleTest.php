@@ -194,6 +194,46 @@ class EntityLifecycleTest extends TestCase
         $this->assertDatabaseHas('transactions', ['id' => $transaction->id, 'money_category_id' => $category->id]);
     }
 
+    public function test_wallet_cannot_be_deleted_while_obligations_or_loans_reference_it(): void
+    {
+        $user = User::factory()->create();
+        $obligationWallet = $user->wallets()->create([
+            'name' => 'Dompet tagihan',
+            'type' => WalletType::Cash,
+        ]);
+        $user->obligations()->create([
+            'kind' => 'bill',
+            'title' => 'Tagihan tertaut',
+            'amount' => 100_000,
+            'due_day' => 15,
+            'starts_on' => '2026-11-01',
+            'wallet_id' => $obligationWallet->id,
+        ]);
+        $obligationWallet->update(['archived_at' => now()]);
+
+        $this->actingAs($user)
+            ->delete(route('user.money.wallets.destroy', $obligationWallet))
+            ->assertUnprocessable();
+        $this->assertDatabaseHas('obligations', ['wallet_id' => $obligationWallet->id]);
+
+        $loanWallet = $user->wallets()->create([
+            'name' => 'Dompet pinjaman',
+            'type' => WalletType::Bank,
+        ]);
+        $user->loans()->create([
+            'direction' => 'borrowed',
+            'counterparty' => 'Pemberi pinjaman',
+            'amount' => 100_000,
+            'loan_date' => '2026-11-01',
+            'wallet_id' => $loanWallet->id,
+        ]);
+        $loanWallet->update(['archived_at' => now()]);
+
+        $this->delete(route('user.money.wallets.destroy', $loanWallet))
+            ->assertUnprocessable();
+        $this->assertDatabaseHas('loans', ['wallet_id' => $loanWallet->id]);
+    }
+
     public function test_habits_and_goals_can_be_restored_and_deleted_with_their_children(): void
     {
         $user = User::factory()->create();

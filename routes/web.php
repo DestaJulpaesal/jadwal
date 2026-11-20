@@ -5,6 +5,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CspReportController;
 use App\Http\Controllers\DataExportController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\User\BudgetController;
 use App\Http\Controllers\User\GoalController;
@@ -100,6 +101,7 @@ if (config('auth.email_verification')) {
 Route::middleware($dashboardMiddleware)->group(function () {
     Route::prefix('dashboard')->name('user.')->group(function () {
         Route::post('/onboarding/dismiss', [UserController::class, 'dismissOnboarding'])->middleware('throttle:60,1')->name('onboarding.dismiss');
+        Route::post('/onboarding/restart', [UserController::class, 'restartOnboarding'])->middleware('throttle:60,1')->name('onboarding.restart');
         Route::get('/', [UserController::class, 'index'])->name('dashboard');
         Route::get('/calendar', [UserController::class, 'calendar'])->name('calendar');
         Route::get('/streak', StreakController::class)->name('streak');
@@ -172,6 +174,12 @@ Route::middleware($dashboardMiddleware)->group(function () {
 Route::middleware(['auth', 'auth.session', 'active'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
     Route::patch('/settings', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('/settings/push-subscriptions', [PushSubscriptionController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('settings.push-subscriptions.store');
+    Route::delete('/settings/push-subscriptions', [PushSubscriptionController::class, 'destroy'])
+        ->middleware('throttle:10,1')
+        ->name('settings.push-subscriptions.destroy');
     Route::get('/settings/exports/{type}', [DataExportController::class, 'export'])
         ->whereIn('type', ['transactions', 'tasks', 'habits', 'habit-logs'])
         ->middleware('throttle:5,1')

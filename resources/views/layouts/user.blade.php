@@ -23,7 +23,7 @@
     </div>
     <header class="user-header fixed inset-x-0 top-0 z-30">
         <div class="user-header-inner flex h-[calc(4rem+env(safe-area-inset-top))] items-center justify-between gap-4 px-4 sm:px-6">
-            <a href="{{ route('user.dashboard') }}" data-prefetch class="user-brand flex min-h-11 min-w-0 items-center gap-3" aria-label="Jadwal Harian, Beranda">
+            <a href="{{ route('user.dashboard') }}" class="user-brand flex min-h-11 min-w-0 items-center gap-3" aria-label="Jadwal Harian, Hari ini">
                 <span class="brand-mark flex h-10 w-10 shrink-0 items-center justify-center" aria-hidden="true">
                     <x-concept-icon name="home" class="h-8 w-8" />
                 </span>
@@ -38,10 +38,10 @@
                         <x-icon name="notifikasi" class="h-8 w-8" />
                     </span>
                 </a>
-                <a href="{{ route('user.streak') }}" class="header-action-link" aria-label="Lihat api aktivitas" title="Api aktivitas" @if (request()->routeIs('user.streak')) aria-current="page" @endif>
+                <a href="{{ route('user.streak') }}" class="header-action-link" aria-label="Lihat rangkaian aktivitas" title="Rangkaian aktivitas" @if (request()->routeIs('user.streak')) aria-current="page" @endif>
                     <x-concept-icon name="fl" class="h-7 w-7" />
                 </a>
-                <a href="{{ route('profile.edit') }}" class="profile-header-link" aria-label="Buka profil" title="Profil">
+                <a href="{{ route('profile.edit') }}" class="profile-header-link" aria-label="Buka profil" title="Profil" @if (request()->routeIs('profile.*', 'settings.*', 'user.application')) aria-current="page" @endif>
                     <span class="profile-header-frame">
                         <x-profile-avatar :user="auth()->user()" class="h-10 w-10" />
                         <span class="profile-header-dot" aria-hidden="true"></span>
@@ -56,9 +56,9 @@
             <div class="sidebar-content px-5 py-6">
                 <nav aria-label="Navigasi utama" class="space-y-3">
                     <details class="sidebar-nav-group" @if (request()->routeIs('user.dashboard', 'user.calendar')) open @endif>
-                        <summary><x-concept-icon name="home" class="h-5 w-5" />Beranda</summary>
+                        <summary><x-concept-icon name="home" class="h-5 w-5" />Hari ini</summary>
                         <div class="sidebar-nav space-y-1.5">
-                            <a href="{{ route('user.dashboard') }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') && request('tab') !== 'attention' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard') && request('tab') !== 'attention') aria-current="page" @endif>Hari ini</a>
+                            <a href="{{ route('user.dashboard') }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') && request('tab') !== 'attention' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard') && request('tab') !== 'attention') aria-current="page" @endif>Ringkasan</a>
                             <a href="{{ route('user.calendar') }}" class="nav-link w-full {{ request()->routeIs('user.calendar') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.calendar')) aria-current="page" @endif>Kalender</a>
                             <a href="{{ route('user.dashboard', ['tab' => 'attention']).'#attention-heading' }}" class="nav-link w-full {{ request()->routeIs('user.dashboard') && request('tab') === 'attention' ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard') && request('tab') === 'attention') aria-current="page" @endif>Perlu perhatian</a>
                         </div>
@@ -69,13 +69,15 @@
                             <a href="{{ route('user.tasks.index') }}" class="nav-link w-full {{ request()->routeIs('user.tasks.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>Daftar tugas</a>
                         </div>
                     </details>
-                    <details class="sidebar-nav-group" @if (request()->routeIs('user.habits.*', 'user.goals.*')) open @endif>
+                    <details class="sidebar-nav-group" @if (request()->routeIs('user.habits.*')) open @endif>
                         <summary><x-concept-icon name="fl" class="h-5 w-5" />Kebiasaan</summary>
                         <div class="sidebar-nav space-y-1.5">
                             <a href="{{ route('user.habits.index') }}" class="nav-link w-full {{ request()->routeIs('user.habits.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*')) aria-current="page" @endif>Kebiasaan</a>
-                            <a href="{{ route('user.goals.index') }}" class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.goals.*')) aria-current="page" @endif>Target</a>
                         </div>
                     </details>
+                    <a href="{{ route('user.goals.index') }}" class="nav-link w-full {{ request()->routeIs('user.goals.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.goals.*')) aria-current="page" @endif>
+                        <x-icon name="target" class="h-5 w-5" />Target
+                    </a>
                     <details class="sidebar-nav-group" @if (request()->routeIs('user.money.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*')) open @endif>
                         <summary><x-concept-icon name="wl" class="h-5 w-5" />Keuangan</summary>
                         <div class="sidebar-nav space-y-1.5">
@@ -92,7 +94,6 @@
                         <div class="sidebar-nav space-y-1.5">
                             <a href="{{ route('profile.edit') }}" class="nav-link w-full {{ request()->routeIs('profile.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('profile.*')) aria-current="page" @endif>Profil</a>
                             <a href="{{ route('settings.edit') }}" class="nav-link w-full {{ request()->routeIs('settings.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('settings.*')) aria-current="page" @endif>Pengaturan</a>
-                            <a href="{{ route('user.application') }}" class="nav-link w-full {{ request()->routeIs('user.application') ? 'nav-link-active' : '' }}" @if (request()->routeIs('user.application')) aria-current="page" @endif>Aplikasi</a>
                             @if (auth()->user()->isAdmin())
                                 <a href="{{ route('admin.dashboard') }}" class="nav-link w-full {{ request()->routeIs('admin.*') ? 'nav-link-active' : '' }}" @if (request()->routeIs('admin.*')) aria-current="page" @endif>Panel Admin</a>
                             @endif
@@ -130,20 +131,20 @@
     <nav id="mobileNavigationMenu" class="mobile-nav fixed bottom-0 z-40 lg:hidden" aria-label="Navigasi utama">
         <span class="mobile-nav-shape" aria-hidden="true"></span>
         <div class="mobile-nav-grid grid grid-cols-5 items-stretch">
-            <a href="{{ route('user.dashboard') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.dashboard', 'user.calendar', 'user.search') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard', 'user.calendar', 'user.search')) aria-current="page" @endif>
-                <span class="mobile-nav-icon"><x-concept-icon name="home" /></span><span>Beranda</span>
+            <a href="{{ route('user.dashboard') }}" class="mobile-nav-link {{ request()->routeIs('user.dashboard', 'user.calendar', 'user.search') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.dashboard', 'user.calendar', 'user.search')) aria-current="page" @endif>
+                <span class="mobile-nav-icon"><x-concept-icon name="home" /></span><span>Hari ini</span>
             </a>
-            <a href="{{ route('user.tasks.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.tasks.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>
+            <a href="{{ route('user.tasks.index') }}" class="mobile-nav-link {{ request()->routeIs('user.tasks.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.tasks.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="tk" /></span><span>Tugas</span>
             </a>
-            <a href="{{ route('user.habits.index') }}" data-prefetch class="mobile-nav-link {{ request()->routeIs('user.habits.*', 'user.goals.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*', 'user.goals.*')) aria-current="page" @endif>
+            <a href="{{ route('user.habits.index') }}" class="mobile-nav-link {{ request()->routeIs('user.habits.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.habits.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="fl" /></span><span>Kebiasaan</span>
+            </a>
+            <a href="{{ route('user.goals.index') }}" class="mobile-nav-link {{ request()->routeIs('user.goals.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.goals.*')) aria-current="page" @endif>
+                <span class="mobile-nav-icon"><x-icon name="target" /></span><span>Target</span>
             </a>
             <a href="{{ route('user.money.index') }}" class="mobile-nav-link {{ request()->routeIs('user.money.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('user.money.*', 'user.obligations.*', 'user.loans.*', 'user.reports.*')) aria-current="page" @endif>
                 <span class="mobile-nav-icon"><x-concept-icon name="wl" /></span><span>Keuangan</span>
-            </a>
-            <a href="{{ route('profile.edit') }}" class="mobile-nav-link {{ request()->routeIs('profile.*', 'settings.*', 'user.application', 'admin.*') ? 'mobile-nav-link-active' : '' }}" @if (request()->routeIs('profile.*', 'settings.*', 'user.application', 'admin.*')) aria-current="page" @endif>
-                <span class="mobile-nav-icon"><x-profile-avatar :user="auth()->user()" class="h-6 w-6" /></span><span>Profil</span>
             </a>
         </div>
     </nav>

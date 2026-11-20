@@ -12,6 +12,115 @@ const canRegisterServiceWorker = () => {
         && !import.meta.env.DEV;
 };
 
+const base64UrlToBytes = (value) => {
+    const padding = '='.repeat((4 - (value.length % 4)) % 4);
+    const base64 = (value + padding).replace(/-/g, '+').replace(/_/g, '/');
+
+    return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+};
+
+const initializePushSettings = () => {
+    const settings = document.querySelector('[data-push-settings]');
+    if (!settings) {
+        return;
+    }
+
+    const enableButton = settings.querySelector('[data-push-enable]');
+    const disableButton = settings.querySelector('[data-push-disable]');
+    const status = settings.querySelector('[data-push-status]');
+    const supported = 'Notification' in window
+        && 'serviceWorker' in navigator
+        && 'PushManager' in window;
+
+    if (!supported) {
+        enableButton.disabled = true;
+        status.textContent = settings.dataset.messageUnsupported;
+
+        return;
+    }
+
+    const updateSubscriptionState = async () => {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        enableButton.hidden = Boolean(subscription);
+        disableButton.hidden = !subscription;
+        status.textContent = subscription
+            ? settings.dataset.messageActive
+            : settings.dataset.messageInactive;
+    };
+
+    updateSubscriptionState().catch((error) => {
+        console.error('PWA push subscription state could not be loaded.', error);
+        status.textContent = settings.dataset.messageStatusUnavailable;
+    });
+
+    enableButton.addEventListener('click', async () => {
+        try {
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                status.textContent = permission === 'denied'
+                    ? settings.dataset.messagePermissionDenied
+                    : settings.dataset.messagePermissionPending;
+
+                return;
+            }
+
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: base64UrlToBytes(settings.dataset.vapidPublicKey),
+            });
+            const response = await fetch(settings.dataset.storeUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': settings.dataset.csrfToken,
+                },
+                body: JSON.stringify(subscription.toJSON()),
+            });
+            if (!response.ok) {
+                throw new Error(`Push subscription could not be saved (${response.status}).`);
+            }
+
+            await updateSubscriptionState();
+            status.textContent = settings.dataset.messageEnabled;
+        } catch (error) {
+            console.error('PWA push subscription could not be enabled.', error);
+            status.textContent = settings.dataset.messageFailed;
+        }
+    });
+
+    disableButton.addEventListener('click', async () => {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const subscription = await registration.pushManager.getSubscription();
+            if (subscription) {
+                const response = await fetch(settings.dataset.deleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        Accept: 'application/json',
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': settings.dataset.csrfToken,
+                    },
+                    body: JSON.stringify({ endpoint: subscription.endpoint }),
+                });
+                if (!response.ok) {
+                    throw new Error(`Push subscription could not be removed (${response.status}).`);
+                }
+
+                await subscription.unsubscribe();
+            }
+
+            await updateSubscriptionState();
+            status.textContent = settings.dataset.messageDisabled;
+        } catch (error) {
+            console.error('PWA push subscription could not be disabled.', error);
+            status.textContent = settings.dataset.messageFailed;
+        }
+    });
+};
+
 export const initializePwa = () => {
     const installButtons = document.querySelectorAll('[data-pwa-install]');
     const iosHelp = document.querySelectorAll('[data-pwa-ios-help]');
@@ -28,6 +137,7 @@ export const initializePwa = () => {
     } else if (isStandalone() && installStatus) {
         installStatus.textContent = 'Jadwal Harian sudah terpasang di perangkat ini.';
     }
+    initializePushSettings();
 
     window.addEventListener('beforeinstallprompt', (event) => {
         event.preventDefault();

@@ -1,0 +1,2 @@
+tesseract.js, tesseract.js-core, dan tessdata_fast (ind) berlisensi Apache-2.0.
+https://github.com/naptha/tesseract.js  https://github.com/tesseract-ocr/tessdata_fast

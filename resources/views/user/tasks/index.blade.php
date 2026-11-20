@@ -137,14 +137,14 @@
                     </div>
                 </div>
             @else
-                <ul class="divide-y divide-line">
+                <ul class="grid gap-3 p-3 sm:p-4">
                     @foreach ($tasks as $task)
                         @php
                             $startsAt = $task->starts_at?->timezone(auth()->user()->timezone);
                             $endsAt = $task->ends_at?->timezone(auth()->user()->timezone);
                             $dueDate = $task->due_date?->timezone(auth()->user()->timezone);
                         @endphp
-                        <li class="flex flex-col gap-3 p-3 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
+                        <li class="flex flex-col gap-3 rounded-xl border border-line bg-surface p-3 sm:p-4 lg:flex-row lg:items-center lg:justify-between">
                             <div class="flex min-w-0 items-start gap-3">
                                 <label class="inline-flex min-h-11 min-w-11 cursor-pointer items-center justify-center">
                                     <input type="checkbox" value="{{ $task->id }}" data-bulk-task-checkbox
@@ -152,6 +152,9 @@
                                         class="h-5 w-5 rounded border-line text-primary-700 focus:ring-primary-700">
                                     <span class="sr-only">{{ __('ui.task.bulk.select_task', ['title' => $task->title]) }}</span>
                                 </label>
+                                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-info-soft text-info" aria-hidden="true">
+                                    <x-icon name="tugas" class="h-5 w-5" />
+                                </span>
                                 <div class="min-w-0">
                                     <h2 class="break-words font-semibold">{{ $task->title }}</h2>
                                     @if ($task->description)

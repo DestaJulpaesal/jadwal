@@ -30,43 +30,62 @@
             @forelse ($obligations as $obligation)
                 <article class="surface-card p-5">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div><h2 class="font-semibold">{{ $obligation->title }}</h2><p class="text-sm text-muted">{{ $obligation->kind->label() }} · {{ rupiah($obligation->amount) }} · tanggal {{ $obligation->due_day }} setiap bulan</p>
-                            @if($obligation->kind->value === 'installment')<p class="mt-1 text-sm text-muted">{{ $obligation->paid_installments }} dari {{ $obligation->installments_total }} · sisa {{ max(0, $obligation->installments_total - $obligation->paid_installments) }}</p>@endif
+                        <div class="flex min-w-0 items-start gap-3">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warning-soft text-warning" aria-hidden="true">
+                                <x-icon name="tagihan" class="h-5 w-5" />
+                            </span>
+                            <div>
+                                <h2 class="font-semibold">{{ $obligation->title }}</h2>
+                                <p class="text-sm text-muted">{{ $obligation->kind->label() }} · {{ rupiah($obligation->amount) }} · tanggal {{ $obligation->due_day }} setiap bulan</p>
+                                @if($obligation->kind->value === 'installment')
+                                    <p class="mt-1 text-sm text-muted">{{ $obligation->paid_installments }} dari {{ $obligation->installments_total }} · sisa {{ max(0, $obligation->installments_total - $obligation->paid_installments) }}</p>
+                                @endif
+                            </div>
                         </div>
-                        @if ($status === 'active')
-                            <x-button href="{{ route('user.obligations.edit', $obligation) }}" variant="secondary" icon="ubah">Ubah pengingat</x-button>
-                            <x-confirm-action :action="route('user.obligations.archive', $obligation)" method="PATCH"
-                                title="Arsipkan pengingat?"
-                                :message="'Pengingat '.$obligation->title.' tidak lagi muncul di agenda. Riwayat pembayarannya tetap tersimpan.'"
-                                label="Arsipkan" tone="secondary" icon="nonaktifkan" />
-                        @else
-                            <form method="POST" action="{{ route('user.obligations.restore', $obligation) }}">
-                                @csrf
-                                @method('PATCH')
-                                <x-button variant="secondary" icon="kembali">Pulihkan</x-button>
-                            </form>
-                            @if ($obligation->payments->isEmpty())
-                                <x-confirm-action :action="route('user.obligations.destroy', $obligation)"
-                                    title="Hapus pengingat permanen?"
-                                    :message="'Pengingat '.$obligation->title.' akan dihapus permanen.'"
-                                    label="Hapus permanen" />
+                        <div class="flex flex-wrap items-end gap-2">
+                            <x-button type="button" variant="secondary" icon="menu-aksi"
+                                aria-label="Aksi untuk {{ $obligation->title }}"
+                                x-data
+                                x-on:click="$dispatch('open-modal', 'obligation-actions-{{ $obligation->id }}')">Aksi</x-button>
+                            @if ($status === 'active' && $obligation->next_due)
+                                <form method="POST" action="{{ route('user.obligations.pay', $obligation) }}" class="flex flex-wrap items-end gap-2">
+                                    @csrf
+                                    <input type="hidden" name="due_on" value="{{ $obligation->next_due->toDateString() }}">
+                                    <div><label class="field-label" for="paid-{{ $obligation->id }}">Dibayar pada</label><input id="paid-{{ $obligation->id }}" name="paid_on" type="date" value="{{ $today }}" required class="form-control"></div>
+                                    <x-money-input id="paid-amount-{{ $obligation->id }}" name="amount_paid" label="Nominal" :value="$obligation->amount" />
+                                    <select name="wallet_id" aria-label="Dompet pembayaran" class="form-control"><option value="">Tanpa dompet</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}" @selected($obligation->wallet_id == $wallet->id)>{{ $wallet->name }}</option>@endforeach</select>
+                                    <x-button variant="primary" icon="selesai" loading-text="Mencatat pembayaran…">Tandai dibayar</x-button>
+                                </form>
                             @else
-                                <p class="text-xs text-muted">Pengingat memiliki riwayat pembayaran dan tidak dapat dihapus.</p>
+                                <span class="text-sm text-muted">{{ $obligation->installments_complete ? 'Semua cicilan sudah dicatat.' : 'Belum ada periode yang jatuh tempo.' }}</span>
                             @endif
-                        @endif
-                        @if ($status === 'active' && $obligation->next_due)
-                            <form method="POST" action="{{ route('user.obligations.pay', $obligation) }}" class="flex flex-wrap items-end gap-2">
-                                @csrf
-                                <input type="hidden" name="due_on" value="{{ $obligation->next_due->toDateString() }}">
-                                <div><label class="field-label" for="paid-{{ $obligation->id }}">Dibayar pada</label><input id="paid-{{ $obligation->id }}" name="paid_on" type="date" value="{{ $today }}" required class="form-control"></div>
-                                <x-money-input id="paid-amount-{{ $obligation->id }}" name="amount_paid" label="Nominal" :value="$obligation->amount" />
-                                <select name="wallet_id" aria-label="Dompet pembayaran" class="form-control"><option value="">Tanpa dompet</option>@foreach ($wallets as $wallet)<option value="{{ $wallet->id }}" @selected($obligation->wallet_id == $wallet->id)>{{ $wallet->name }}</option>@endforeach</select>
-                                <x-button variant="primary" icon="selesai" loading-text="Mencatat pembayaran…">Tandai dibayar</x-button>
-                            </form>
-                        @else
-                            <span class="text-sm text-muted">{{ $obligation->installments_complete ? 'Semua cicilan sudah dicatat.' : 'Belum ada periode yang jatuh tempo.' }}</span>
-                        @endif
+                        </div>
                     </div>
+                    <x-bottom-sheet name="obligation-actions-{{ $obligation->id }}" :title="'Aksi pengingat: '.$obligation->title">
+                        <div class="space-y-3">
+                            @if ($status === 'active')
+                                <x-button href="{{ route('user.obligations.edit', $obligation) }}" variant="secondary" icon="ubah" class="w-full">Ubah pengingat</x-button>
+                                <x-confirm-action :action="route('user.obligations.archive', $obligation)" method="PATCH"
+                                    title="Arsipkan pengingat?"
+                                    :message="'Pengingat '.$obligation->title.' tidak lagi muncul di agenda. Riwayat pembayarannya tetap tersimpan.'"
+                                    label="Arsipkan" tone="secondary" icon="nonaktifkan" />
+                            @else
+                                <form method="POST" action="{{ route('user.obligations.restore', $obligation) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <x-button variant="secondary" icon="kembali" class="w-full">Pulihkan</x-button>
+                                </form>
+                                @if ($obligation->payments->isEmpty())
+                                    <x-confirm-action :action="route('user.obligations.destroy', $obligation)"
+                                        title="Hapus pengingat permanen?"
+                                        :message="'Pengingat '.$obligation->title.' akan dihapus permanen.'"
+                                        label="Hapus permanen" />
+                                @else
+                                    <p class="text-xs text-muted">Pengingat memiliki riwayat pembayaran dan tidak dapat dihapus.</p>
+                                @endif
+                            @endif
+                        </div>
+                    </x-bottom-sheet>
                     @if ($obligation->next_due)<p class="mt-2 text-sm text-muted">Bayar periode tertua terlebih dahulu: {{ $obligation->next_due->translatedFormat('j F Y') }}.</p>@endif
                     <ul class="mt-4 divide-y divide-line border-t border-line">
                         @foreach ($obligation->periods as $period)

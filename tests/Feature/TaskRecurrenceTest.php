@@ -45,6 +45,54 @@ class TaskRecurrenceTest extends TestCase
         $this->assertSame(1, $user->tasks()->where('recurrence_parent_id', $task->id)->count());
     }
 
+    public function test_completion_explains_when_recurrence_until_prevents_the_next_occurrence(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-02 12:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'UTC']);
+        TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $task = $user->tasks()->create([
+            'title' => 'Pengingat',
+            'recurrence' => 'daily',
+            'recurrence_until' => '2026-11-02',
+        ]);
+
+        $this->actingAs($user)
+            ->withHeader('Accept', 'application/json')
+            ->patch(route('user.tasks.complete', $task))
+            ->assertOk()
+            ->assertJson([
+                'message' => __('ui.feedback.task_recurrence_end_date', [
+                    'date' => $task->recurrence_until->translatedFormat('j M Y'),
+                ]),
+                'status' => 'Selesai',
+            ]);
+
+        $this->assertDatabaseCount('tasks', 1);
+    }
+
+    public function test_completion_explains_when_weekly_recurrence_has_no_days(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-02 12:00:00', 'UTC'));
+        $user = User::factory()->create();
+        TaskStatus::create(['name' => 'Selesai', 'is_completed' => true]);
+        $task = $user->tasks()->create([
+            'title' => 'Pengingat mingguan',
+            'recurrence' => 'weekly',
+            'recurrence_days' => null,
+        ]);
+
+        $this->actingAs($user)
+            ->withHeader('Accept', 'application/json')
+            ->patch(route('user.tasks.complete', $task))
+            ->assertOk()
+            ->assertJson([
+                'message' => __('ui.feedback.task_recurrence_missing_weekdays'),
+                'status' => 'Selesai',
+            ]);
+
+        $this->assertDatabaseCount('tasks', 1);
+    }
+
     public function test_weekly_multi_day_recurrence_uses_iso_weekdays_when_update_marks_task_complete(): void
     {
         $this->travelTo(Carbon::parse('2026-11-02 00:00:00', 'UTC'));

@@ -21,10 +21,13 @@
         </span>
     @endif
 
-    <div class="hidden items-center gap-2 sm:flex">
-        <x-button href="{{ route('user.tasks.edit', $task) }}" variant="secondary" class="min-h-11 px-3">
-            Ubah
-        </x-button>
+    <x-button type="button" variant="secondary" icon="menu-aksi"
+        aria-label="Aksi untuk {{ $task->title }}"
+        x-data
+        x-on:click="$dispatch('open-modal', 'task-actions-{{ $task->id }}')">Aksi</x-button>
+    <x-bottom-sheet name="task-actions-{{ $task->id }}" :title="'Aksi tugas: '.$task->title">
+        <div class="space-y-3">
+            <x-button href="{{ route('user.tasks.edit', $task) }}" variant="secondary" icon="ubah" class="w-full">Ubah</x-button>
         @if ($showDelete)
             <x-confirm-action
                 :action="route('user.tasks.destroy', $task)"
@@ -43,34 +46,6 @@
                 />
             @endif
         @endif
-    </div>
-
-    <details class="task-actions relative sm:hidden">
-        <summary class="button button--ghost button--icon-only" aria-label="Menu aksi untuk {{ $task->title }}" title="Menu aksi untuk {{ $task->title }}">
-            <x-concept-icon name="dt" class="h-5 w-5" />
-        </summary>
-        <div class="task-actions-menu">
-            <a href="{{ route('user.tasks.edit', $task) }}">
-                Ubah
-            </a>
-            @if ($showDelete)
-                <x-confirm-action
-                    :action="route('user.tasks.destroy', $task)"
-                    method="DELETE"
-                    title="Hapus tugas ini?"
-                    :message="$task->recurrence !== 'none' ? __('ui.task.recurrence.delete_single_message') : 'Tugas ini akan dihapus permanen dan tidak dapat dipulihkan.'"
-                    :label="$task->recurrence !== 'none' ? __('ui.task.recurrence.delete_single') : 'Hapus'"
-                />
-                @if ($task->recurrence !== 'none')
-                    <x-confirm-action
-                        :action="route('user.tasks.destroy-series', $task)"
-                        method="DELETE"
-                        :title="__('ui.task.recurrence.stop_title')"
-                        :message="__('ui.task.recurrence.stop_message')"
-                        :label="__('ui.task.recurrence.stop_action')"
-                    />
-                @endif
-            @endif
         </div>
-    </details>
+    </x-bottom-sheet>
 </div>

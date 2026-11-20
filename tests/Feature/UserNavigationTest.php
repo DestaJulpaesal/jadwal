@@ -48,27 +48,29 @@ class UserNavigationTest extends TestCase
         $this->actingAs($user);
 
         $routes = [
-            [route('user.dashboard'), 'Beranda'],
-            [route('user.calendar'), 'Beranda'],
-            [route('user.search'), 'Beranda'],
+            [route('user.dashboard'), 'Hari ini'],
+            [route('user.calendar'), 'Hari ini'],
+            [route('user.search'), 'Hari ini'],
             [route('user.tasks.index'), 'Tugas'],
             [route('user.habits.index'), 'Kebiasaan'],
-            [route('user.goals.index'), 'Kebiasaan'],
+            [route('user.goals.index'), 'Target'],
             [route('user.money.index', ['section' => 'overview']), 'Keuangan'],
             [route('user.money.index', ['section' => 'transactions']), 'Keuangan'],
             [route('user.money.index', ['section' => 'wallets']), 'Keuangan'],
             [route('user.obligations.index'), 'Keuangan'],
             [route('user.loans.index'), 'Keuangan'],
             [route('user.reports.index'), 'Keuangan'],
-            [route('profile.edit'), 'Profil'],
-            [route('settings.edit'), 'Profil'],
-            [route('user.application'), 'Profil'],
         ];
 
         foreach ($routes as [$url, $active]) {
             $response = $this->get($url)->assertOk();
             $this->assertActiveMobileItem($response->getContent(), $active, $url);
         }
+
+        $this->get(route('profile.edit'))
+            ->assertOk()
+            ->assertSee('Buka profil')
+            ->assertSee('aria-current="page"', false);
     }
 
     public function test_streak_is_available_from_the_header_without_adding_a_mobile_navigation_item(): void
@@ -79,10 +81,11 @@ class UserNavigationTest extends TestCase
             ->get(route('user.dashboard'))
             ->assertOk()
             ->assertSee(route('user.streak'), false)
-            ->assertSee('Api aktivitas');
+            ->assertSee('Rangkaian aktivitas');
 
         $this->get(route('user.streak'))
             ->assertOk()
+            ->assertSee('Rangkaian aktivitas')
             ->assertSee('Aktivitas 14 hari terakhir')
             ->assertSee(route('user.tasks.index'), false)
             ->assertSee(route('user.habits.index'), false);
@@ -94,11 +97,10 @@ class UserNavigationTest extends TestCase
         $this->actingAs($user);
 
         $routes = [
-            [route('user.dashboard'), 'Beranda', 'Hari ini'],
-            [route('user.calendar'), 'Beranda', 'Kalender'],
-            [route('user.dashboard', ['tab' => 'attention']), 'Beranda', 'Perlu perhatian'],
+            [route('user.dashboard'), 'Hari ini', 'Ringkasan'],
+            [route('user.calendar'), 'Hari ini', 'Kalender'],
+            [route('user.dashboard', ['tab' => 'attention']), 'Hari ini', 'Perlu perhatian'],
             [route('user.habits.index'), 'Kebiasaan', 'Kebiasaan'],
-            [route('user.goals.index'), 'Kebiasaan', 'Target'],
             [route('user.money.index'), 'Keuangan', 'Ringkasan'],
             [route('user.money.index', ['section' => 'transactions']), 'Keuangan', 'Transaksi'],
             [route('user.money.index', ['section' => 'wallets']), 'Keuangan', 'Dompet'],
@@ -107,7 +109,6 @@ class UserNavigationTest extends TestCase
             [route('user.reports.index'), 'Keuangan', 'Laporan'],
             [route('profile.edit'), 'Profil', 'Profil'],
             [route('settings.edit'), 'Profil', 'Pengaturan'],
-            [route('user.application'), 'Profil', 'Aplikasi'],
         ];
 
         foreach ($routes as [$url, $group, $label]) {
@@ -136,13 +137,37 @@ class UserNavigationTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)
+        $response = $this->actingAs($user)
             ->get(route('user.dashboard'))
             ->assertOk()
             ->assertSee('Tambah tugas pertama')
             ->assertSee('Pilih kebiasaan')
             ->assertSee('Catat uang pertama')
             ->assertSee('Belum selesai');
+
+        $this->assertLessThan(
+            strpos($response->getContent(), 'aria-label="Ringkasan hari ini"'),
+            strpos($response->getContent(), 'Mulai dari mana?')
+        );
+    }
+
+    public function test_onboarding_can_be_restarted_from_settings(): void
+    {
+        $user = User::factory()->create(['onboarding_dismissed_at' => now()]);
+
+        $this->actingAs($user)
+            ->get(route('settings.edit'))
+            ->assertOk()
+            ->assertSee('Lihat panduan lagi')
+            ->assertSee(route('user.onboarding.restart'), false);
+
+        $this->post(route('user.onboarding.restart'))
+            ->assertRedirect(route('user.dashboard'));
+        $this->assertNull($user->fresh()->onboarding_dismissed_at);
+
+        $this->get(route('user.dashboard'))
+            ->assertOk()
+            ->assertSee('Mulai dari mana?');
     }
 
     public function test_onboarding_marks_existing_tasks_as_complete(): void
@@ -183,7 +208,9 @@ class UserNavigationTest extends TestCase
             ->get(route('settings.edit'))
             ->assertOk()
             ->assertSee('Sesuaikan aplikasi')
-            ->assertSee('Atur tampilan, pengingat');
+            ->assertSee('Atur tampilan, pengingat')
+            ->assertSee('Pasang di HP')
+            ->assertSee(route('user.application'), false);
 
         $this->get(route('profile.edit'))
             ->assertOk()
@@ -194,6 +221,17 @@ class UserNavigationTest extends TestCase
             ->assertOk()
             ->assertSee('Pencarian pribadi')
             ->assertSee('Temukan tugas, kebiasaan, dan catatan uangmu.');
+    }
+
+    public function test_authenticated_navigation_does_not_prefetch_pages(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('user.dashboard'))
+            ->assertOk()
+            ->assertDontSee('data-prefetch')
+            ->assertDontSee('rel="prefetch"', false);
     }
 
     private function assertActiveMobileItem(string $html, string $expected, string $url): void

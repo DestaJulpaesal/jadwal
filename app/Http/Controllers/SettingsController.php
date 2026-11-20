@@ -28,6 +28,7 @@ class SettingsController extends Controller
             'user' => $user,
             'dashboardSections' => $user->dashboard_sections ?? array_keys(self::DASHBOARD_SECTIONS),
             'dashboardSectionLabels' => self::DASHBOARD_SECTIONS,
+            'webPushPublicKey' => config('services.webpush.public_key'),
             'exportStartDate' => $today->subMonthNoOverflow()->toDateString(),
             'exportEndDate' => $today->toDateString(),
         ]);

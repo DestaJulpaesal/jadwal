@@ -1,12 +1,12 @@
 @extends('layouts.user')
 
-@section('title', 'Api aktivitas')
+@section('title', 'Rangkaian aktivitas')
 
 @section('content')
     <div class="mx-auto max-w-4xl space-y-5">
         <x-page-header
             eyebrow="Konsistensi harian"
-            title="Api aktivitas"
+            title="Rangkaian aktivitas"
             description="Selesaikan setidaknya satu tugas atau kebiasaan setiap hari untuk menjaga rentetanmu."
         />
 
