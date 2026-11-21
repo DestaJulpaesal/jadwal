@@ -4,30 +4,19 @@ namespace App\Support;
 
 use Closure;
 use Illuminate\Support\Facades\DB as Database;
-use Throwable;
 
 class Db
 {
+    /**
+     * Run a callback inside an IMMEDIATE transaction.
+     *
+     * Since Laravel 13 + PHP 8.4, the sqlite connection's transaction_mode
+     * config handles BEGIN IMMEDIATE automatically for all DB::transaction
+     * calls, so this method now delegates directly. It is kept as a
+     * semantic alias that documents write-intent at the call site.
+     */
     public static function immediate(callable $callback): mixed
     {
-        $callback = Closure::fromCallable($callback);
-        $connection = Database::connection();
-
-        if ($connection->getDriverName() !== 'sqlite' || $connection->transactionLevel() > 0) {
-            return $connection->transaction($callback);
-        }
-
-        $connection->unprepared('BEGIN IMMEDIATE');
-
-        try {
-            $result = $callback();
-            $connection->unprepared('COMMIT');
-
-            return $result;
-        } catch (Throwable $exception) {
-            $connection->unprepared('ROLLBACK');
-
-            throw $exception;
-        }
+        return Database::connection()->transaction(Closure::fromCallable($callback));
     }
 }
