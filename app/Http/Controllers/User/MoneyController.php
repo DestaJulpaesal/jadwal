@@ -475,6 +475,11 @@ class MoneyController extends Controller
         return Feedback::success(back(), __('ui.feedback.transaction_deleted'));
     }
 
+    private function transactionDateLimit(Request $request): string
+    {
+        return app(UserClock::class)->today($request->user())->addYear()->toDateString();
+    }
+
     private function validatedTransactionData(Request $request): array
     {
         $request->merge(['amount' => Rupiah::normalize($request->input('amount'))]);
@@ -484,7 +489,12 @@ class MoneyController extends Controller
             'wallet_id' => ['required', 'integer', Rule::exists('wallets', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
             'to_wallet_id' => ['nullable', 'integer', Rule::exists('wallets', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
             'money_category_id' => ['nullable', 'integer', Rule::exists('money_categories', 'id')->where('user_id', $request->user()->id)->whereNull('archived_at')],
-            'occurred_on' => ['required', 'date_format:Y-m-d'],
+            'occurred_on' => [
+                'required',
+                'date_format:Y-m-d',
+                'after_or_equal:2000-01-01',
+                'before_or_equal:'.$this->transactionDateLimit($request),
+            ],
             'note' => ['nullable', 'string', 'max:255'],
         ]);
         if ($data['type'] === TransactionType::Transfer->value) {

@@ -75,6 +75,27 @@ class MoneyControllerSectionsTest extends TestCase
             ->assertDontSee(__('ui.money.negative_wallets_title'));
     }
 
+    public function test_transaction_dates_stay_within_supported_range(): void
+    {
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $wallet = $user->wallets()->create(['name' => 'Tunai', 'type' => WalletType::Cash]);
+        $payload = [
+            'wallet_id' => $wallet->id,
+            'type' => TransactionType::Expense->value,
+            'amount' => '10000',
+            'occurred_on' => '1999-12-31',
+        ];
+
+        $this->actingAs($user)->post(route('user.money.transactions.store'), $payload)
+            ->assertSessionHasErrors('occurred_on');
+        $this->assertDatabaseCount('transactions', 0);
+
+        $payload['occurred_on'] = now('Asia/Jakarta')->addYear()->addDay()->toDateString();
+        $this->actingAs($user)->post(route('user.money.transactions.store'), $payload)
+            ->assertSessionHasErrors('occurred_on');
+        $this->assertDatabaseCount('transactions', 0);
+    }
+
     public function test_transactions_are_grouped_by_date_and_actions_are_in_a_bottom_sheet(): void
     {
         $user = User::factory()->create();
