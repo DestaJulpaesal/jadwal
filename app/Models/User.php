@@ -26,7 +26,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
     protected array $businessDateColumns = ['digest_last_sent_on', 'push_last_sent_on'];
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'timezone', 'digest_enabled', 'push_enabled',
+        'name', 'email', 'password', 'timezone', 'digest_enabled', 'push_enabled',
         'week_starts_on', 'theme', 'digest_time', 'digest_days',
         'hide_financial_amounts', 'dashboard_sections',
     ];

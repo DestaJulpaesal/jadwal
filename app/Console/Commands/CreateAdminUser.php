@@ -48,8 +48,8 @@ class CreateAdminUser extends Command
                 'name' => $this->option('name'),
                 'email' => $email,
                 'password' => Hash::make($password),
-                'role' => 'admin',
             ]);
+            $admin->forceFill(['role' => 'admin'])->save();
             $admin->forceFill([
                 'email_verified_at' => now(),
                 'is_active' => true,

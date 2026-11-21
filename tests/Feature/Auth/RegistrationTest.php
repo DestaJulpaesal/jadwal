@@ -51,6 +51,18 @@ class RegistrationTest extends TestCase
         Notification::assertNothingSent();
     }
 
+    public function test_role_cannot_be_mass_assigned(): void
+    {
+        $user = User::create([
+            'name' => 'Injected Admin',
+            'email' => 'injected@example.com',
+            'password' => 'password',
+            'role' => 'admin',
+        ]);
+
+        $this->assertNull($user->role);
+    }
+
     public function test_registered_users_can_log_out_and_log_back_in(): void
     {
         $credentials = [
