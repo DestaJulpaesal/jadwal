@@ -58,6 +58,33 @@ class HabitLifecycleTest extends TestCase
         }
     }
 
+    public function test_check_in_updates_existing_log_without_creating_duplicate(): void
+    {
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 03:00:00', 'UTC'));
+        $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
+        $habit = $user->habits()->create([
+            'title' => 'Kebiasaan',
+            'frequency' => HabitFrequency::Daily,
+            'starts_on' => '2026-10-01',
+        ]);
+
+        $this->actingAs($user)->postJson(route('user.habits.check-in', $habit), [
+            'status' => 'done',
+            'log_date' => '2026-11-01',
+        ])->assertOk();
+        $this->actingAs($user)->postJson(route('user.habits.check-in', $habit), [
+            'status' => 'skipped',
+            'log_date' => '2026-11-01',
+        ])->assertOk();
+
+        $this->assertDatabaseCount('habit_logs', 1);
+        $this->assertDatabaseHas('habit_logs', [
+            'habit_id' => $habit->id,
+            'log_date' => '2026-11-01',
+            'status' => 'skipped',
+        ]);
+    }
+
     public function test_check_ins_are_rejected_for_habits_outside_the_active_lifecycle(): void
     {
         $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-01 03:00:00', 'UTC'));

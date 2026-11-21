@@ -145,16 +145,18 @@ class HabitController extends Controller
             abort_unless(in_array(\Illuminate\Support\Carbon::parse($date)->dayOfWeekIso, array_map('intval', $habit->weekdays ?? []), true), 422, __('ui.feedback.habit_not_scheduled'));
         }
 
-        $request->user()->habitLogs()->updateOrCreate(
-            ['habit_id' => $habit->id, 'log_date' => $date],
-            [
-                'status' => $data['status'],
-                'value' => $data['value'] ?? ($data['status'] === HabitLogStatus::Done->value ? $habit->goal_value : null),
-                'duration_minutes' => $data['status'] === HabitLogStatus::Done->value ? ($data['duration_minutes'] ?? null) : null,
-                'performed_at' => $data['status'] === HabitLogStatus::Done->value ? ($data['performed_at'] ?? null) : null,
-                'note' => $data['note'] ?? null,
-            ]
-        );
+        DatabaseTransaction::immediate(function () use ($request, $habit, $date, $data): void {
+            $request->user()->habitLogs()->updateOrCreate(
+                ['habit_id' => $habit->id, 'log_date' => $date],
+                [
+                    'status' => $data['status'],
+                    'value' => $data['value'] ?? ($data['status'] === HabitLogStatus::Done->value ? $habit->goal_value : null),
+                    'duration_minutes' => $data['status'] === HabitLogStatus::Done->value ? ($data['duration_minutes'] ?? null) : null,
+                    'performed_at' => $data['status'] === HabitLogStatus::Done->value ? ($data['performed_at'] ?? null) : null,
+                    'note' => $data['note'] ?? null,
+                ]
+            );
+        });
 
         if ($request->expectsJson()) {
             return response()->json([
