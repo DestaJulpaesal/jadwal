@@ -190,11 +190,12 @@ class TaskController extends Controller
     {
         $validated = $this->normalizeRecurrence($request->validated(), $request->user(), $task);
         $validated = $this->normalizeScheduleTimes($validated, $request->user());
-        $wasCompleted = $task->status()->where('is_completed', true)->exists();
         $isCompleted = $this->isCompletedStatus($validated['task_status_id'] ?? null);
-        $completedAt = $this->taskCompletion->forStatusTransition($wasCompleted, $isCompleted, $task->completed_at);
 
-        $recurrenceStopReason = DB::transaction(function () use ($validated, $request, $task, $completedAt, $wasCompleted, $isCompleted): ?string {
+        $recurrenceStopReason = DatabaseTransaction::immediate(function () use ($validated, $request, $task, $isCompleted): ?string {
+            $task = $request->user()->tasks()->lockForUpdate()->findOrFail($task->id);
+            $wasCompleted = $task->status()->where('is_completed', true)->exists();
+            $completedAt = $this->taskCompletion->forStatusTransition($wasCompleted, $isCompleted, $task->completed_at);
             $category = $this->resolveCategory($validated, $request);
 
             $task->update([
