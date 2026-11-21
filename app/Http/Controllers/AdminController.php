@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\AdminAuditLog;
 use App\Models\User;
+use App\Support\Db as DatabaseTransaction;
 use App\Support\Feedback;
 use App\Support\Like;
 use Illuminate\Http\Request;
@@ -53,19 +54,24 @@ class AdminController extends Controller
             return back()->withErrors(['account' => __('ui.feedback.admin_cannot_disable_self')]);
         }
 
-        if ($user->is_active && $user->isAdmin()) {
-            $activeAdmins = User::where('role', 'admin')->where('is_active', true)->count();
-            if ($activeAdmins <= 1) {
-                return back()->withErrors(['account' => __('ui.feedback.last_active_admin_disable')]);
+        $message = DatabaseTransaction::immediate(function () use ($user): string {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+            if ($user->is_active && $user->isAdmin()
+                && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+                return 'error:last_active_admin_disable';
             }
+
+            $wasActive = $user->is_active;
+            $user->is_active = ! $wasActive;
+            $user->save();
+            $this->audit($wasActive ? 'account.deactivated' : 'account.activated', $user);
+
+            return $user->is_active ? 'success:account_enabled' : 'success:account_disabled';
+        });
+        if (str_starts_with($message, 'error:')) {
+            return back()->withErrors(['account' => __('ui.feedback.'.substr($message, 6))]);
         }
-
-        $wasActive = $user->is_active;
-        $user->is_active = ! $wasActive;
-        $user->save();
-        $this->audit($wasActive ? 'account.deactivated' : 'account.activated', $user);
-
-        $message = $user->is_active ? __('ui.feedback.account_enabled') : __('ui.feedback.account_disabled');
+        $message = __('ui.feedback.'.substr($message, 8));
 
         return Feedback::success(redirect()->route('admin.dashboard'), $message);
     }
@@ -76,18 +82,23 @@ class AdminController extends Controller
             return back()->withErrors(['account' => __('ui.feedback.admin_cannot_change_own_role')]);
         }
 
-        if ($user->isAdmin() && $user->is_active) {
-            $activeAdmins = User::where('role', 'admin')->where('is_active', true)->count();
-            if ($activeAdmins <= 1) {
-                return back()->withErrors(['account' => __('ui.feedback.last_active_admin_role')]);
+        $message = DatabaseTransaction::immediate(function () use ($user): string {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+            if ($user->isAdmin() && $user->is_active
+                && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+                return 'error:last_active_admin_role';
             }
+
+            $user->role = $user->isAdmin() ? 'user' : 'admin';
+            $user->save();
+            $this->audit('account.role_changed', $user);
+
+            return $user->isAdmin() ? 'success:role_admin' : 'success:role_user';
+        });
+        if (str_starts_with($message, 'error:')) {
+            return back()->withErrors(['account' => __('ui.feedback.'.substr($message, 6))]);
         }
-
-        $user->role = $user->isAdmin() ? 'user' : 'admin';
-        $user->save();
-        $this->audit('account.role_changed', $user);
-
-        $message = $user->isAdmin() ? __('ui.feedback.role_admin') : __('ui.feedback.role_user');
+        $message = __('ui.feedback.'.substr($message, 8));
 
         return Feedback::success(redirect()->route('admin.users.show', $user), $message);
     }
@@ -111,15 +122,21 @@ class AdminController extends Controller
             return back()->withErrors(['account' => __('ui.feedback.admin_cannot_delete_self')]);
         }
 
-        if ($user->is_active && $user->isAdmin()) {
-            $activeAdmins = User::where('role', 'admin')->where('is_active', true)->count();
-            if ($activeAdmins <= 1) {
-                return back()->withErrors(['account' => __('ui.feedback.last_active_admin_delete')]);
+        $blocked = DatabaseTransaction::immediate(function () use ($user): bool {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+            if ($user->is_active && $user->isAdmin()
+                && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+                return true;
             }
-        }
 
-        $this->audit('account.deleted', $user);
-        $user->delete();
+            $this->audit('account.deleted', $user);
+            $user->delete();
+
+            return false;
+        });
+        if ($blocked) {
+            return back()->withErrors(['account' => __('ui.feedback.last_active_admin_delete')]);
+        }
 
         return Feedback::success(redirect()->route('admin.dashboard'), __('ui.feedback.account_deleted'));
     }

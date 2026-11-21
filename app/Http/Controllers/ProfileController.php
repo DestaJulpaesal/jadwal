@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\User;
 use App\Models\UserAuditLog;
+use App\Support\Db as DatabaseTransaction;
 use App\Support\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -109,22 +110,29 @@ class ProfileController extends Controller
         ], __('validation.catalog.profile_deletion'));
 
         $user = $request->user();
-        if ($user->isAdmin() && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+        $blocked = DatabaseTransaction::immediate(function () use ($user, $request): bool {
+            $user = User::query()->lockForUpdate()->findOrFail($user->id);
+            if ($user->isAdmin() && User::where('role', 'admin')->where('is_active', true)->count() <= 1) {
+                return true;
+            }
+
+            UserAuditLog::query()->create([
+                'user_id' => $user->id,
+                'action' => 'account_deleted',
+                'ip_address' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            ]);
+            $user->delete();
+
+            return false;
+        });
+        if ($blocked) {
             return Redirect::back()->withErrors([
                 'account' => __('ui.feedback.last_active_admin_deletion'),
             ], 'userDeletion');
         }
 
-        UserAuditLog::query()->create([
-            'user_id' => $user->id,
-            'action' => 'account_deleted',
-            'ip_address' => $request->ip(),
-            'user_agent' => substr((string) $request->userAgent(), 0, 500),
-        ]);
-
         Auth::logout();
-
-        $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
