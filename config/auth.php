@@ -3,6 +3,7 @@
 return [
 
     'email_verification' => env('AUTH_EMAIL_VERIFICATION', false),
+    'registration_enabled' => env('REGISTRATION_ENABLED', true),
 
     /*
     |--------------------------------------------------------------------------

@@ -21,7 +21,7 @@
                 <a href="{{ route('user.dashboard') }}" class="home-button home-button-primary"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#home" /></svg>Buka beranda</a>
             @else
                 <a href="{{ route('login') }}" class="home-login"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#us" /></svg><span>Masuk</span></a>
-                @if (Route::has('register'))
+                @if (config('auth.registration_enabled'))
                     <a href="{{ route('register') }}" class="home-button home-button-primary"><span class="home-plus" aria-hidden="true">+</span>Daftar gratis</a>
                 @endif
             @endauth
@@ -37,7 +37,9 @@
                 <p class="home-description">Tugas, kebiasaan, agenda, dan catatan uangmu—tertata dalam satu tempat. Mulai dari satu hal kecil, sisanya bisa menyusul.</p>
                 <div class="home-actions">
                     @guest
-                        <a href="{{ route('register') }}" class="home-button home-button-primary"><span class="home-plus" aria-hidden="true">+</span>Mulai sekarang</a>
+                        @if (config('auth.registration_enabled'))
+                            <a href="{{ route('register') }}" class="home-button home-button-primary"><span class="home-plus" aria-hidden="true">+</span>Mulai sekarang</a>
+                        @endif
                         <a href="{{ route('login') }}" class="home-button home-button-secondary"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#us" /></svg>Masuk ke akun</a>
                     @else
                         <a href="{{ route('user.dashboard') }}" class="home-button home-button-primary"><svg viewBox="0 0 48 48" aria-hidden="true"><use href="#home" /></svg>Lihat jadwalku</a>
@@ -110,7 +112,9 @@
                             <a href="{{ route('user.dashboard') }}">Berandaku</a>
                         @else
                             <a href="{{ route('login') }}">Masuk</a>
-                            <a href="{{ route('register') }}">Daftar gratis</a>
+                            @if (config('auth.registration_enabled'))
+                    <a href="{{ route('register') }}">Daftar gratis</a>
+                @endif
                         @endauth
                     </nav>
                 </div>

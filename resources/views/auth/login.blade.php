@@ -70,7 +70,9 @@
             @if (Route::has('password.request'))
                 <a href="{{ route('password.request') }}">Lupa kata sandi?</a>
             @endif
-            <a href="{{ route('register') }}">Buat akun baru</a>
+            @if (config('auth.registration_enabled'))
+                <a href="{{ route('register') }}">Buat akun baru</a>
+            @endif
         </div>
     </form>
 

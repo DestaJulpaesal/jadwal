@@ -121,7 +121,7 @@
 
             <section class="surface-card p-5">
                 <h2 class="mb-4 text-lg font-semibold">Keadaan kosong dan memuat</h2>
-                <x-empty-state title="Belum ada agenda" description="Tambahkan tugas untuk mulai menyusun harimu." action-url="{{ route('register') }}" action-label="Daftar gratis" />
+                <x-empty-state title="Belum ada agenda" description="Tambahkan tugas untuk mulai menyusun harimu." action-url="{{ config('auth.registration_enabled') ? route('register') : route('login') }}" action-label="Daftar gratis" />
                 <div class="mt-5 space-y-3" aria-label="Contoh pemuatan">
                     <x-skeleton height="h-5" width="w-1/2" />
                     <x-skeleton />
