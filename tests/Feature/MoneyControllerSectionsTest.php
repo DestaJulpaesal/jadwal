@@ -77,6 +77,7 @@ class MoneyControllerSectionsTest extends TestCase
 
     public function test_transaction_dates_stay_within_supported_range(): void
     {
+        $this->travelTo(Carbon::parse('2026-11-27 12:00:00', 'UTC'));
         $user = User::factory()->create(['timezone' => 'Asia/Jakarta']);
         $wallet = $user->wallets()->create(['name' => 'Tunai', 'type' => WalletType::Cash]);
         $payload = [
@@ -90,10 +91,17 @@ class MoneyControllerSectionsTest extends TestCase
             ->assertSessionHasErrors('occurred_on');
         $this->assertDatabaseCount('transactions', 0);
 
+        $payload['occurred_on'] = '2000-01-01';
+        $this->post(route('user.money.transactions.store'), $payload)->assertSessionHasNoErrors();
+
+        $payload['occurred_on'] = now('Asia/Jakarta')->addYear()->toDateString();
+        $this->post(route('user.money.transactions.store'), $payload)->assertSessionHasNoErrors();
+        $this->assertDatabaseCount('transactions', 2);
+
         $payload['occurred_on'] = now('Asia/Jakarta')->addYear()->addDay()->toDateString();
         $this->actingAs($user)->post(route('user.money.transactions.store'), $payload)
             ->assertSessionHasErrors('occurred_on');
-        $this->assertDatabaseCount('transactions', 0);
+        $this->assertDatabaseCount('transactions', 2);
     }
 
     public function test_transactions_are_grouped_by_date_and_actions_are_in_a_bottom_sheet(): void

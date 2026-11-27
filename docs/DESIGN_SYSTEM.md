@@ -4,7 +4,7 @@ Fondasi visual ini dibuat untuk aplikasi sehari-hari yang digunakan terutama lew
 
 ## Arah visual
 
-Ramah, tenang, terpercaya, dan mudah dibaca. Permukaan putih berada di atas latar abu-hijau yang lembut; hijau tua menandai tindakan utama. Hindari gradien dekoratif, bayangan tebal, dan ornamen yang tidak membantu pekerjaan.
+Ramah, tenang, terpercaya, dan mudah dibaca. Permukaan terang berada di atas latar lembut; hijau menandai tindakan utama, sementara aksen pastel membedakan kartu fitur tanpa menggantikan warna status. Hindari gradien dekoratif, bayangan tebal, dan ornamen yang tidak membantu pekerjaan.
 
 ## Token desain
 
@@ -22,8 +22,11 @@ Token didefinisikan di `tailwind.config.js` dan `resources/css/tokens.css`.
 | Peringatan | `#85520b` |
 | Bahaya | `#a3312c` |
 | Informasi | `#245d81` |
+| Aksen pastel | kuning `#ffd23f`, hijau `#7ee8b4`, pink `#ff9ec4`, biru `#8fb1ff`, oranye `#ffa95c` |
 
-Pasangan teks dan permukaan yang dipakai komponen melampaui WCAG AA 4,5:1. Pada tema terang: ink/surface 15,04:1, muted/surface 6,52:1, muted/canvas 6,12:1, dan primary/surface 6,39:1; teks status di latar soft berada pada rentang 6,04–6,48:1. Pada tema gelap: ink/surface 11,70:1, muted/surface 7,80:1, primary/foreground tombol 8,91:1, dan teks status di latar soft berada pada rentang 6,58–7,81:1. Tema user gelap memakai pasangan primary khusus dengan rasio 10,97:1. Nilai dihitung dari token sRGB dengan rumus WCAG; ukur kembali pasangan baru dan jangan memakai warna sebagai satu-satunya penanda status.
+Warna semantik (`primary`, sukses, peringatan, bahaya, informasi) menyampaikan tindakan atau status. Aksen pastel dipakai sebagai latar/ornamen fitur dan kartu, bukan sebagai pengganti label status atau warna kontrol utama. Gunakan satu aksen pastel dengan permukaan netral per kartu; jangan menambah palet baru.
+
+Pasangan teks dan permukaan yang dipakai komponen melampaui WCAG AA 4,5:1. Pada tema terang: ink/surface 15,04:1, muted/surface 6,52:1, muted/canvas 6,12:1, dan primary/surface 6,39:1; teks status di latar soft berada pada rentang 6,04–6,48:1. Pada tema gelap: ink/surface 11,70:1, muted/surface 7,80:1, primary/foreground tombol 8,91:1, dan teks status di latar soft berada pada rentang 6,58–7,81:1. Rasio dihitung dari token sRGB dengan rumus WCAG; ukur kembali pasangan baru dan jangan memakai warna sebagai satu-satunya penanda status.
 
 Figtree di-self-host melalui `@fontsource/figtree`; gunakan sans-serif sistem sebagai cadangan. Skala teks utama: 12–14 px untuk keterangan, 16 px untuk isi, 20–24 px untuk judul bagian, 32–48 px untuk judul halaman/landing. Maksimal satu keluarga font.
 
@@ -31,7 +34,7 @@ Gunakan skala Tailwind yang tersedia untuk jarak (kelipatan 4 px), sudut 8 px un
 
 ## Komponen Blade
 
-- `<x-icon name="kalender" />`: gunakan ikon di `public/icons/sprite.svg`; garis mengikuti `currentColor` dan tiap ikon hanya memakai satu aksen datar dari palet khusus. Nama ikon harus berasal dari daftar pada `DAFTAR_IKON_CUSTOM.md`.
+- `<x-icon name="kalender" />`: gunakan ikon outline di `public/icons/sprite.svg`; stroke mengikuti `currentColor`, tanpa blok aksen warna di dalam glyph. Nama ikon harus berasal dari daftar pada `DAFTAR_IKON_CUSTOM.md`.
 - `<x-primary-button>` dan `.btn-primary`: satu aksi utama per bagian.
 - `<x-secondary-button>` dan `.btn-secondary`: aksi pendamping atau batal.
 - `<x-danger-button>` dan `.btn-danger`: tindakan yang menghapus atau berdampak besar.
@@ -64,7 +67,7 @@ Bottom-nav ponsel harus selalu tepat lima item dan urutannya tidak berubah: **Be
 
 Kalender berada di Beranda; target berada di Kebiasaan; tagihan, utang-piutang, dan laporan berada di Keuangan; pengaturan serta panel admin berada di Profil. Pencarian dan Perlu perhatian tetap dapat diakses dari ikon header; notifikasi menuju tab Perlu perhatian. Keluar disediakan di halaman Profil dengan konfirmasi, bukan sebagai item bottom-nav.
 
-Api aktivitas dibuka dari ikon api di header, di samping notifikasi, tanpa menambah item navigasi bawah. Riwayat streak diurutkan berdasarkan rentetan terpanjang agar rekor terbaik tetap terlihat setelah api terputus. Instalasi dan pembaruan PWA tersedia di halaman Aplikasi dan tidak menggunakan banner mengambang.
+Rangkaian aktivitas dibuka dari ikon terkait di header, di samping notifikasi, tanpa menambah item navigasi bawah. Riwayatnya diurutkan berdasarkan rentetan terpanjang agar rekor terbaik tetap terlihat setelah rentetan berakhir. Instalasi dan pembaruan PWA tersedia di halaman Aplikasi dan tidak menggunakan banner mengambang.
 
 `<x-subnav>` memakai link URL biasa agar bookmark, navigasi browser Back, dan penggunaan tanpa JavaScript tetap berfungsi. Tab boleh digeser horizontal; tab aktif dipusatkan saat halaman dibuka, memiliki `aria-current="page"`, target sentuh minimal 44 px, serta tetap mengikuti reduced-motion. Sidebar desktop mencerminkan lima grup yang sama dan membuka grup aktif secara otomatis. Tombol tambah global tetap menyediakan tugas, kebiasaan, catat uang, target, tagihan/cicilan, dan utang-piutang.
 

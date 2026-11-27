@@ -65,7 +65,9 @@ class EntityLifecycleTest extends TestCase
         $this->get(route('user.obligations.index', ['status' => 'archived']))
             ->assertViewHas('obligations', fn ($items) => $items->pluck('id')->all() === [$obligation->id]);
         $this->patch(route('user.obligations.restore', $obligation))->assertRedirect();
-        $this->assertTrue($agenda->forDate($user, '2026-11-16')->contains(fn ($item) => $item['title'] === 'Internet'));
+        $agendaItem = $agenda->forDate($user, '2026-11-16')->first(fn ($item) => $item['title'] === 'Internet');
+        $this->assertNotNull($agendaItem);
+        $this->assertSame(route('user.obligations.pay', $obligation), $agendaItem['quick_action']);
         $this->assertTrue($agenda->attentionFor($user, '2026-11-16')->contains(fn ($item) => $item['title'] === 'Internet'));
         $this->patch(route('user.obligations.archive', $obligation))->assertRedirect();
         $this->delete(route('user.obligations.destroy', $obligation))->assertRedirect();

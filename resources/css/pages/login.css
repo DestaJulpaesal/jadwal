@@ -382,6 +382,12 @@ h2 {
     box-shadow: 3px 3px 0 var(--ink);
 }
 
+.fld input:focus {
+    border-color: transparent;
+    box-shadow: none;
+    outline: 0;
+}
+
 .fld .ic {
     width: 34px;
     height: 34px;

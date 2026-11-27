@@ -46,3 +46,39 @@ test('offline navigation shows the cached offline page', async ({ page, context 
 
     await expect(page.getByRole('heading', { name: 'Kamu sedang offline' })).toBeVisible();
 });
+
+test('receipt scanner works under enforced CSP without WebAssembly eval exceptions', async ({ page }) => {
+    const consoleMessages = [];
+    page.on('console', (message) => consoleMessages.push(message.text()));
+    page.on('pageerror', (error) => consoleMessages.push(error.message));
+
+    await page.goto('/dashboard/money?section=transactions&create=transaction');
+    const scanner = page.locator('[data-receipt-scan]');
+    await expect(scanner).toBeVisible();
+
+    const imageDataUrl = await page.evaluate(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 600;
+        canvas.height = 180;
+        const context = canvas.getContext('2d');
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#000';
+        context.font = '32px sans-serif';
+        context.fillText('TOKO UJI  TOTAL 10000', 12, 90);
+
+        return canvas.toDataURL('image/png');
+    });
+    const image = Buffer.from(imageDataUrl.split(',')[1], 'base64');
+    await scanner.locator('[data-receipt-input="camera"]').setInputFiles({
+        name: 'synthetic-receipt.png',
+        mimeType: 'image/png',
+        buffer: image,
+    });
+
+    const status = scanner.locator('[data-receipt-status]');
+    await expect(status).toContainText(/gagal|cocok|terbaca|mencurigakan|ditemukan/i, { timeout: 60_000 });
+    await expect(status).toContainText(/Nominal terbaca|cocok/i);
+    await expect(scanner.locator('xpath=ancestor::form').locator('[name="amount"]')).not.toHaveValue('');
+    expect(consoleMessages.join('\n')).not.toMatch(/Refused to compile or instantiate WebAssembly/i);
+});

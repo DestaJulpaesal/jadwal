@@ -1,12 +1,14 @@
 # Laporan penutupan polish — Fase 0–99
 
+> Arsip checkpoint historis. Angka versi, test, bundle, dan audit di bagian ini bukan status terkini; gunakan [PROGRESS.md](./PROGRESS.md) sebagai sumber status.
+
 ## Ringkasan
 
 Fase 0–2 tercatat selesai pada checkpoint historis; catatan progres terbaru menyatakan gate penuh Fase 2 masih terbuka. Pekerjaan fase 3–9 yang dapat diterapkan dan diverifikasi secara lokal telah dilanjutkan, tetapi fase-fase tersebut **belum seluruhnya selesai** karena masih ada pemeriksaan menyeluruh serta verifikasi yang membutuhkan server produksi, browser audit, atau perangkat nyata. Fase 10 bersifat opsional dan tidak dikerjakan. Laporan ini tidak menyatakan seluruh fase selesai tanpa bukti.
 
 ## Update hardening — 18 November 2026
 
-- Axios/bootstrap dihapus; pemeriksaan ukuran bundle dijalankan pada CI. Build terakhir: JS **33,49 KB gzip**, CSS halaman terberat **19,86 KB gzip**, keduanya di bawah budget desimal 50.000/20.000 byte.
+- Axios/bootstrap dihapus; pemeriksaan ukuran bundle dijalankan pada CI. Nilai bundle pada checkpoint ini sudah superseded oleh [PROGRESS.md](./PROGRESS.md).
 - Service worker menggunakan SHA-256 manifest untuk cache aset, menghapus cache statis lama saat aktivasi, dan tidak menyimpan halaman navigasi, termasuk halaman terautentikasi.
 - Optimistic actions membedakan 401/419 dan 422, menggunakan pesan dari atribut terlokalisasi, memulihkan fokus, mengumumkan status lewat `aria-live`, dan memperbarui hitungan habit dashboard.
 - Preferensi privasi nominal menggunakan `sessionStorage` dan CSS menyembunyikan angka sebelum JS siap. Selector CSS tanpa referensi runtime dibersihkan secara terbatas.
@@ -14,11 +16,10 @@ Fase 0–2 tercatat selesai pada checkpoint historis; catatan progres terbaru me
 - Layout error kini tetap render saat nonce CSP belum dibagikan; tes mode report yang ada tetap menjaga nonce request normal.
 - Pemeriksaan backup kini melaporkan umur/jumlah/ukuran dan menulis `critical` jika tidak ada backup atau umurnya lebih dari 36 jam; restore checkpoint WAL serta memvalidasi/menghapus sidecar secara eksplisit. Latihan restore production dan salinan offsite belum dibuktikan.
 - `robots.txt`, cache immutable untuk aset Vite ber-hash, dan warning boot untuk `APP_URL` loopback production telah ditambahkan; aturan Apache belum diverifikasi di server Apache production.
-- Verifikasi terbaru: suite penuh **263 lulus (1.793 assertion; 340,80 detik)**; Pint **248 file lulus**; `php artisan view:cache`, `git diff --check`, serta parse YAML CI lulus. Migrasi fresh + seeding lulus pada SQLite sementara dan `PRAGMA integrity_check` menghasilkan `ok`; database kerja tidak disentuh.
-- Build terbaru dan pemeriksaan budget lulus: JavaScript **33,49 KB gzip**, CSS aplikasi terberat **19,86 KB gzip**, di bawah batas 50/20 KB. Health endpoint lokal merespons HTTP 200.
+- Suite, Pint, migrasi sementara, cache view, parse CI, dan health endpoint lulus pada checkpoint historis ini. Lihat [PROGRESS.md](./PROGRESS.md) untuk hasil run terkini.
 - Workflow CI kini mencakup migrasi fresh/seed dan job fixture migrasi berisi data. Larastan level 5, run CI remote pada checkout bersih, dan hasil deployment Apache masih belum tersedia.
 - Screenshot beranda 360px dan login 360/1280px diperiksa. Tes mode gelap terautentikasi dan aksi optimistic melalui sesi browser belum dilakukan.
-- Dependency audit tetap memblokir gate: `npm audit fix` non-forced menghilangkan advisori moderat, tetapi audit kini melaporkan **13 high/0 moderate**. Advisori Picomatch belum memiliki versi patched menurut [GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf); `--force` mengusulkan downgrade Vite dan tidak diterapkan. Composer audit terakhir melaporkan **55 advisory pada 15 paket**. Upgrade framework Fase 3 dan Fase 4.5–4.7 masih terbuka. Rincian terbaru ada di [PROGRESS.md](./PROGRESS.md).
+- Temuan dependency dan status fase pada checkpoint ini sudah superseded; gunakan [PROGRESS.md](./PROGRESS.md) sebelum mengambil keputusan rilis.
 
 ## Status per fase
 
@@ -51,7 +52,7 @@ Rincian progres historis dan checklist per fase ada di [PROGRESS.md](./PROGRESS.
 
 ## Hasil verifikasi historis — Fase 0–2
 
-- `php artisan test`: **177 lulus, 1.107 assertion**.
+- Suite PHPUnit lulus pada checkpoint historis; angka terbaru ada di [PROGRESS.md](./PROGRESS.md).
 - `npm run build`: lulus.
 - `npm audit --audit-level=high`: 0 vulnerability.
 - Pint `--test`: lulus untuk file PHP yang berubah.

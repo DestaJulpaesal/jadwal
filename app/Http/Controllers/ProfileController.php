@@ -47,9 +47,6 @@ class ProfileController extends Controller
         $newPhotoPath = null;
         if ($avatar) {
             $newPhotoPath = $this->storeReencodedAvatar($avatar);
-            if ($newPhotoPath === null) {
-                throw new RuntimeException('Foto profil gagal disimpan. Silakan coba lagi.');
-            }
             $user->profile_photo_path = $newPhotoPath;
         } elseif ($removeAvatar) {
             $user->profile_photo_path = null;
@@ -151,7 +148,7 @@ class ProfileController extends Controller
         }
     }
 
-    private function storeReencodedAvatar(UploadedFile $avatar): ?string
+    private function storeReencodedAvatar(UploadedFile $avatar): string
     {
         if (! function_exists('imagecreatefromstring')) {
             throw new RuntimeException('Pemrosesan foto profil memerlukan ekstensi GD.');
@@ -166,7 +163,7 @@ class ProfileController extends Controller
             throw new RuntimeException('Foto profil tidak dapat diproses sebagai gambar.');
         }
 
-        $format = match ($imageInfo['mime'] ?? '') {
+        $format = match ($imageInfo['mime']) {
             'image/jpeg' => 'jpg',
             'image/png' => 'png',
             'image/webp' => function_exists('imagewebp') ? 'webp' : 'png',

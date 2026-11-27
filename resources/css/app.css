@@ -4,6 +4,8 @@
 @import './components/legacy.css' layer(components);
 @import './layouts/legacy.css';
 
+@config '../../tailwind.app.config.js';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

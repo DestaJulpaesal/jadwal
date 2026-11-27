@@ -78,6 +78,39 @@ class EncryptedSqliteBackupTest extends TestCase
         }
     }
 
+    public function test_backup_status_fails_when_the_latest_local_backup_has_not_reached_s3(): void
+    {
+        $directory = sys_get_temp_dir().DIRECTORY_SEPARATOR.'jadwal-backup-status-s3-'.bin2hex(random_bytes(6));
+        File::ensureDirectoryExists($directory);
+        $older = 'jadwal-'.now()->subMinute()->format('Ymd-His').'-01234567.sqlite.gz.enc';
+        $latest = 'jadwal-'.now()->format('Ymd-His').'-89abcdef.sqlite.gz.enc';
+        $statusPath = $directory.DIRECTORY_SEPARATOR.'.s3-status.json';
+        file_put_contents($directory.DIRECTORY_SEPARATOR.$older, 'old');
+        file_put_contents($directory.DIRECTORY_SEPARATOR.$latest, 'new');
+        touch($directory.DIRECTORY_SEPARATOR.$older, now()->subMinute()->timestamp);
+        touch($directory.DIRECTORY_SEPARATOR.$latest, now()->timestamp);
+        file_put_contents($statusPath, json_encode([
+            'filename' => $older,
+            'copied_at' => now()->toIso8601String(),
+        ], JSON_THROW_ON_ERROR));
+        config([
+            'backup.directory' => $directory,
+            'backup.offsite_s3_bucket' => 'private-test-bucket',
+            'backup.offsite_status_file' => $statusPath,
+        ]);
+        Log::spy();
+
+        try {
+            $exitCode = Artisan::call('app:backup-status');
+
+            $this->assertSame(1, $exitCode);
+            $this->assertStringContainsString('Cadangan lokal terbaru belum cocok dengan salinan S3.', Artisan::output());
+            Log::shouldHaveReceived('critical')->once();
+        } finally {
+            File::deleteDirectory($directory);
+        }
+    }
+
     public function test_backup_and_restore_preserve_sqlite_data_and_profile_photos(): void
     {
         $testDirectory = sys_get_temp_dir().DIRECTORY_SEPARATOR.'jadwal-backup-test-'.bin2hex(random_bytes(6));
@@ -100,7 +133,7 @@ class EncryptedSqliteBackupTest extends TestCase
             'database.connections.sqlite.database' => $databasePath,
             'backup.directory' => $backupDirectory,
             'backup.profile_photos_directory' => $photosDirectory,
-            'backup.encryption_key' => base64_encode(random_bytes(32)),
+            'backup.encryption_key' => $encryptionKey = base64_encode(random_bytes(32)),
         ]);
         DB::purge('sqlite');
 
@@ -112,7 +145,7 @@ class EncryptedSqliteBackupTest extends TestCase
             $pdo = null;
             $backupPath = $backup->create();
             $this->assertFileExists($backupPath);
-            $this->assertStringStartsWith('JDBAK1', (string) file_get_contents($backupPath));
+            $this->assertStringStartsWith('JDBAK2', (string) file_get_contents($backupPath));
 
             DB::connection('sqlite')->table('backup_test_records')->update(['value' => 'after']);
             file_put_contents($photosDirectory.DIRECTORY_SEPARATOR.'avatar.png', 'photo-after');
@@ -130,6 +163,83 @@ class EncryptedSqliteBackupTest extends TestCase
             $this->assertSame(
                 'photo-before',
                 file_get_contents($photosDirectory.DIRECTORY_SEPARATOR.'avatar.png')
+            );
+
+            $encryptedBackup = file_get_contents($backupPath);
+            $lastByte = strlen($encryptedBackup) - 1;
+            $encryptedBackup[$lastByte] = chr(ord($encryptedBackup[$lastByte]) ^ 1);
+            file_put_contents($backupPath, $encryptedBackup);
+
+            try {
+                $backup->restore(basename($backupPath));
+                $this->fail('A modified backup must not be restored.');
+            } catch (\RuntimeException $exception) {
+                $this->assertStringContainsString('authenticated or decrypted', $exception->getMessage());
+            }
+            $this->assertSame(
+                'before',
+                DB::connection('sqlite')->table('backup_test_records')->value('value')
+            );
+        } finally {
+            DB::purge('sqlite');
+            File::deleteDirectory($testDirectory);
+        }
+    }
+
+    public function test_legacy_jdbak1_backup_can_still_be_restored(): void
+    {
+        $testDirectory = sys_get_temp_dir().DIRECTORY_SEPARATOR.'jadwal-backup-legacy-test-'.bin2hex(random_bytes(6));
+        $databasePath = $testDirectory.DIRECTORY_SEPARATOR.'database.sqlite';
+        $backupDirectory = $testDirectory.DIRECTORY_SEPARATOR.'backups';
+        $photosDirectory = $testDirectory.DIRECTORY_SEPARATOR.'profile-photos';
+        $zipPath = $testDirectory.DIRECTORY_SEPARATOR.'legacy.zip';
+        File::ensureDirectoryExists($testDirectory);
+        File::ensureDirectoryExists($photosDirectory);
+
+        $pdo = new PDO('sqlite:'.$databasePath);
+        $pdo->exec('CREATE TABLE users (id INTEGER PRIMARY KEY)');
+        $pdo->exec('CREATE TABLE migrations (id INTEGER PRIMARY KEY)');
+        $pdo->exec('CREATE TABLE backup_test_records (id INTEGER PRIMARY KEY, value TEXT NOT NULL)');
+        $pdo->exec("INSERT INTO backup_test_records (value) VALUES ('before')");
+        $pdo = null;
+
+        $archive = new \ZipArchive;
+        $archive->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $archive->addFile($databasePath, 'database.sqlite');
+        $archive->close();
+        $compressed = gzencode((string) file_get_contents($zipPath), 6);
+        $nonce = random_bytes(12);
+        $tag = '';
+        $encryptionKey = base64_encode(random_bytes(32));
+        $ciphertext = openssl_encrypt(
+            $compressed,
+            'aes-256-gcm',
+            base64_decode($encryptionKey, true),
+            OPENSSL_RAW_DATA,
+            $nonce,
+            $tag,
+            'JDBAK1'
+        );
+        $legacyPath = $backupDirectory.DIRECTORY_SEPARATOR.'jadwal-'.now()->format('Ymd-His').'-01234567.sqlite.gz.enc';
+        File::ensureDirectoryExists($backupDirectory);
+        file_put_contents($legacyPath, 'JDBAK1'.$nonce.$tag.$ciphertext);
+        config([
+            'database.default' => 'sqlite',
+            'database.connections.sqlite.database' => $databasePath,
+            'backup.directory' => $backupDirectory,
+            'backup.profile_photos_directory' => $photosDirectory,
+            'backup.encryption_key' => $encryptionKey,
+        ]);
+        DB::purge('sqlite');
+
+        try {
+            DB::connection('sqlite')->table('backup_test_records')->update(['value' => 'after']);
+
+            app(EncryptedSqliteBackup::class)->restore(basename($legacyPath));
+
+            $this->assertSame(
+                'before',
+                DB::connection('sqlite')->table('backup_test_records')->value('value')
             );
         } finally {
             DB::purge('sqlite');

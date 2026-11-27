@@ -104,6 +104,9 @@ jobs:
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Test receipt parser
+        run: npm run test:receipt
+
       - name: Build assets
         run: npm run build
 

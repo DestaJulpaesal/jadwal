@@ -143,8 +143,8 @@ return [
         'adjustment_label' => 'Penyesuaian saldo',
         'adjustment_note' => 'Penyesuaian saldo',
         'monthly_net_help' => 'Selisih ini hanya menghitung pemasukan dan pengeluaran biasa bulan ini. Utang, pelunasan, dan penyesuaian saldo tidak termasuk, jadi nilainya bisa berbeda dari perubahan saldo dompet.',
-        'negative_wallets_title' => 'Ada dompet dengan saldo minus.',
-        'negative_wallets_help' => 'Transaksi tetap bisa dicatat. Periksa riwayat atau sesuaikan saldo jika angka ini tidak sesuai.',
+        'negative_wallets_title' => 'Perhatian: ada dompet dengan saldo minus.',
+        'negative_wallets_help' => 'Saldo negatif perlu diperiksa. Periksa riwayat transaksi atau gunakan penyesuaian saldo sebelum mencatat pengeluaran baru.',
     ],
     'dashboard' => [
         'incomplete_today' => 'Belum selesai hari ini',
@@ -348,8 +348,8 @@ return [
     ],
     'streak' => [
         'best_period' => '400 hari terakhir',
-        'history_period' => 'Riwayat api 400 hari terakhir',
-        'period_note' => 'Streak terpanjang dihitung dari aktivitas dalam 400 hari terakhir.',
+        'history_period' => 'Riwayat rentetan 400 hari terakhir',
+        'period_note' => 'Rentetan terpanjang dihitung dari aktivitas dalam 400 hari terakhir.',
     ],
     'confirmations' => [
         'category_delete_title' => 'Hapus kategori?',

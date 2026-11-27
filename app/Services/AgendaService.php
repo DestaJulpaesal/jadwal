@@ -11,6 +11,9 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
+/**
+ * @phpstan-type AgendaItem array{type:string,title:string,time:?string,status:string,url:string,quick_action:?string}
+ */
 class AgendaService
 {
     public function __construct(
@@ -39,10 +42,10 @@ class AgendaService
         $endKey = CarbonImmutable::parse($endsOn)->toDateString();
         $start = CarbonImmutable::parse($startKey, $timezone)->startOfDay();
         $end = CarbonImmutable::parse($endKey, $timezone)->startOfDay();
-        $dates = collect();
+        $dates = $this->emptyAgendaRange();
 
         for ($date = $start; $date->lte($end); $date = $date->addDay()) {
-            $dates->put($date->toDateString(), collect());
+            $dates->put($date->toDateString(), $this->emptyAgendaDay());
         }
         if ($dates->isEmpty()) {
             return $dates;
@@ -65,7 +68,7 @@ class AgendaService
                 'task',
                 $task->title,
                 $task->starts_at ? $local->format('H:i') : null,
-                $task->status?->name ?? __('ui.task_status.no_status'),
+                $task->status === null ? __('ui.task_status.no_status') : $task->status->name,
                 route('user.tasks.edit', $task),
                 null
             ));
@@ -257,8 +260,28 @@ class AgendaService
         return $items->values();
     }
 
+    /** @return Collection<string, Collection<int, AgendaItem>> */
+    private function emptyAgendaRange(): Collection
+    {
+        return collect();
+    }
+
+    /** @return Collection<int, AgendaItem> */
+    private function emptyAgendaDay(): Collection
+    {
+        return collect();
+    }
+
+    /** @return AgendaItem */
     private function item(string $type, string $title, ?string $time, string $status, string $url, ?string $quickAction): array
     {
-        return compact('type', 'title', 'time', 'status', 'url', 'quickAction');
+        return [
+            'type' => $type,
+            'title' => $title,
+            'time' => $time,
+            'status' => $status,
+            'url' => $url,
+            'quick_action' => $quickAction,
+        ];
     }
 }

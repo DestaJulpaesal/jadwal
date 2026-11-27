@@ -25,6 +25,7 @@ class DataExportController extends Controller
             'tasks' => $this->tasks($user),
             'habits' => $this->habits($user),
             'habit-logs' => $this->habitLogs($user),
+            default => abort(404),
         };
 
         Log::info('export', [

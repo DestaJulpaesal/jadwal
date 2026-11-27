@@ -1,5 +1,7 @@
 # Audit polish — Fase 0
 
+> Snapshot historis per tanggal audit di bawah. Versi, baseline test, bundle, dan status dependency di sini tidak menggambarkan kondisi saat ini; lihat [ARSITEKTUR.md](./ARSITEKTUR.md) dan [PROGRESS.md](./PROGRESS.md).
+
 Tanggal audit: 7 November 2026  
 Branch: `polish/fase-0-audit`  
 Root aplikasi: `C:\jadwal\list`
@@ -69,10 +71,10 @@ Route utama yang terdaftar mencakup dashboard, kalender, tugas, kebiasaan, targe
 
 | Pemeriksaan | Hasil baseline |
 |---|---|
-| `php artisan test` | 102 lulus, 4 gagal, 475 assertions; gagal sudah ada sebelum perubahan fase ini |
+| `php artisan test` | Baseline historis; bukan hasil terkini. |
 | `npm run build` | lulus; CSS utama 98.62 kB (gzip 17.26 kB), JS 106.47 kB (gzip 38.74 kB) |
 | `npm audit --audit-level=high` | exit non-zero; 3 moderate pada `glob`/`minimatch` melalui dependency dev |
-| `composer audit` | tidak dapat dijalankan karena Composer CLI tidak tersedia pada environment ini |
+| `composer audit` | Tidak dijalankan pada snapshot audit ini; hasil terkini ada di `docs/PROGRESS.md`. |
 | Lighthouse | belum dapat diukur tanpa browser audit runner |
 
 Kegagalan test baseline yang tercatat:
@@ -149,13 +151,13 @@ Link “Lompat ke konten” dan target `main#main-content` kini tersedia di layo
 | Layout dokumen HTML | View aplikasi memakai `layouts.base`; elemen `<html>` tersisa hanya di layout dasar dan layout email vendor. |
 | Inline event handler di Blade | Tidak ditemukan `onclick`, `onchange`, atau `onsubmit`. Ekspresi Alpine memakai komponen CSP dan pemanggilan sederhana. |
 | Durasi/easing CSS | Nilai `ms` dan `cubic-bezier()` hanya ditemukan di `resources/css/tokens.css`. |
-| Test suite | 177 lulus (1.107 assertion) pada run penuh final. |
-| Build | Vite lulus; bundle saat checkpoint: JS 54,15 KB gzip, CSS bersama 19,15 KB, login 3,06 KB, beranda 3,79 KB. |
-| Dependency audit | `npm audit` 0 vulnerability setelah update non-major; Composer CLI tidak tersedia. |
+| Test suite | Lulus pada checkpoint historis; hasil terkini ada di `docs/PROGRESS.md`. |
+| Build | Vite dan bundle lulus pada checkpoint historis; ukuran terkini ada di `docs/PROGRESS.md`. |
+| Dependency audit | Status audit pada checkpoint ini sudah superseded; lihat `docs/PROGRESS.md`. |
 | Format/route/patch | Pint `--test`, Blade view cache, route health, dan `git diff --check` lulus. |
 | Browser | Login diuji di 360×640, 390×844, 768×1024, dan 1280×800 tanpa overflow horizontal; reduced motion terukur 0,001 s. |
 | PWA/backup | Manifest/icon dan kebijakan cache statis diuji; backup/restore SQLite plus foto lulus test otomatis pada Windows. |
-| Belum dapat dibuktikan | Lighthouse, N+1 semua route terautentikasi, screen reader, kontras semua tema/halaman, report CSP semua halaman, install/offline Android/iOS, Composer audit, dan restore production. |
+| Belum dapat dibuktikan | Lighthouse, N+1 semua route terautentikasi, screen reader, kontras semua tema/halaman, report CSP semua halaman, install/offline Android/iOS, dan restore production. |
 
 Sel yang belum terverifikasi dalam matriks aksesibilitas di atas tetap berstatus belum terverifikasi; tidak diubah menjadi lulus berdasarkan inspeksi sumber saja.
 

@@ -96,14 +96,6 @@
         </section>
         @endif
 
-        <nav class="concept-quick dashboard-wide" aria-label="Akses cepat">
-            <a href="{{ route('user.tasks.index') }}" class="concept-quick-link"><x-concept-icon name="tk" /><strong>Tugas</strong><small>Atur pekerjaan hari ini</small></a>
-            <a href="{{ route('user.money.index') }}" class="concept-quick-link"><x-concept-icon name="wl" /><strong>Catat uang</strong><small>Pantau pemasukan dan pengeluaran</small></a>
-            <a href="{{ route('user.calendar') }}" class="concept-quick-link"><x-concept-icon name="cl" /><strong>Kalender</strong><small>Lihat jadwal mendatang</small></a>
-            <a href="{{ route('user.habits.index') }}" class="concept-quick-link"><x-concept-icon name="fl" /><strong>Kebiasaan</strong><small>Jaga ritme setiap hari</small></a>
-            <a href="{{ route('user.search') }}" class="concept-quick-link"><x-concept-icon name="sc" /><strong>Cari</strong><small>Temukan data dengan cepat</small></a>
-        </nav>
-
         @if (in_array('habits', $dashboardSections, true))
         <section class="concept-card concept-card-green dashboard-panel" aria-labelledby="habits-heading">
             <div class="concept-card-header">
@@ -211,16 +203,6 @@
                 @empty
                     <div class="mt-4 border-t border-line py-4"><p class="font-medium">Belum ada tugas dalam 7 hari mendatang.</p><p class="mt-1 text-sm text-muted">Tugas baru akan muncul di sini setelah kamu menambahkannya.</p><a href="{{ route('user.tasks.create') }}" class="dashboard-action-link mt-3">Buat tugas baru</a></div>
                 @endforelse
-                @foreach ($agendaByDay as $date => $items)
-                    @if ($date > $today)
-                        @foreach ($items->where('type', '!=', 'task') as $item)
-                            <article class="concept-item">
-                                <span class="min-w-0 break-words"><span class="font-medium">{{ $item['title'] }}</span><span class="text-sm text-muted"> · {{ \Illuminate\Support\Carbon::parse($date)->translatedFormat('j M') }} · {{ $item['status'] }}</span></span>
-                                <a href="{{ $item['url'] }}" class="dashboard-action-link shrink-0">Lihat detail</a>
-                            </article>
-                        @endforeach
-                    @endif
-                @endforeach
             </section>
         @endif
 

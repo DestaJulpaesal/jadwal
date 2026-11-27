@@ -4,7 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read TaskStatus|null $status
+ * @property-read int|null $all_count
+ * @property-read int|null $today_count
+ * @property-read int|null $upcoming_count
+ * @property-read int|null $overdue_count
+ * @property-read int|null $completed_count
+ */
 class Task extends Model
 {
     use HasFactory;
@@ -37,17 +46,20 @@ class Task extends Model
         'occurrence_date',
     ];
 
-    public function user()
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function category()
+    /** @return BelongsTo<Category, $this> */
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function status()
+    /** @return BelongsTo<TaskStatus, $this> */
+    public function status(): BelongsTo
     {
         return $this->belongsTo(TaskStatus::class, 'task_status_id');
     }

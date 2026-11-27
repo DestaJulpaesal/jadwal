@@ -1,13 +1,97 @@
 /* Base element rules. */
+*, ::before, ::after, ::backdrop, ::file-selector-button {
+    box-sizing: border-box;
+    border: 0 solid;
+}
+
 html {
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    tab-size: 4;
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
     overflow-x: clip;
 }
 
 body {
+    margin: 0;
+    line-height: inherit;
     background-color: var(--color-canvas);
     color: var(--color-ink);
+}
+
+h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+    margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+b, strong {
+    font-weight: bolder;
+}
+
+button, input, optgroup, select, textarea {
+    margin: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+}
+
+button, select {
+    text-transform: none;
+}
+
+input[type="checkbox"], input[type="radio"] {
+    border-width: 1px;
+    accent-color: var(--color-primary-700);
+}
+
+button, [type="button"], [type="reset"], [type="submit"] {
+    appearance: button;
+    background-color: transparent;
+    background-image: none;
+}
+
+ol, ul, menu {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+summary {
+    display: list-item;
+}
+
+textarea {
+    resize: vertical;
+}
+
+::placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+img, svg, video, canvas {
+    display: block;
+    vertical-align: middle;
+}
+
+img, video {
+    max-width: 100%;
+    height: auto;
+}
+
+[hidden] {
+    display: none !important;
 }
 
 .skip-link {

@@ -13,6 +13,7 @@ class Category extends Model
 
     protected $fillable = ['name', 'color'];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -25,16 +26,19 @@ class Category extends Model
             : '#3B82F6';
     }
 
+    /** @return HasMany<Task, $this> */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 
+    /** @return HasMany<Habit, $this> */
     public function habits(): HasMany
     {
         return $this->hasMany(Habit::class);
     }
 
+    /** @return HasMany<Goal, $this> */
     public function goals(): HasMany
     {
         return $this->hasMany(Goal::class);

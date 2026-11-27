@@ -14,7 +14,13 @@
         </form>
         <section class="space-y-4">
             @forelse ($goals as $goal)
-                <article class="surface-card p-5">
+                <article @class([
+                    'concept-card p-5',
+                    'concept-card-yellow' => $loop->iteration % 4 === 1,
+                    'concept-card-green' => $loop->iteration % 4 === 2,
+                    'concept-card-pink' => $loop->iteration % 4 === 3,
+                    'concept-card-blue' => $loop->iteration % 4 === 0,
+                ])>
                     <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">

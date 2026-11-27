@@ -50,7 +50,7 @@ class ExportDataRequest extends FormRequest
             $start = CarbonImmutable::createFromFormat('!Y-m-d', $this->input('start_date'));
             $end = CarbonImmutable::createFromFormat('!Y-m-d', $this->input('end_date'));
 
-            if ($start !== false && $end !== false && $end->gt($start->addYearsNoOverflow(5))) {
+            if ($start !== null && $end !== null && $end->gt($start->addYearsNoOverflow(5))) {
                 $validator->errors()->add('end_date', __('ui.export.max_range'));
             }
         });

@@ -14,7 +14,7 @@ class OwnedModelPolicy
 
     public function view(User $user, Model $model): bool
     {
-        return ! $user->isAdmin() && (int) $model->user_id === (int) $user->id;
+        return ! $user->isAdmin() && (int) $model->getAttribute('user_id') === (int) $user->id;
     }
 
     public function create(User $user): bool

@@ -47,7 +47,7 @@ class UserStreakTest extends TestCase
             ->assertViewHas('activeToday', true)
             ->assertViewHas('streakHistory', fn ($history) => count($history) === 1 && $history[0]['days'] === 3)
             ->assertSee('3 hari berturut-turut')
-            ->assertSee('Riwayat api 400 hari terakhir')
+            ->assertSee('Riwayat rentetan 400 hari terakhir')
             ->assertSee('Aktivitas hari ini sudah tercatat.');
     }
 
@@ -69,7 +69,7 @@ class UserStreakTest extends TestCase
             ->assertViewHas('currentStreak', 0)
             ->assertViewHas('bestStreak', 1)
             ->assertViewHas('activeToday', false)
-            ->assertSee('Api akan menyala lagi');
+            ->assertSee('Rentetan akan dimulai lagi');
     }
 
     public function test_streak_history_keeps_the_highest_record_at_the_top_after_a_longer_streak_has_ended(): void
@@ -94,7 +94,7 @@ class UserStreakTest extends TestCase
                 && $history[0]['days'] === 3
                 && $history[0]['start']->toDateString() === '2026-11-01'
                 && $history[1]['days'] === 2)
-            ->assertSee('Api tertinggi 400 hari terakhir');
+            ->assertSee('Rentetan terbaik 400 hari terakhir');
     }
 
     public function test_best_streak_is_limited_to_the_most_recent_four_hundred_days(): void
@@ -119,7 +119,7 @@ class UserStreakTest extends TestCase
             ->get(route('user.streak'))
             ->assertOk()
             ->assertViewHas('bestStreak', 2)
-            ->assertSee('Streak terpanjang dihitung dari aktivitas dalam 400 hari terakhir.');
+            ->assertSee('Rentetan terpanjang dihitung dari aktivitas dalam 400 hari terakhir.');
     }
 
     public function test_completing_a_task_records_its_completion_date_for_the_streak(): void

@@ -4,7 +4,6 @@ namespace App\Exceptions;
 
 use App\Support\Feedback;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Request;
 use Illuminate\Session\TokenMismatchException;
 use Throwable;
 
@@ -33,7 +32,7 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $e)
     {
-        if ($e instanceof TokenMismatchException && $request instanceof Request && ! $request->expectsJson()) {
+        if ($e instanceof TokenMismatchException && ! $request->expectsJson()) {
             return Feedback::info(redirect()->route('login'), __('ui.login.session_expired'));
         }
 

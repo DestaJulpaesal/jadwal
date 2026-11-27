@@ -33,18 +33,22 @@
         <section class="space-y-4">
             @forelse ($loans as $loan)
                 <article class="surface-card p-5">
-                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-success-soft text-success" aria-hidden="true">
                                 <x-icon name="utang" class="h-5 w-5" />
                             </span>
                             <div>
                                 <h2 class="font-semibold">{{ $loan->direction->label() }} · {{ $loan->counterparty }}</h2>
-                                <p class="text-sm text-muted">{{ rupiah($loan->amount) }} · tercatat {{ $loan->loan_date->translatedFormat('j M Y') }}@if($loan->due_on) · jatuh tempo {{ $loan->due_on->translatedFormat('j M Y') }}@endif</p>
-                                <p class="mt-1 text-sm">Sisa: <strong data-private>{{ rupiah($loan->remaining_amount) }}</strong> · {{ $loan->due_label }}</p>
+                                <p class="text-sm text-muted">Tercatat {{ $loan->loan_date->translatedFormat('j M Y') }}@if($loan->due_on) · jatuh tempo {{ $loan->due_on->translatedFormat('j M Y') }}@endif</p>
                             </div>
                         </div>
-                        <div class="flex flex-wrap items-end gap-2">
+                        <div class="flex flex-col gap-2 md:items-end">
+                            <div class="text-right">
+                                <strong class="block tabular-nums" data-private>{{ rupiah($loan->amount) }}</strong>
+                                <p class="text-sm text-muted">Sisa <strong data-private>{{ rupiah($loan->remaining_amount) }}</strong> · {{ $loan->due_label }}</p>
+                            </div>
+                            <div class="flex flex-wrap items-end gap-2">
                             <x-button type="button" variant="secondary" icon="menu-aksi"
                                 aria-label="Aksi untuk {{ $loan->counterparty }}"
                                 x-data
@@ -60,6 +64,7 @@
                         @elseif ($loan->remaining_amount === 0)
                             <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-800">Lunas</span>
                         @endif
+                            </div>
                         </div>
                     </div>
                     <x-bottom-sheet name="loan-actions-{{ $loan->id }}" :title="'Aksi utang/piutang: '.$loan->counterparty">

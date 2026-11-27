@@ -42,7 +42,8 @@ class UserTaskTest extends TestCase
             ->assertSee('Ringkasan')
             ->assertSee('Perlu perhatian')
             ->assertSee('Keuangan')
-            ->assertSee('class="concept-quick-link"><svg', false);
+            ->assertSee('Tambah baru')
+            ->assertDontSee('Akses cepat');
     }
 
     public function test_dashboard_lists_overdue_tasks_once_and_counts_only_incomplete_today(): void

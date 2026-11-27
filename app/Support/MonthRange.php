@@ -20,7 +20,7 @@ class MonthRange
 
         $start = CarbonImmutable::createFromFormat('!Y-m', $month);
 
-        if ($start === false || $start->format('Y-m') !== $month) {
+        if ($start === null || $start->format('Y-m') !== $month) {
             throw new InvalidArgumentException('Month must use the YYYY-MM format.');
         }
 

@@ -16,11 +16,13 @@ class Budget extends Model
         'amount' => 'integer',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<MoneyCategory, $this> */
     public function moneyCategory(): BelongsTo
     {
         return $this->belongsTo(MoneyCategory::class);

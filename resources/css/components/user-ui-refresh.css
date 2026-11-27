@@ -1,0 +1,467 @@
+body.user-app {
+    background-color: var(--color-canvas);
+    background-image: none;
+}
+
+body.user-app .user-header,
+body.user-app .user-sidebar,
+body.user-app .sidebar-profile-footer {
+    border-color: var(--color-line);
+    background: var(--color-surface);
+    box-shadow: none;
+}
+
+body.user-app .user-header {
+    border-bottom-width: 1px;
+}
+
+body.user-app .user-sidebar {
+    border-right-width: 1px;
+}
+
+body.user-app .sidebar-profile-footer {
+    border-top-width: 1px;
+}
+
+body.user-app .sidebar-nav-group {
+    overflow: visible;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+}
+
+body.user-app .sidebar-nav-group > summary {
+    min-height: 44px;
+    border-radius: 10px;
+}
+
+body.user-app .sidebar-nav-group > summary:hover,
+body.user-app .sidebar-profile-card:hover {
+    background: var(--color-primary-50);
+}
+
+body.user-app .nav-link {
+    min-height: 42px;
+    border: 0;
+    border-radius: 9px;
+    box-shadow: none;
+}
+
+body.user-app .nav-link-active,
+body.user-app .nav-link-active:hover {
+    border: 0;
+    background: var(--color-primary-50);
+    box-shadow: inset 3px 0 0 var(--color-primary-700);
+    color: var(--color-primary-800);
+}
+
+body.user-app .surface-card,
+body.user-app .concept-card,
+body.user-app .money-summary-card,
+body.user-app .habit-card,
+body.user-app .settings-choice {
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-card);
+    transition: box-shadow var(--dur-base) var(--ease-standard), border-color var(--dur-base) var(--ease-standard);
+}
+
+body.user-app .concept-card {
+    padding: 20px;
+}
+
+body.user-app .surface-card:hover,
+body.user-app .concept-card:hover,
+body.user-app .money-summary-card:hover,
+body.user-app .habit-card:hover,
+body.user-app .settings-choice:hover {
+    box-shadow: var(--shadow-raised);
+    transform: none;
+}
+
+body.user-app .concept-card-yellow {
+    background-color: #fff8df;
+}
+
+body.user-app .concept-card-green {
+    background-color: #eff8f2;
+}
+
+body.user-app .concept-card-pink {
+    background-color: #fff1f6;
+}
+
+body.user-app .concept-card-blue {
+    background-color: #eff4ff;
+}
+
+body.user-app .concept-card-orange {
+    background-color: #fff3e8;
+}
+
+body.user-app .concept-card-purple {
+    background-color: #f4f0ff;
+}
+
+body.user-app .dashboard-page .concept-hero {
+    padding: 24px;
+    border-color: #7d9de8;
+    background-color: var(--b);
+    box-shadow: var(--shadow-card);
+}
+
+body.user-app .concept-hero-mascot {
+    top: 16px;
+    right: 20px;
+    width: 84px;
+    height: 76px;
+}
+
+body.user-app .concept-hero-spark,
+body.user-app .concept-icon,
+body.user-app .stk {
+    filter: none;
+}
+
+body.user-app .concept-hero-spark {
+    display: none;
+}
+
+body.user-app .concept-stat,
+body.user-app .habit-metrics .habit-stat,
+body.user-app .money-summary-card {
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+body.user-app .concept-stat:hover {
+    box-shadow: none;
+    transform: none;
+}
+
+body.user-app .concept-card-header {
+    gap: 10px 16px;
+    margin-bottom: 16px;
+}
+
+body.user-app .concept-item {
+    min-height: 52px;
+    border-top: 1px solid var(--color-line);
+}
+
+body.user-app .concept-meter {
+    height: 10px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-primary-100);
+}
+
+body.user-app .concept-meter span {
+    border: 0;
+    border-radius: inherit;
+    background: var(--color-primary-600);
+}
+
+body.user-app .concept-quick-link {
+    border: 1px solid var(--color-line);
+    border-radius: 14px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-xs);
+}
+
+body.user-app .concept-quick-link:hover {
+    border-color: var(--color-primary-200);
+    background: var(--color-primary-50);
+    box-shadow: var(--shadow-card);
+    transform: translateY(-1px);
+}
+
+body.user-app .btn-primary,
+body.user-app .btn-secondary,
+body.user-app .btn-danger,
+body.user-app .btn-quiet,
+body.user-app .btn-icon {
+    border-radius: 10px;
+    box-shadow: none;
+}
+
+body.user-app .btn-primary {
+    border: 1px solid var(--color-primary-700);
+    background-color: var(--color-primary-700);
+    color: var(--color-primary-foreground, #fff);
+}
+
+body.user-app .btn-primary:hover {
+    border-color: var(--color-primary-800);
+    background-color: var(--color-primary-800);
+    box-shadow: none;
+}
+
+body.user-app .btn-secondary,
+body.user-app .btn-icon {
+    border: 1px solid var(--color-line);
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+}
+
+body.user-app .btn-secondary:hover,
+body.user-app .btn-icon:hover {
+    border-color: var(--color-primary-300);
+    background-color: var(--color-primary-50);
+    box-shadow: none;
+}
+
+body.user-app .form-control {
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background-color: var(--color-surface);
+    box-shadow: none;
+}
+
+body.user-app .form-control:hover {
+    border-color: var(--color-primary-300);
+    box-shadow: none;
+}
+
+body.user-app .form-control:focus {
+    border-color: var(--color-primary-600);
+    background-color: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-100);
+    transform: none;
+}
+
+body.user-app .user-subnav {
+    border: 0;
+    background: transparent;
+}
+
+body.user-app .user-subnav-track {
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+}
+
+body.user-app .user-subnav-link {
+    min-height: 40px;
+    border: 0;
+    border-radius: 9px;
+    padding-inline: 12px;
+}
+
+body.user-app .user-subnav-link-active {
+    background: var(--color-primary-50);
+    color: var(--color-primary-800);
+}
+
+body.user-app .user-page-header h1 {
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -.03em;
+    line-height: 1.15;
+}
+
+body.user-app .user-page-header > div:first-child > p:last-child {
+    max-width: 44rem;
+    color: var(--color-muted);
+    line-height: 1.55;
+}
+
+body.user-app .habit-card-accent {
+    width: 4px;
+}
+
+body.user-app .habit-card-actions {
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-canvas);
+}
+
+body.user-app .habit-metrics .habit-stat {
+    min-height: 64px;
+}
+
+body.user-app .global-search-control:focus-within {
+    transform: none;
+}
+
+body.user-app .global-search-input {
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+    box-shadow: none;
+}
+
+body.user-app .global-search-input:hover,
+body.user-app .global-search-input:focus {
+    border-color: var(--color-primary-500);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-100);
+}
+
+body.user-app .global-search-button {
+    border-radius: 9px;
+    background: var(--color-primary-700);
+    color: var(--color-primary-foreground, #fff);
+    transform: translateY(-50%);
+}
+
+body.user-app .global-search-button:hover,
+body.user-app .global-search-button:active {
+    background: var(--color-primary-800);
+    box-shadow: none;
+    transform: translateY(-50%);
+}
+
+body.user-app #mobileNavigationMenu {
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    height: calc(68px + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--color-line);
+    background: var(--color-surface);
+    box-shadow: 0 -4px 16px rgb(23 53 39 / 7%);
+    isolation: auto;
+}
+
+body.user-app .mobile-nav-shape {
+    display: none;
+}
+
+body.user-app .mobile-nav-grid {
+    height: 100%;
+    padding: 4px 6px 0;
+}
+
+body.user-app .mobile-nav-link,
+body.user-app .mobile-nav-link-active,
+body.user-app .mobile-nav-link-active:hover {
+    position: static;
+    min-height: 0;
+    gap: 3px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+body.user-app .mobile-nav-icon,
+body.user-app .mobile-nav-link-active .mobile-nav-icon {
+    position: static;
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+    animation: none;
+}
+
+body.user-app .mobile-nav-icon .concept-icon,
+body.user-app .mobile-nav-link-active .mobile-nav-icon .concept-icon {
+    width: 22px;
+    height: 22px;
+    color: currentColor;
+    opacity: 1;
+    filter: none;
+}
+
+body.user-app .mobile-nav-link > span:last-child {
+    position: static;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+body.user-app .mobile-nav-link-active,
+body.user-app .mobile-nav-link-active:hover {
+    color: var(--color-primary-800);
+    font-weight: 700;
+}
+
+body.user-app .mobile-nav-link-active .mobile-nav-icon {
+    background: var(--color-primary-50);
+    color: var(--color-primary-700);
+}
+
+body.user-app .mobile-create-button {
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-primary-700);
+    box-shadow: var(--shadow-raised);
+    color: var(--color-primary-foreground, #fff);
+}
+
+body.user-app .mobile-create-button:hover {
+    background: var(--color-primary-800);
+    box-shadow: var(--shadow-raised);
+    transform: translateY(-2px);
+}
+
+body.user-app .mobile-create-button:active {
+    box-shadow: var(--shadow-card);
+    transform: translateY(0);
+}
+
+body.user-app .bobf,
+body.user-app .flick,
+body.user-app .hop,
+body.user-app .wig,
+body.user-app .eye {
+    animation: none;
+}
+
+html[data-color-scheme="dark"] body.user-app .concept-card-yellow,
+html[data-color-scheme="dark"] body.user-app .concept-card-green,
+html[data-color-scheme="dark"] body.user-app .concept-card-pink,
+html[data-color-scheme="dark"] body.user-app .concept-card-blue,
+html[data-color-scheme="dark"] body.user-app .concept-card-orange,
+html[data-color-scheme="dark"] body.user-app .concept-card-purple {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+}
+
+@media (max-width: 767px) {
+    body.user-app .concept-card {
+        padding: 16px;
+    }
+
+    body.user-app .dashboard-page .concept-hero {
+        padding: 18px;
+    }
+
+    body.user-app .concept-hero-mascot {
+        top: 12px;
+        right: 12px;
+        width: 64px;
+        height: 58px;
+    }
+
+    body.user-app .user-subnav {
+        top: calc(4rem + env(safe-area-inset-top));
+    }
+}
+
+@media (max-width: 1023px) {
+    body.user-app .mobile-create-button {
+        bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.user-app .mobile-create-button,
+    body.user-app .mobile-nav-link,
+    body.user-app .concept-quick-link {
+        transition: none;
+    }
+}

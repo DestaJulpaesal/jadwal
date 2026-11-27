@@ -1,6 +1,6 @@
 # Panduan deployment
 
-Panduan ini menargetkan Laravel 10 dan SQLite pada satu server. Data aplikasi dan konfigurasi harus tetap di luar document root; document root web server hanya `public/`.
+Panduan ini menargetkan Laravel 13 dan SQLite pada satu server. Data aplikasi dan konfigurasi harus tetap di luar document root; document root web server hanya `public/`.
 
 ## Prasyarat dan izin
 
@@ -19,6 +19,7 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://example.com
 APP_KEY=<persistent generated Laravel key>
+REGISTRATION_ENABLED=true
 TRUSTED_PROXIES=10.0.0.10,10.0.0.0/24
 
 DB_CONNECTION=sqlite
@@ -34,6 +35,9 @@ LOG_CHANNEL=daily
 LOG_LEVEL=warning
 BACKUP_DIRECTORY=/srv/jadwal-private/backups
 BACKUP_ENCRYPTION_KEY=<separate base64 32-byte key>
+BACKUP_OFFSITE_S3_BUCKET=<optional private S3 bucket>
+BACKUP_OFFSITE_S3_PREFIX=jadwal-backups
+BACKUP_OFFSITE_STATUS_FILE=/srv/jadwal-private/backups/.s3-status.json
 VAPID_SUBJECT=mailto:admin@example.com
 VAPID_PUBLIC_KEY=<persistent VAPID public key>
 VAPID_PRIVATE_KEY=<persistent VAPID private key from secret manager>
@@ -41,7 +45,7 @@ VAPID_PRIVATE_KEY=<persistent VAPID private key from secret manager>
 
 `TRUSTED_PROXIES` must contain the reverse-proxy IP addresses/CIDRs that connect directly to the app, separated by commas. Leave it empty when the app is reached directly. Use `*` only when the network boundary guarantees every request reaches the app through a trusted proxy.
 
-Buat `APP_KEY` satu kali (`php artisan key:generate`) dan pertahankan lintas rilis; jangan pernah membagikannya atau memasukkannya ke repository. Buat kunci cadangan terpisah sesuai [panduan backup](./BACKUP.md). Konfigurasikan SMTP produksi untuk email/verifikasi bila digunakan. Jadwal dan `onOneServer()` perlu cache lock yang sesuai jika aplikasi berjalan di lebih dari satu instance.
+Buat `APP_KEY` satu kali (`php artisan key:generate`) dan pertahankan lintas rilis; jangan pernah membagikannya atau memasukkannya ke repository. Registrasi publik tetap terbuka secara default; atur `REGISTRATION_ENABLED=false` bila ingin menutupnya. Buat kunci cadangan terpisah sesuai [panduan backup](./BACKUP.md). Konfigurasikan SMTP produksi untuk email/verifikasi bila digunakan. Jadwal dan `onOneServer()` perlu cache lock yang sesuai jika aplikasi berjalan di lebih dari satu instance.
 
 Untuk push PWA, buat satu pasangan kunci VAPID dengan `php -r "require 'vendor/autoload.php'; echo json_encode(Minishlink\\WebPush\\VAPID::createVapidKeys(), JSON_PRETTY_PRINT);"` lalu simpan private key di secret manager. Pertahankan pasangan kunci yang sama lintas rilis; jangan menaruh private key di repository. Push hanya tersedia setelah kunci dikonfigurasi dan hanya dikirim kepada pengguna yang berlangganan pada perangkatnya.
 
@@ -98,7 +102,6 @@ Aktifkan kompresi gzip/Brotli di web server atau proxy untuk CSS, JavaScript, JS
     AddOutputFilterByType DEFLATE text/css application/javascript application/json image/svg+xml
 </IfModule>
 ```
-```
 
 Contoh Nginx (sesuaikan root dan PHP-FPM socket):
 
@@ -143,6 +146,16 @@ server {
 Atur redirect HTTP-ke-HTTPS pada server block port 80 terpisah. Service worker sengaja tidak menyimpan HTML atau data privat; `Cache-Control` untuk respons terautentikasi tetap private.
 
 Ikon PWA yang sudah dihasilkan tersimpan di `public/icons`. Jika perlu dibuat ulang setelah mengubah favicon, jalankan `php scripts/make-icons.php` pada mesin yang memiliki ekstensi PHP GD.
+
+## Checklist verifikasi operator
+
+Jalankan setelah deployment pada server produksi; langkah-langkah ini belum dapat dinyatakan selesai dari checkout lokal:
+
+1. Pastikan cron atau Windows Scheduled Task memanggil `php artisan schedule:run` setiap menit. Periksa `php artisan schedule:list` dan log scheduler.
+2. Isi MAIL SMTP dari secret manager, jalankan `php artisan app:send-daily-digest` dengan akun uji yang mengaktifkan ringkasan, lalu konfirmasi email diterima. Jangan mengaktifkan digest akun nyata sebagai bagian dari uji.
+3. Jalankan workflow GitHub Actions pada checkout bersih dan pastikan semua job berwarna hijau.
+4. Pada Apache production, verifikasi document root menunjuk ke `public/`, module `mod_rewrite`, `mod_headers`, `mod_mime`, dan `mod_setenvif` aktif, HTTPS berfungsi, serta header dan MIME manifest/service worker sesuai.
+5. Jalankan `php artisan app:backup-status`, konfirmasi salinan offsite S3 terbaru, dan lakukan restore drill pada database staging sesuai [panduan backup](./BACKUP.md).
 
 ## Health, logs, dan monitoring
 

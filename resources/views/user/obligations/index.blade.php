@@ -29,20 +29,22 @@
         <section class="space-y-4">
             @forelse ($obligations as $obligation)
                 <article class="surface-card p-5">
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div class="flex min-w-0 items-start gap-3">
                             <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-warning-soft text-warning" aria-hidden="true">
                                 <x-icon name="tagihan" class="h-5 w-5" />
                             </span>
                             <div>
                                 <h2 class="font-semibold">{{ $obligation->title }}</h2>
-                                <p class="text-sm text-muted">{{ $obligation->kind->label() }} · {{ rupiah($obligation->amount) }} · tanggal {{ $obligation->due_day }} setiap bulan</p>
+                                <p class="text-sm text-muted">{{ $obligation->kind->label() }} · tanggal {{ $obligation->due_day }} setiap bulan</p>
                                 @if($obligation->kind->value === 'installment')
                                     <p class="mt-1 text-sm text-muted">{{ $obligation->paid_installments }} dari {{ $obligation->installments_total }} · sisa {{ max(0, $obligation->installments_total - $obligation->paid_installments) }}</p>
                                 @endif
                             </div>
                         </div>
-                        <div class="flex flex-wrap items-end gap-2">
+                        <div class="flex flex-col gap-2 sm:items-end">
+                            <strong class="text-right tabular-nums" data-private>{{ rupiah($obligation->amount) }}</strong>
+                            <div class="flex flex-wrap items-end gap-2">
                             <x-button type="button" variant="secondary" icon="menu-aksi"
                                 aria-label="Aksi untuk {{ $obligation->title }}"
                                 x-data
@@ -59,6 +61,7 @@
                             @else
                                 <span class="text-sm text-muted">{{ $obligation->installments_complete ? 'Semua cicilan sudah dicatat.' : 'Belum ada periode yang jatuh tempo.' }}</span>
                             @endif
+                            </div>
                         </div>
                     </div>
                     <x-bottom-sheet name="obligation-actions-{{ $obligation->id }}" :title="'Aksi pengingat: '.$obligation->title">

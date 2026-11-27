@@ -21,11 +21,13 @@ class GoalUpdate extends Model
         'recorded_on' => 'date',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Goal, $this> */
     public function goal(): BelongsTo
     {
         return $this->belongsTo(Goal::class);

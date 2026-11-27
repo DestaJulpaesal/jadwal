@@ -3,7 +3,8 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build",
+        "copy:ocr": "node scripts/copy-ocr-assets.mjs",
+        "build": "npm run copy:ocr && vite build",
         "check:bundle": "node scripts/check-bundle-size.mjs",
         "test:receipt": "node --test tests/js/*.test.mjs",
         "test:e2e": "npm run build && node tests/e2e/run.mjs"

@@ -1,6 +1,6 @@
 <x-subnav class="dashboard-wide" label="Hari ini" :items="[
     [
-        'label' => 'Ringkasan',
+        'label' => 'Hari ini',
         'concept' => 'home',
         'url' => route('user.dashboard'),
         'active' => request()->routeIs('user.dashboard') && request('tab') !== 'attention',

@@ -9,6 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property-read HabitLog|null $today_log Computed by dashboard and habit-list queries.
+ */
 class Habit extends Model
 {
     use CastsBusinessDates;
@@ -30,16 +33,19 @@ class Habit extends Model
         'archived_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Category, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /** @return HasMany<HabitLog, $this> */
     public function logs(): HasMany
     {
         return $this->hasMany(HabitLog::class);

@@ -13,20 +13,20 @@
         <section class="surface-card p-5 sm:p-7" aria-labelledby="streak-summary-heading">
             <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <p class="text-sm font-semibold text-muted">Api saat ini</p>
+                    <p class="text-sm font-semibold text-muted">Rentetan aktif saat ini</p>
                     <h2 id="streak-summary-heading" class="mt-1 text-4xl font-bold tracking-tight">{{ $currentStreak }} hari berturut-turut</h2>
                     <p class="mt-2 text-sm text-muted">
                         @if ($activeToday)
-                            Aktivitas hari ini sudah tercatat. Api aman untuk hari ini!
+                            Aktivitas hari ini sudah tercatat. Rentetanmu tetap terjaga untuk hari ini.
                         @elseif ($currentStreak > 0)
-                            Api masih menyala. Selesaikan satu tugas atau kebiasaan hari ini untuk menjaganya.
+                            Rentetan masih berjalan. Selesaikan satu tugas atau kebiasaan hari ini untuk menjaganya.
                         @else
-                            Api akan menyala lagi setelah kamu menyelesaikan tugas atau kebiasaan.
+                            Rentetan akan dimulai lagi setelah kamu menyelesaikan tugas atau kebiasaan.
                         @endif
                     </p>
                 </div>
                 <div class="rounded-xl border-2 border-ink bg-primary-50 px-5 py-4 text-center shadow-card">
-                    <p class="text-sm font-semibold text-muted">Api tertinggi {{ __('ui.streak.best_period') }}</p>
+                    <p class="text-sm font-semibold text-muted">Rentetan terbaik {{ __('ui.streak.best_period') }}</p>
                     <p class="mt-1 text-2xl font-bold">{{ $bestStreak }} hari</p>
                     <p class="mt-1 text-xs text-muted">{{ __('ui.streak.period_note') }}</p>
                 </div>
@@ -45,7 +45,7 @@
 
         <section class="surface-card p-5 sm:p-7" aria-labelledby="streak-records-heading">
             <h2 id="streak-records-heading" class="text-lg font-semibold">{{ __('ui.streak.history_period') }}</h2>
-            <p class="mt-1 text-sm text-muted">Diurutkan dari streak paling panjang, bukan berdasarkan kapan api terakhir padam.</p>
+            <p class="mt-1 text-sm text-muted">Diurutkan dari rentetan paling panjang, bukan berdasarkan kapan rentetan terakhir berakhir.</p>
             @if ($streakHistory)
                 <ol class="mt-4 space-y-3">
                     @foreach ($streakHistory as $streak)
@@ -62,7 +62,7 @@
                                         Rekor #{{ $loop->iteration }}
                                     @endif
                                     @if ($streak['current'])
-                                        <span class="ml-1 text-sm font-medium text-primary-800">· Api masih menyala</span>
+                                        <span class="ml-1 text-sm font-medium text-primary-800">· Rentetan masih berjalan</span>
                                     @endif
                                 </p>
                                 <p class="mt-1 text-sm text-muted">
@@ -76,7 +76,7 @@
                 </ol>
             @else
                 <p class="mt-4 rounded-xl border border-line bg-white p-4 text-sm text-muted">
-                    Belum ada riwayat api. Selesaikan tugas atau kebiasaan untuk mulai membangun rekor pertamamu.
+                    Belum ada riwayat rentetan aktivitas. Selesaikan tugas atau kebiasaan untuk mulai membangun rekor pertamamu.
                 </p>
             @endif
         </section>

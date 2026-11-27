@@ -58,7 +58,7 @@ class BudgetProgress
             /** @var Budget|null $budget */
             $budget = $budgets->get($categoryId);
             $category = $categories->get($categoryId);
-            $actual = (int) ($spent->get($categoryId)?->amount ?? 0);
+            $actual = (int) ($spent->get($categoryId)->amount ?? 0);
 
             $amount = $budget?->amount;
             $rawPercent = $amount ? (int) round($actual * 100 / $amount) : null;

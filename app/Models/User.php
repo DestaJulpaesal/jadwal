@@ -73,81 +73,97 @@ class User extends Authenticatable implements MustVerifyEmailContract
         return $this->role === 'admin';
     }
 
-    public function tasks()
+    /** @return HasMany<Task, $this> */
+    public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 
+    /** @return HasMany<Category, $this> */
     public function categories(): HasMany
     {
         return $this->hasMany(Category::class);
     }
 
+    /** @return HasMany<Habit, $this> */
     public function habits(): HasMany
     {
         return $this->hasMany(Habit::class);
     }
 
+    /** @return HasMany<HabitLog, $this> */
     public function habitLogs(): HasMany
     {
         return $this->hasMany(HabitLog::class);
     }
 
+    /** @return HasMany<Goal, $this> */
     public function goals(): HasMany
     {
         return $this->hasMany(Goal::class);
     }
 
+    /** @return HasMany<GoalUpdate, $this> */
     public function goalUpdates(): HasMany
     {
         return $this->hasMany(GoalUpdate::class);
     }
 
+    /** @return HasMany<Wallet, $this> */
     public function wallets(): HasMany
     {
         return $this->hasMany(Wallet::class);
     }
 
+    /** @return HasMany<MoneyCategory, $this> */
     public function moneyCategories(): HasMany
     {
         return $this->hasMany(MoneyCategory::class);
     }
 
+    /** @return HasMany<Budget, $this> */
     public function budgets(): HasMany
     {
         return $this->hasMany(Budget::class);
     }
 
+    /** @return HasMany<Transaction, $this> */
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
     }
 
+    /** @return HasMany<Obligation, $this> */
     public function obligations(): HasMany
     {
         return $this->hasMany(Obligation::class);
     }
 
+    /** @return HasMany<ObligationPayment, $this> */
     public function obligationPayments(): HasMany
     {
         return $this->hasMany(ObligationPayment::class);
     }
 
+    /** @return HasMany<Loan, $this> */
     public function loans(): HasMany
     {
         return $this->hasMany(Loan::class);
     }
 
+    /** @return HasMany<LoanRepayment, $this> */
     public function loanRepayments(): HasMany
     {
         return $this->hasMany(LoanRepayment::class);
     }
 
+    /** @return HasMany<UserAuditLog, $this> */
     public function auditLogs(): HasMany
     {
         return $this->hasMany(UserAuditLog::class);
     }
 
+    /** @return HasMany<PushSubscription, $this> */
     public function pushSubscriptions(): HasMany
     {
         return $this->hasMany(PushSubscription::class);

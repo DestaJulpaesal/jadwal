@@ -21,6 +21,7 @@ class PushSubscription extends Model
         'auth_token' => 'encrypted',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

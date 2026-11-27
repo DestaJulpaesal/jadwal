@@ -1,9 +1,10 @@
+import '../css/components/user-ui-refresh.css';
 import './calendar';
 import './habit-form';
-import '@fontsource/figtree/400.css';
-import '@fontsource/figtree/500.css';
-import '@fontsource/figtree/600.css';
-import '@fontsource/figtree/700.css';
+import '@fontsource/figtree/latin-400.css';
+import '@fontsource/figtree/latin-500.css';
+import '@fontsource/figtree/latin-600.css';
+import '@fontsource/figtree/latin-700.css';
 import './forms';
 import { initializeTaskBulkActions } from './task-bulk-actions';
 import { initializeMotion } from './motion';

@@ -44,6 +44,7 @@ class HabitController extends Controller
                 ->whereNotNull('ends_on')
                 ->where('ends_on', '<', $today),
             'archived' => $query->whereNotNull('archived_at'),
+            default => abort(422),
         };
 
         $habits = $query->get()
@@ -171,7 +172,7 @@ class HabitController extends Controller
     public function cancelCheckIn(Request $request, Habit $habit, UserClock $clock)
     {
         $this->authorize('update', $habit);
-        abort_if($habit->archived_at, 404);
+        abort_if($habit->archived_at !== null, 404);
         $date = $request->validate(['log_date' => ['required', 'date_format:Y-m-d']])['log_date'];
         $today = $clock->date($request->user());
         abort_if(
@@ -196,7 +197,7 @@ class HabitController extends Controller
     public function archive(Habit $habit)
     {
         $this->authorize('update', $habit);
-        abort_if($habit->archived_at, 404);
+        abort_if($habit->archived_at !== null, 404);
         $habit->update(['archived_at' => now()]);
 
         return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.habit_archived'));
@@ -205,7 +206,7 @@ class HabitController extends Controller
     public function restore(Habit $habit)
     {
         $this->authorize('update', $habit);
-        abort_unless($habit->archived_at, 404);
+        abort_unless($habit->archived_at !== null, 404);
         $habit->update(['archived_at' => null]);
 
         return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.record_restored'));
@@ -214,7 +215,7 @@ class HabitController extends Controller
     public function destroy(Habit $habit)
     {
         $this->authorize('delete', $habit);
-        abort_unless($habit->archived_at, 404);
+        abort_unless($habit->archived_at !== null, 404);
         DatabaseTransaction::immediate(fn () => $habit->delete());
 
         return Feedback::success(redirect()->route('user.habits.index'), __('ui.feedback.record_deleted'));

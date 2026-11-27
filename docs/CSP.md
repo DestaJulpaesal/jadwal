@@ -41,3 +41,5 @@ The standard Alpine runtime has been replaced by `@alpinejs/csp`. Stateful UI is
 5. Keep `off`/`report` available as a configuration rollback. Never add a third-party source based solely on a report; verify ownership and necessity first.
 
 At this point the endpoint and mode behavior are covered by feature tests, but a full browser sweep and an observation period have not been completed. Keep production in `off` or `report` until that work is recorded.
+
+The Playwright Chromium E2E suite now runs a synthetic receipt scan with `CSP_MODE=enforce`. The scan reaches the parser and the browser emits no WebAssembly compilation refusal, so `'wasm-unsafe-eval'` has not been added. This verifies the current Chromium/Tesseract build only; repeat on Chrome Android and Safari iOS before treating device coverage as complete.

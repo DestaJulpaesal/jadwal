@@ -28,16 +28,19 @@ class Loan extends Model
         'archived_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Wallet, $this> */
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
+    /** @return HasMany<LoanRepayment, $this> */
     public function repayments(): HasMany
     {
         return $this->hasMany(LoanRepayment::class);

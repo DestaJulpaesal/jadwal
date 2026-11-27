@@ -110,7 +110,7 @@ class TaskController extends Controller
                     THEN 1 ELSE 0
                 END), 0) AS overdue_count,
                 COALESCE(SUM(CASE WHEN task_status_id = ? THEN 1 ELSE 0 END), 0) AS completed_count',
-                [$todayStart, $tomorrowStart, $tomorrowStart, $nowUtc, $nowUtc, $completedStatus?->id ?? 0]
+                [$todayStart, $tomorrowStart, $tomorrowStart, $nowUtc, $nowUtc, $completedStatus->id ?? 0]
             )
             ->first();
         $taskCounts = [
@@ -465,11 +465,11 @@ class TaskController extends Controller
 
     private function normalizeRecurrence(array $validated, User $user, ?Task $task = null): array
     {
-        $recurrence = $validated['recurrence'] ?? $task?->recurrence ?? 'none';
+        $recurrence = $validated['recurrence'] ?? $task->recurrence ?? 'none';
         $validated['recurrence'] = $recurrence;
 
         if ($recurrence === 'weekly') {
-            $validated['recurrence_days'] = $validated['recurrence_days'] ?? $task?->recurrence_days ?? [];
+            $validated['recurrence_days'] = $validated['recurrence_days'] ?? $task->recurrence_days ?? [];
         } else {
             $validated['recurrence_days'] = null;
         }

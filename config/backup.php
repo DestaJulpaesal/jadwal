@@ -5,4 +5,7 @@ return [
     'encryption_key' => env('BACKUP_ENCRYPTION_KEY'),
     'max_archive_bytes' => (int) env('BACKUP_MAX_ARCHIVE_BYTES', 536870912),
     'profile_photos_directory' => storage_path('app/profile-photos'),
+    'offsite_s3_bucket' => env('BACKUP_OFFSITE_S3_BUCKET'),
+    'offsite_s3_prefix' => env('BACKUP_OFFSITE_S3_PREFIX', 'jadwal-backups'),
+    'offsite_status_file' => env('BACKUP_OFFSITE_STATUS_FILE'),
 ];

@@ -80,9 +80,7 @@ class ObligationController extends Controller
             $obligation->setAttribute('periods', $visiblePeriods);
             $obligation->setAttribute('installments_complete', $obligation->kind === ObligationKind::Installment
                 && $obligation->payments->count() >= $obligation->installments_total);
-            $obligation->setAttribute('next_due', $visiblePeriods->first(
-                fn ($period) => $period['payment'] === null && $period['date']->toDateString() <= $today
-            )['date'] ?? null);
+            $obligation->setAttribute('next_due', $due->first()['date'] ?? null);
             $obligation->setAttribute('paid_installments', $obligation->payments->count());
         });
         $wallets = $request->user()->wallets()->whereNull('archived_at')->orderBy('name')->get();

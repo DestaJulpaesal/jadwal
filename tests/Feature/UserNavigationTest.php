@@ -46,20 +46,24 @@ class UserNavigationTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
+        $this->assertMobileNavigationLabels(
+            $this->get(route('user.dashboard'))->assertOk()->getContent()
+        );
 
         $routes = [
-            [route('user.dashboard'), 'Hari ini'],
-            [route('user.calendar'), 'Hari ini'],
-            [route('user.search'), 'Hari ini'],
+            [route('user.dashboard'), 'Beranda'],
+            [route('user.calendar'), 'Beranda'],
+            [route('user.search'), 'Beranda'],
             [route('user.tasks.index'), 'Tugas'],
             [route('user.habits.index'), 'Kebiasaan'],
-            [route('user.goals.index'), 'Target'],
+            [route('user.goals.index'), 'Kebiasaan'],
             [route('user.money.index', ['section' => 'overview']), 'Keuangan'],
             [route('user.money.index', ['section' => 'transactions']), 'Keuangan'],
             [route('user.money.index', ['section' => 'wallets']), 'Keuangan'],
             [route('user.obligations.index'), 'Keuangan'],
             [route('user.loans.index'), 'Keuangan'],
             [route('user.reports.index'), 'Keuangan'],
+            [route('profile.edit'), 'Profil'],
         ];
 
         foreach ($routes as [$url, $active]) {
@@ -97,10 +101,11 @@ class UserNavigationTest extends TestCase
         $this->actingAs($user);
 
         $routes = [
-            [route('user.dashboard'), 'Hari ini', 'Ringkasan'],
+            [route('user.dashboard'), 'Hari ini', 'Hari ini'],
             [route('user.calendar'), 'Hari ini', 'Kalender'],
             [route('user.dashboard', ['tab' => 'attention']), 'Hari ini', 'Perlu perhatian'],
             [route('user.habits.index'), 'Kebiasaan', 'Kebiasaan'],
+            [route('user.goals.index'), 'Kebiasaan', 'Target'],
             [route('user.money.index'), 'Keuangan', 'Ringkasan'],
             [route('user.money.index', ['section' => 'transactions']), 'Keuangan', 'Transaksi'],
             [route('user.money.index', ['section' => 'wallets']), 'Keuangan', 'Dompet'],
@@ -250,6 +255,23 @@ class UserNavigationTest extends TestCase
         $this->assertCount(1, iterator_to_array($activeItems), "Expected one active mobile menu item for {$url}.");
         $this->assertSame($expected, trim($activeItems->item(0)->lastElementChild->textContent));
         $this->assertStringNotContainsString('Lainnya', $items->item(0)->parentNode->textContent);
+    }
+
+    private function assertMobileNavigationLabels(string $html): void
+    {
+        $document = new \DOMDocument;
+        $previousLibxmlSetting = libxml_use_internal_errors(true);
+        $document->loadHTML($html);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previousLibxmlSetting);
+        $xpath = new \DOMXPath($document);
+        $items = $xpath->query('//nav[@id="mobileNavigationMenu"]/div/a');
+        $labels = [];
+        foreach ($items as $item) {
+            $labels[] = trim($item->lastElementChild->textContent);
+        }
+
+        $this->assertSame(['Beranda', 'Tugas', 'Kebiasaan', 'Keuangan', 'Profil'], $labels);
     }
 
     private function assertSubnavTabActive(string $html, string $group, string $expected, string $url): void

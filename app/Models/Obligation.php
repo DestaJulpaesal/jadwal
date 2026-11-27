@@ -28,21 +28,25 @@ class Obligation extends Model
         'archived_at' => 'datetime',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Wallet, $this> */
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
+    /** @return BelongsTo<MoneyCategory, $this> */
     public function moneyCategory(): BelongsTo
     {
         return $this->belongsTo(MoneyCategory::class);
     }
 
+    /** @return HasMany<ObligationPayment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(ObligationPayment::class);

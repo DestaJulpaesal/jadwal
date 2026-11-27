@@ -22,16 +22,19 @@ class ObligationPayment extends Model
         'amount_paid' => 'integer',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Obligation, $this> */
     public function obligation(): BelongsTo
     {
         return $this->belongsTo(Obligation::class);
     }
 
+    /** @return BelongsTo<Transaction, $this> */
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);

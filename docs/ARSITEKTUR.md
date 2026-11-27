@@ -10,14 +10,15 @@ Audit dilakukan pada project di root ini: `C:\jadwal\list`. Yang dibaca meliputi
 
 ### Stack dan struktur yang ada
 
-- PHP `^8.1`, Laravel `^10.10`, Blade, Tailwind CSS 3, Alpine.js, Vite 6, dan SQLite pada `.env.example`. `config/database.php` memakai nilai `DB_CONNECTION` dari environment dengan fallback `mysql`; jangan mengasumsikan koneksi runtime tanpa memeriksa environment.
+- PHP `^8.3`, Laravel `^13`, Blade, Tailwind CSS 3, Alpine CSP, Vite 6, dan SQLite pada `.env.example`. `config/database.php` memakai fallback `sqlite` dan mendukung `transaction_mode=IMMEDIATE` untuk koneksi SQLite.
 - Bahasa aplikasi `id`, fallback `id`, zona waktu aplikasi `UTC`. Zona waktu pengguna disimpan pada `users.timezone` dan divalidasi saat profil diperbarui.
 - Model yang ada: `User`, `Task`, `Category`, dan `TaskStatus`. Policy yang didaftarkan manual di `AuthServiceProvider`: `TaskPolicy` dan `CategoryPolicy`.
 - Route dashboard pengguna berada di `routes/web.php` dalam middleware `auth` dan `active`, dengan `verified` bila `auth.email_verification` aktif. Panel admin punya grup `auth`, `active`, dan `admin`; profil punya grup `auth`, `active`.
 - `TaskController` mengubah waktu input lokal ke UTC, lalu menampilkan konflik dalam zona waktu pemilik. `UserController` membentuk dashboard dan kalender dari tugas milik pengguna, mengubah rentang lokal ke UTC, serta memulai minggu pada Senin.
-- `User` punya relasi tugas, tetapi belum ada relasi kategori/preset atau modul lain. Tidak ada direktori `Services`, `Support`, atau enum domain yang saat ini dipakai. `DatabaseSeeder` hanya menyiapkan tiga status tugas; hanya `UserFactory` tersedia.
-- `app/Console/Kernel` belum menjadwalkan pekerjaan. Tidak ada antrean atau worker yang boleh diasumsikan tersedia.
-- Ada **59 metode test** terdaftar dalam suite Unit dan Feature. Test yang sudah ada mencakup autentikasi, akun, profil, tugas, kalender, zona waktu, konflik jadwal, isolasi pemilik, warna kategori, dan migrasi jadwal.
+- Model domain saat ini mencakup tugas, kategori, kebiasaan/log, target/perubahan target, dompet, kategori uang, transaksi, tagihan/pembayaran, pinjaman/pelunasan, notifikasi, dan preferensi pengguna. Relasi Eloquent menggunakan generic PHPDoc untuk tipe parent/related model.
+- `app/Services`, `app/Support`, enum domain, policy, form request, factory, dan test tersedia untuk modul yang sudah dibangun. `DatabaseSeeder` menyiapkan status tugas bawaan; data demo hanya digunakan di environment `local`.
+- `app/Console/Kernel` menjadwalkan backup, housekeeping, dan ringkasan pengguna sesuai preferensi. Queue default tetap `sync`; jangan mengasumsikan worker aktif kecuali deployment mengaturnya.
+- Jumlah test Unit dan Feature dapat berubah; gunakan hasil run terbaru sebagai acuan, bukan angka tetap dalam dokumen.
 - `.env.example` di root aplikasi menggunakan SQLite. Ada subfolder `list/` dengan beberapa berkas lama/duplikat, termasuk `.env.example` yang berbeda; acuan fase berikutnya adalah root aplikasi ini, bukan salinan parsial tersebut.
 
 ### Skema lama yang harus tetap utuh
@@ -38,16 +39,11 @@ Audit dilakukan pada project di root ini: `C:\jadwal\list`. Yang dibaca meliputi
 - Locale Indonesia dan berkas autentikasi, validasi, password, pagination sudah tersedia di `lang/id`.
 - Belum ada komponen uang/progres/pilih hari/lembar bawah, enum fitur, preset, atau service domain baru.
 
-### Ketidaksesuaian dan utang teknis terverifikasi
+### Catatan audit historis dan status sekarang
 
-1. `Task` dan `Category` saat ini memasukkan `user_id` di `$fillable`. `TaskController` memakai relasi pemilik untuk membuat tugas, tetapi resolver kategori serta sejumlah test membuat kategori dengan `Category::create()`. Fitur baru tetap harus mengikuti aturan brief: jangan menerima `user_id` dari request atau mass assignment; bila aturan itu diterapkan ke model lama, jalur pembuatan lama dan fixture test perlu disesuaikan tanpa mengubah kontrak route.
-2. `TaskController` membuat kategori baru tanpa mencari kategori yang sama terlebih dahulu.
-3. Filter tugas terlambat memeriksa `due_date < now()` saja; ia tidak mengecualikan status selesai dan tidak memakai `ends_at`. Dashboard memiliki kondisi terlambat berbeda.
-4. Status selesai dicari melalui nama `"Selesai"` pada lebih dari satu tempat.
-5. `ProfileController::destroy` belum mencegah admin aktif terakhir menghapus akunnya sendiri. Guard yang ada hanya berada pada aksi penghapusan di panel admin.
-6. README memakai `migrate --seed` untuk instalasi lokal, tetapi checklist production belum mencantumkan `db:seed`.
-7. `docs/DESIGN_SYSTEM.md` masih mendeskripsikan ikon dengan satu aksen warna, sedangkan sprite dan `DAFTAR_IKON_CUSTOM.md` saat ini memakai outline tanpa blok warna. Perbarui dokumentasi desain agar sesuai ikon aktual pada fase penutup.
-8. Laravel/PHP yang dipakai jangan dinaikkan major dalam pekerjaan ini. Status dukungan keamanan versi akan diverifikasi terpisah pada fase penutup; rekomendasi upgrade tetap pekerjaan terpisah.
+Temuan audit awal di atas direkam sebelum modul domain dibangun dan bukan inventaris utang teknis terkini. Saat ini `Task` dan `Category` tidak memasukkan `user_id` ke `$fillable`; pembuatan data personal memakai relasi pemilik. Konfigurasi SQLite memakai `transaction_mode=IMMEDIATE`, dan operasi yang menjaga invariant admin aktif terakhir dibungkus transaksi. Dokumen deployment/backup kini mencakup seed instalasi, scheduler, S3, dan langkah verifikasi operator.
+
+Hal yang tetap membutuhkan bukti di lingkungan pemilik: workflow GitHub Actions pada checkout bersih, SMTP/cron/Apache produksi, izin IAM dan restore drill S3, serta uji OCR pada Chrome Android/Safari iOS dengan struk asli. Jangan menyimpulkan kesiapan produksi hanya dari test lokal.
 
 ## 2. Diagram relasi
 
@@ -168,23 +164,23 @@ Untuk setiap fase, cakupan test mencakup isolasi antar pengguna, IDOR pada ID pa
 ## 6. Risiko yang perlu dijaga
 
 - Kesalahan pemetaan waktu lokal dapat menggeser hari di WIB/WITA/WIT. Pisahkan tanggal bisnis `DATE` dari waktu UTC dan uji batas tengah malam.
-- `user_id` yang dapat di-mass-assign pada model lama perlu ditangani tanpa mematahkan jalur pembuatan dan test yang ada.
 - `transactions` menjadi sumber saldo; setiap aksi multi-tabel wajib atomic, transfer tidak boleh dihitung ganda, dan kebijakan penghapusan tidak boleh merusak riwayat.
-- SQLite adalah basis kompatibilitas minimal; migrasi, constraint, dan agregasi perlu diuji juga terhadap perilaku SQLite. Nilai fallback koneksi database di config berbeda dari `.env.example`.
+- SQLite adalah basis data produksi saat ini; `transaction_mode=IMMEDIATE` dan test lokal melindungi jalur tulis dari transaksi deferred. Kontensi tetap perlu dipantau pada server nyata.
 - Jumlah item agenda, kebiasaan, dompet, dan transaksi dapat membuat N+1 atau query berulang. Gunakan eager loading/agregasi serta test jumlah query yang memiliki ambang tetap.
-- Fase bertahap berisiko menghasilkan tautan ke modul yang belum dibuat. Jaga progressive enhancement dan jangan menampilkan aksi palsu.
-- Ringkasan email berjalan tanpa queue worker; kirim secara terkendali dan idempoten dalam jadwal hourly, dan jangan mengekspos data keuangan sensitif di log.
-- Beberapa perilaku hapus/arsip dan referensi ke transaksi belum dispesifikasikan. Putuskan secara konservatif sebelum fase terkait, tanpa menambah fitur di luar brief.
+- Email ringkasan berjalan secara sinkron pada scheduler dan tetap idempoten; jangan mengekspos data keuangan sensitif di log.
+- Backup offsite, SMTP, scheduler, Apache, dan migrasi CI perlu dibuktikan pada deployment; unit/feature test lokal tidak menggantikan pemeriksaan operator.
 
 ## 7. Validasi akhir dan keputusan
 
 - Implementasi mencakup migrasi, model, factory, policy kepemilikan, form request, controller, view, agenda terpadu, email digest opt-in, ringkasan laporan, dan test untuk fitur baru.
-- Hasil validasi terakhir: `php artisan test` **81 lulus, 314 assertion**; `npm run build` berhasil; `artisan view:cache` dan route report berhasil.
-- Pint lulus pada 69 file PHP domain/terkait. `pint --test` seluruh workspace masih melaporkan 37 isu format, semuanya berada pada file lama di luar perubahan fitur ini, termasuk salinan proyek lama dalam `list/`.
-- Tidak ada dependensi baru. Data demo hanya di-seed pada environment `local`.
+- Run lokal terbaru: `php artisan test` **294 lulus, 1.956 assertion**; Pint lulus; Larastan level 5 melaporkan 0 diagnosis.
+- Vite build, E2E Playwright (4 tes), receipt parser (16 tes), dan bundle check lulus: JS 38,51 KB gzip dan CSS 19,76 KB gzip, di bawah budget masing-masing 50/20 KB.
+- `npm audit` dan Composer audit locked bersih. Symfony diperbarui ke versi patch 7.4.24 untuk mengatasi advisori yang terdeteksi; Guzzle hanya menjadi dependensi transitif Laravel dan Web Push.
+- Backup JDBAK2 streaming lulus round-trip, tamper rejection, dan restore kompatibilitas JDBAK1. Pengukuran SQLite sintetis 64,1 MiB mencatat puncak 10 MiB pada create dan restore JDBAK2.
+- Data demo hanya di-seed pada environment `local`.
 - Penghapusan pembayaran tagihan/cicilan membatalkan transaksi terkait secara atomik. Penghapusan akun menghapus data pemilik melalui foreign key cascade. Transaksi pinjaman dibedakan melalui `source_type` dan dikecualikan dari ringkasan pemasukan/pengeluaran.
 - Saldo awal dompet boleh negatif, sementara nominal transaksi/pembayaran tetap dibatasi pada bilangan Rupiah positif.
-- Halaman Kebiasaan, Keuangan, Tagihan/Cicilan, Utang/Piutang, Target, dan Laporan diuji di browser pada lebar 360, 390, 768, dan 1280 px; semua merespons HTTP 200 tanpa overflow horizontal. Aksesibilitas pola label, target sentuh, teks status, dan batang laporan ditinjau; uji pembaca layar lintas browser belum dilakukan.
+- Server lokal port 1574 serta verifikasi perangkat nyata/produksi tetap harus diuji terpisah; lihat [PROGRESS.md](./PROGRESS.md).
 
 ## Kapan pindah dari SQLite
 
@@ -194,8 +190,4 @@ Evaluasi MySQL/MariaDB atau PostgreSQL jika aplikasi membutuhkan lebih dari satu
 
 Jalur migrasi: pertahankan Eloquent/Query Builder dan uji migrasi skema pada mesin tujuan sebelum cutover; hindari SQL khusus SQLite. Audit tipe boolean/tanggal, rename kolom (mungkin memerlukan `doctrine/dbal` pada versi tertentu), collation dan perbandingan huruf besar-kecil pada unique email, indeks, serta locking/isolasi transaksi. Ambang pengguna hanyalah panduan operasional, bukan kapasitas atau jaminan performa.
 
-### Verifikasi penutupan 9 November 2026
-
-Run penuh sesudah penutupan security, navigasi, feedback, backup, dan test Windows: **176 test lulus, 1.095 assertion** pada checkpoint sebelum penambahan tes housekeeping terakhir. Build Vite lulus dan bundle tercatat di `docs/MOTION.md`. `npm audit` kemudian dibersihkan dengan update non-major; `composer audit` tidak dapat dijalankan karena Composer CLI tidak terpasang.
-
-Hasil ini tidak menggantikan audit N+1 lintas semua halaman autentikasi, pengukuran Lighthouse, uji screen reader, CSP report lintas route, uji install PWA di perangkat, atau restore backup produksi; semuanya tetap menjadi verifikasi deployment.
+Verifikasi teknis terkini, hasil test terakhir, dan item yang belum dapat diuji di luar repo dicatat pada [PROGRESS.md](./PROGRESS.md). Jangan memakai angka atau hasil dari checkpoint historis sebagai status saat ini.

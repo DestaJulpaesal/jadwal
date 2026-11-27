@@ -11,7 +11,17 @@ use ZipArchive;
 
 class EncryptedSqliteBackup
 {
-    private const MAGIC = 'JDBAK1';
+    private const LEGACY_MAGIC = 'JDBAK1';
+
+    private const MAGIC = 'JDBAK2';
+
+    private const CHUNK_BYTES = 1_048_576;
+
+    private const TAG_BYTES = 16;
+
+    private const SALT_BYTES = 16;
+
+    private const V2_HEADER_BYTES = 6 + self::SALT_BYTES + 8;
 
     public function create(): string
     {
@@ -22,6 +32,7 @@ class EncryptedSqliteBackup
         try {
             $snapshotPath = $workDirectory.DIRECTORY_SEPARATOR.'database.sqlite';
             $zipPath = $workDirectory.DIRECTORY_SEPARATOR.'backup.zip';
+            $compressedPath = $workDirectory.DIRECTORY_SEPARATOR.'backup.gz';
             $pdo = DB::connection('sqlite')->getPdo();
             $pdo->exec('VACUUM INTO '.$pdo->quote($snapshotPath));
             $this->assertIntegrity($snapshotPath);
@@ -32,38 +43,22 @@ class EncryptedSqliteBackup
                 throw new RuntimeException('The backup archive exceeds BACKUP_MAX_ARCHIVE_BYTES.');
             }
 
-            $archive = file_get_contents($zipPath);
-            if ($archive === false) {
-                throw new RuntimeException('Unable to read the completed backup archive.');
-            }
-
-            $compressed = gzencode($archive, 6);
-            if ($compressed === false) {
-                throw new RuntimeException('Unable to compress the backup archive.');
-            }
-
-            $nonce = random_bytes(12);
-            $tag = '';
-            $ciphertext = openssl_encrypt(
-                $compressed,
-                'aes-256-gcm',
-                $this->encryptionKey(),
-                OPENSSL_RAW_DATA,
-                $nonce,
-                $tag,
-                self::MAGIC
-            );
-            if ($ciphertext === false || strlen($tag) !== 16) {
-                throw new RuntimeException('Unable to encrypt the backup archive.');
-            }
+            $this->compressArchive($zipPath, $compressedPath);
 
             $filename = 'jadwal-'.now()->format('Ymd-His').'-'.bin2hex(random_bytes(4)).'.sqlite.gz.enc';
             $backupPath = $backupDirectory.DIRECTORY_SEPARATOR.$filename;
-            $temporaryPath = $backupPath.'.tmp';
-            $bytes = file_put_contents($temporaryPath, self::MAGIC.$nonce.$tag.$ciphertext, LOCK_EX);
-            if ($bytes === false || ! rename($temporaryPath, $backupPath)) {
-                @unlink($temporaryPath);
-                throw new RuntimeException('Unable to save the encrypted backup file.');
+            $temporaryPath = $backupPath.'.'.bin2hex(random_bytes(4)).'.tmp';
+            try {
+                $this->encryptStream($compressedPath, $temporaryPath);
+                if (! rename($temporaryPath, $backupPath)) {
+                    throw new RuntimeException('Unable to save the encrypted backup file.');
+                }
+            } catch (Throwable $exception) {
+                if (is_file($temporaryPath) && ! unlink($temporaryPath)) {
+                    throw new RuntimeException('Unable to clean up an incomplete encrypted backup.', previous: $exception);
+                }
+
+                throw $exception;
             }
 
             @chmod($backupPath, 0600);
@@ -245,6 +240,119 @@ class EncryptedSqliteBackup
         }
     }
 
+    private function compressArchive(string $archivePath, string $compressedPath): void
+    {
+        $input = fopen($archivePath, 'rb');
+        if ($input === false) {
+            throw new RuntimeException('Unable to read the completed backup archive.');
+        }
+
+        $gzip = gzopen($compressedPath, 'wb6');
+        if ($gzip === false) {
+            fclose($input);
+            throw new RuntimeException('Unable to create the compressed backup stream.');
+        }
+
+        try {
+            while (! feof($input)) {
+                $chunk = fread($input, self::CHUNK_BYTES);
+                if ($chunk === false || ($chunk === '' && ! feof($input))) {
+                    throw new RuntimeException('Unable to read the backup archive stream.');
+                }
+                if ($chunk === '') {
+                    break;
+                }
+
+                if (gzwrite($gzip, $chunk) !== strlen($chunk)) {
+                    throw new RuntimeException('Unable to compress the backup archive stream.');
+                }
+            }
+
+            if (! gzclose($gzip)) {
+                $gzip = false;
+                throw new RuntimeException('Unable to finish compressing the backup archive.');
+            }
+            $gzip = false;
+        } finally {
+            fclose($input);
+            if ($gzip !== false) {
+                gzclose($gzip);
+            }
+        }
+    }
+
+    private function encryptStream(string $compressedPath, string $encryptedPath): void
+    {
+        $compressedSize = filesize($compressedPath);
+        if ($compressedSize === false || $compressedSize < 1) {
+            throw new RuntimeException('The compressed backup stream is empty or unavailable.');
+        }
+
+        $chunkCount = (int) ceil($compressedSize / self::CHUNK_BYTES);
+        if ($chunkCount > 0xFFFFFFFF) {
+            throw new RuntimeException('The backup stream exceeds the supported chunk count.');
+        }
+        if (self::V2_HEADER_BYTES + $compressedSize + $chunkCount * self::TAG_BYTES > $this->maxEncryptedBackupBytes()) {
+            throw new RuntimeException('The encrypted backup exceeds BACKUP_MAX_ARCHIVE_BYTES.');
+        }
+
+        $salt = random_bytes(self::SALT_BYTES);
+        $header = self::MAGIC.$salt.pack('J', $compressedSize);
+        $encryptionKey = hash_hkdf(
+            'sha256',
+            $this->encryptionKey(),
+            32,
+            'jadwal-backup-jdbak2',
+            $salt
+        );
+        $input = fopen($compressedPath, 'rb');
+        $output = fopen($encryptedPath, 'xb');
+        if ($input === false || $output === false) {
+            if (is_resource($input)) {
+                fclose($input);
+            }
+            if (is_resource($output)) {
+                fclose($output);
+            }
+            throw new RuntimeException('Unable to open the encrypted backup streams.');
+        }
+
+        try {
+            $this->writeAll($output, $header);
+            $remaining = $compressedSize;
+            for ($index = 0; $remaining > 0; $index++) {
+                $chunkLength = min(self::CHUNK_BYTES, $remaining);
+                $chunk = $this->readExact($input, $chunkLength);
+                $nonce = str_repeat("\0", 8).pack('N', $index);
+                $tag = '';
+                $ciphertext = openssl_encrypt(
+                    $chunk,
+                    'aes-256-gcm',
+                    $encryptionKey,
+                    OPENSSL_RAW_DATA,
+                    $nonce,
+                    $tag,
+                    $header.pack('N', $index),
+                    self::TAG_BYTES
+                );
+                if ($ciphertext === false || strlen($tag) !== self::TAG_BYTES) {
+                    throw new RuntimeException('Unable to encrypt a backup stream chunk.');
+                }
+
+                $this->writeAll($output, $tag.$ciphertext);
+                $remaining -= $chunkLength;
+            }
+
+            $trailing = fread($input, 1);
+            if ($trailing === false || $trailing !== '') {
+                throw new RuntimeException('The compressed backup stream changed while being encrypted.');
+            }
+        } finally {
+            fclose($input);
+            fclose($output);
+        }
+    }
+
     private function createArchive(string $databasePath, string $archivePath): void
     {
         $archive = new ZipArchive;
@@ -292,45 +400,35 @@ class EncryptedSqliteBackup
     private function unpackBackup(string $backupPath, string $workDirectory): array
     {
         $backupSize = filesize($backupPath);
-        $maxArchiveBytes = (int) config('backup.max_archive_bytes');
-        if ($backupSize === false || $backupSize > $maxArchiveBytes + 128) {
+        if ($backupSize === false || $backupSize > $this->maxEncryptedBackupBytes()) {
             throw new RuntimeException('The encrypted backup exceeds BACKUP_MAX_ARCHIVE_BYTES.');
         }
 
-        $contents = file_get_contents($backupPath);
-        if ($contents === false || strlen($contents) < strlen(self::MAGIC) + 12 + 16 + 1) {
+        if ($backupSize < strlen(self::LEGACY_MAGIC) + 12 + self::TAG_BYTES + 1) {
             throw new RuntimeException('The backup file is empty or incomplete.');
         }
 
-        $headerLength = strlen(self::MAGIC);
-        if (substr($contents, 0, $headerLength) !== self::MAGIC) {
-            throw new RuntimeException('The backup file format is not supported.');
+        $input = fopen($backupPath, 'rb');
+        if ($input === false) {
+            throw new RuntimeException('Unable to open the encrypted backup.');
         }
 
-        $nonce = substr($contents, $headerLength, 12);
-        $tag = substr($contents, $headerLength + 12, 16);
-        $ciphertext = substr($contents, $headerLength + 28);
-        $compressed = openssl_decrypt(
-            $ciphertext,
-            'aes-256-gcm',
-            $this->encryptionKey(),
-            OPENSSL_RAW_DATA,
-            $nonce,
-            $tag,
-            self::MAGIC
-        );
-        if ($compressed === false) {
-            throw new RuntimeException('The backup could not be authenticated or decrypted.');
-        }
-
-        $archiveBytes = gzdecode($compressed, $maxArchiveBytes);
-        if ($archiveBytes === false || strlen($archiveBytes) > $maxArchiveBytes) {
-            throw new RuntimeException('The backup archive is damaged or could not be decompressed.');
+        try {
+            $magic = $this->readExact($input, strlen(self::LEGACY_MAGIC));
+        } finally {
+            fclose($input);
         }
 
         $archivePath = $workDirectory.DIRECTORY_SEPARATOR.'restore.zip';
-        if (file_put_contents($archivePath, $archiveBytes, LOCK_EX) === false) {
-            throw new RuntimeException('Unable to stage the decrypted backup archive.');
+        $maxArchiveBytes = (int) config('backup.max_archive_bytes');
+        if ($magic === self::MAGIC) {
+            $compressedPath = $workDirectory.DIRECTORY_SEPARATOR.'restore.gz';
+            $this->decryptStream($backupPath, $compressedPath);
+            $this->decompressArchive($compressedPath, $archivePath, $maxArchiveBytes);
+        } elseif ($magic === self::LEGACY_MAGIC) {
+            $this->unpackLegacyV1($backupPath, $archivePath, $maxArchiveBytes);
+        } else {
+            throw new RuntimeException('The backup file format is not supported.');
         }
 
         $archive = new ZipArchive;
@@ -406,6 +504,204 @@ class EncryptedSqliteBackup
         return [$archivePath, $databaseStage, $photosStage];
     }
 
+    private function decryptStream(string $encryptedPath, string $compressedPath): void
+    {
+        $input = fopen($encryptedPath, 'rb');
+        if ($input === false) {
+            throw new RuntimeException('Unable to open the encrypted backup.');
+        }
+
+        $output = false;
+        try {
+            $header = $this->readExact($input, self::V2_HEADER_BYTES);
+            if (substr($header, 0, strlen(self::MAGIC)) !== self::MAGIC) {
+                throw new RuntimeException('The backup file format is not supported.');
+            }
+
+            $salt = substr($header, strlen(self::MAGIC), self::SALT_BYTES);
+            $lengthBytes = substr($header, strlen(self::MAGIC) + self::SALT_BYTES, 8);
+            $length = unpack('Jlength', $lengthBytes)['length'] ?? null;
+            if (! is_int($length) || $length < 1 || $length > $this->maxEncryptedBackupBytes()) {
+                throw new RuntimeException('The encrypted backup has an invalid stream length.');
+            }
+
+            $chunkCount = (int) ceil($length / self::CHUNK_BYTES);
+            $expectedSize = self::V2_HEADER_BYTES + $length + $chunkCount * self::TAG_BYTES;
+            if (filesize($encryptedPath) !== $expectedSize) {
+                throw new RuntimeException('The encrypted backup is incomplete or contains trailing data.');
+            }
+
+            $encryptionKey = hash_hkdf(
+                'sha256',
+                $this->encryptionKey(),
+                32,
+                'jadwal-backup-jdbak2',
+                $salt
+            );
+            $output = fopen($compressedPath, 'xb');
+            if ($output === false) {
+                throw new RuntimeException('Unable to stage the decrypted backup stream.');
+            }
+
+            $remaining = $length;
+            for ($index = 0; $remaining > 0; $index++) {
+                $chunkLength = min(self::CHUNK_BYTES, $remaining);
+                $tag = $this->readExact($input, self::TAG_BYTES);
+                $ciphertext = $this->readExact($input, $chunkLength);
+                $nonce = str_repeat("\0", 8).pack('N', $index);
+                $chunk = openssl_decrypt(
+                    $ciphertext,
+                    'aes-256-gcm',
+                    $encryptionKey,
+                    OPENSSL_RAW_DATA,
+                    $nonce,
+                    $tag,
+                    $header.pack('N', $index)
+                );
+                if ($chunk === false) {
+                    throw new RuntimeException('The backup could not be authenticated or decrypted.');
+                }
+
+                $this->writeAll($output, $chunk);
+                $remaining -= $chunkLength;
+            }
+        } finally {
+            fclose($input);
+            if (is_resource($output)) {
+                fclose($output);
+            }
+        }
+    }
+
+    private function decompressArchive(string $compressedPath, string $archivePath, int $maxArchiveBytes): void
+    {
+        $gzip = gzopen($compressedPath, 'rb');
+        if ($gzip === false) {
+            throw new RuntimeException('The encrypted backup is not a valid gzip stream.');
+        }
+
+        $output = fopen($archivePath, 'xb');
+        if ($output === false) {
+            gzclose($gzip);
+            throw new RuntimeException('Unable to stage the decrypted backup archive.');
+        }
+
+        $archiveBytes = 0;
+        try {
+            while (true) {
+                $chunk = gzread($gzip, self::CHUNK_BYTES);
+                if ($chunk === false) {
+                    throw new RuntimeException('The backup archive is damaged or could not be decompressed.');
+                }
+                if ($chunk === '') {
+                    if (! gzeof($gzip)) {
+                        throw new RuntimeException('The backup archive ended unexpectedly.');
+                    }
+
+                    break;
+                }
+
+                $archiveBytes += strlen($chunk);
+                if ($archiveBytes > $maxArchiveBytes) {
+                    throw new RuntimeException('The backup archive exceeds BACKUP_MAX_ARCHIVE_BYTES.');
+                }
+                $this->writeAll($output, $chunk);
+            }
+
+            $closed = gzclose($gzip);
+            $gzip = false;
+            if ($archiveBytes === 0 || ! $closed) {
+                throw new RuntimeException('The backup archive is damaged or could not be decompressed.');
+            }
+        } finally {
+            fclose($output);
+            if ($gzip !== false) {
+                gzclose($gzip);
+            }
+        }
+    }
+
+    private function unpackLegacyV1(string $backupPath, string $archivePath, int $maxArchiveBytes): void
+    {
+        $contents = file_get_contents($backupPath);
+        $minimumLength = strlen(self::LEGACY_MAGIC) + 12 + self::TAG_BYTES + 1;
+        if ($contents === false || strlen($contents) < $minimumLength) {
+            throw new RuntimeException('The backup file is empty or incomplete.');
+        }
+
+        $headerLength = strlen(self::LEGACY_MAGIC);
+        if (substr($contents, 0, $headerLength) !== self::LEGACY_MAGIC) {
+            throw new RuntimeException('The backup file format is not supported.');
+        }
+
+        $nonce = substr($contents, $headerLength, 12);
+        $tag = substr($contents, $headerLength + 12, self::TAG_BYTES);
+        $ciphertext = substr($contents, $headerLength + 12 + self::TAG_BYTES);
+        $compressed = openssl_decrypt(
+            $ciphertext,
+            'aes-256-gcm',
+            $this->encryptionKey(),
+            OPENSSL_RAW_DATA,
+            $nonce,
+            $tag,
+            self::LEGACY_MAGIC
+        );
+        if ($compressed === false) {
+            throw new RuntimeException('The backup could not be authenticated or decrypted.');
+        }
+
+        $archiveBytes = gzdecode($compressed, $maxArchiveBytes);
+        if ($archiveBytes === false || strlen($archiveBytes) > $maxArchiveBytes) {
+            throw new RuntimeException('The backup archive is damaged or could not be decompressed.');
+        }
+
+        if (file_put_contents($archivePath, $archiveBytes, LOCK_EX) === false) {
+            throw new RuntimeException('Unable to stage the decrypted backup archive.');
+        }
+    }
+
+    private function maxEncryptedBackupBytes(): int
+    {
+        $maxArchiveBytes = (int) config('backup.max_archive_bytes');
+
+        return $maxArchiveBytes + intdiv($maxArchiveBytes, 100) + 2 * 1024 * 1024;
+    }
+
+    /**
+     * @param  resource  $stream
+     */
+    private function readExact($stream, int $length): string
+    {
+        $contents = '';
+        while (strlen($contents) < $length) {
+            $chunk = fread($stream, $length - strlen($contents));
+            if ($chunk === false || $chunk === '') {
+                throw new RuntimeException('The backup stream is incomplete or could not be read.');
+            }
+
+            $contents .= $chunk;
+        }
+
+        return $contents;
+    }
+
+    /**
+     * @param  resource  $stream
+     */
+    private function writeAll($stream, string $contents): void
+    {
+        $offset = 0;
+        $length = strlen($contents);
+        while ($offset < $length) {
+            $written = fwrite($stream, substr($contents, $offset));
+            if ($written === false || $written === 0) {
+                throw new RuntimeException('Unable to write the backup stream.');
+            }
+
+            $offset += $written;
+        }
+    }
+
     private function copyArchiveEntry(ZipArchive $archive, string $name, string $destination): bool
     {
         $input = $archive->getStream($name);
@@ -445,13 +741,13 @@ class EncryptedSqliteBackup
     private function assertIntegrity(string $databasePath): void
     {
         $pdo = new PDO('sqlite:'.$databasePath);
-        $result = $pdo->query('PRAGMA integrity_check')?->fetchColumn();
-        if ($result !== 'ok') {
+        $integrityCheck = $pdo->query('PRAGMA integrity_check');
+        if ($integrityCheck === false || $integrityCheck->fetchColumn() !== 'ok') {
             throw new RuntimeException('SQLite integrity check failed for the backup snapshot.');
         }
 
-        $hasUsersTable = $pdo->query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users'")?->fetchColumn();
-        if ($hasUsersTable === false) {
+        $usersTableCheck = $pdo->query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users'");
+        if ($usersTableCheck === false || $usersTableCheck->fetchColumn() === false) {
             throw new RuntimeException('The backup does not contain the application users table.');
         }
     }
@@ -542,7 +838,7 @@ class EncryptedSqliteBackup
             }
 
             $date = \Illuminate\Support\Carbon::createFromFormat('Ymd-His', $matches[1].'-'.$matches[2]);
-            if ($date !== false) {
+            if ($date !== null) {
                 $backups[] = ['path' => $file->getPathname(), 'date' => $date];
             }
         }

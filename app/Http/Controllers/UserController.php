@@ -121,8 +121,8 @@ class UserController extends Controller
             ->with(['updates', 'habit', 'wallet'])
             ->orderBy('due_on')
             ->orderBy('id')
-            ->get()
-            ->take(3);
+            ->limit(3)
+            ->get();
         $activeGoals->each(function (Goal $goal) use ($goalProgress) {
             $current = $goalProgress->current($goal);
             $goal->setAttribute('current_value', $current);

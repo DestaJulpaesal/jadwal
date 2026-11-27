@@ -23,11 +23,13 @@ class HabitLog extends Model
         'duration_minutes' => 'integer',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Habit, $this> */
     public function habit(): BelongsTo
     {
         return $this->belongsTo(Habit::class);

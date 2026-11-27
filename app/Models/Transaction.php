@@ -26,21 +26,25 @@ class Transaction extends Model
         'occurred_on' => 'date',
     ];
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Wallet, $this> */
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
+    /** @return BelongsTo<Wallet, $this> */
     public function destinationWallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class, 'to_wallet_id');
     }
 
+    /** @return BelongsTo<MoneyCategory, $this> */
     public function moneyCategory(): BelongsTo
     {
         return $this->belongsTo(MoneyCategory::class);
